@@ -382,7 +382,7 @@ async function gerar(){
   }
 
   try{
-    const resp = await fetch("https://masayoshi.app.n8n.cloud/webhook-test/gerar-prova",{
+    const resp = await fetch("http://localhost:5678/webhook/gerar-prova",{
       method:"POST",
       body:formData
     });
@@ -416,3 +416,4 @@ async function gerar(){
 </script>
 </body>
 </html>
+
