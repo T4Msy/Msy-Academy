@@ -2,1001 +2,425 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8">
-  <!-- FIX: Força modo escuro para os controles nativos do navegador -->
   <meta name="color-scheme" content="dark">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gerador de Provas MSY</title>
-  <style>
-    :root {
-      --background: #0a0a0a;
-      --foreground: #f5f5f5;
-      --card: #141414;
-      --card-2: rgba(20,20,20,0.65);
-      --secondary: #1f1f1f;
-      --muted: #a3a3a3;
-      --border: rgba(255,255,255,0.10);
-      --accent: #2EE59D; /* green accent */
-      --accent-2: rgba(46,229,157,0.10);
-      --danger: #ef4444;
-      --radius: 14px;
-      --shadow: 0 12px 30px rgba(0,0,0,0.35);
-      --maxw: 1200px;
-      --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
-      
-      /* Garante que variáveis de sistema sigam o tema */
-      color-scheme: dark;
-    }
-
-    * { box-sizing: border-box; }
-    html, body { height: 100%; margin: 0; }
-
-    body {
-      font-family: var(--font);
-      color: var(--foreground);
-      background: 
-        radial-gradient(900px 500px at 15% 0%, rgba(46,229,157,0.10), transparent 60%),
-        radial-gradient(700px 450px at 85% 10%, rgba(46,229,157,0.06), transparent 55%),
-        var(--background);
-    }
-    a { color: inherit; }
-
-    .container { max-width: var(--maxw); margin: 0 auto; padding: 30px 18px 70px; }
-    
-    .header {
-      position: sticky; top: 0; z-index: 50;
-      border-bottom: 1px solid var(--border);
-      background: rgba(20,20,20,0.55);
-      backdrop-filter: blur(10px);
-    }
-    .header-inner {
-      max-width: var(--maxw); margin: 0 auto; padding: 0 16px; height: 64px;
-      display: flex; align-items: center; justify-content: space-between; gap: 16px;
-    }
-
-    .brand { display: flex; align-items: center; gap: 12px; }
-    .logo {
-      width: 36px; height: 36px; border-radius: 12px;
-      background: var(--accent); display: grid; place-items: center;
-      box-shadow: 0 10px 22px rgba(46,229,157,0.25);
-    }
-    .brand-title { font-weight: 650; letter-spacing: .2px; font-size: 18px; }
-    .powered { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; }
-    .spark { width: 16px; height: 16px; color: var(--accent); }
-
-    .stack { display: flex; flex-direction: column; gap: 16px; margin-top: 20px; }
-    
-    .card {
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: var(--radius); box-shadow: var(--shadow);
-    }
-    .card-header {
-      padding: 18px 18px 0 18px; display: flex; align-items: flex-start;
-      justify-content: space-between; gap: 14px;
-    }
-    .card-title {
-      display: flex; align-items: center; gap: 12px; margin: 0;
-      font-size: 17px; font-weight: 700; letter-spacing: .2px;
-    }
-    .card-icon {
-      width: 36px; height: 36px; border-radius: 12px;
-      background: rgba(46,229,157,0.10); border: 1px solid rgba(46,229,157,0.35);
-      display: grid; place-items: center; color: var(--accent);
-      box-shadow: 0 10px 22px rgba(46,229,157,0.10);
-    }
-    .card-body { padding: 18px 18px 20px 18px; }
-    
-    .grid { display: grid; gap: 14px; }
-    .grid-2 { grid-template-columns: repeat(2, minmax(0,1fr)); }
-    @media (max-width: 920px) { .grid-2 { grid-template-columns: 1fr; } }
-    
-    .powered span { display: none; }
-    label.lbl {
-      display: block; font-size: 13px; font-weight: 600;
-      color: var(--foreground); margin-bottom: 8px;
-    }
-    .help { font-size: 12px; color: var(--muted); margin-top: 8px; line-height: 1.35; }
-
-    .input, select.input, textarea.input {
-      width: 100%; background: rgba(255,255,255,0.05);
-      border: 1px solid var(--border); color: var(--foreground);
-      border-radius: 12px; padding: 12px 12px; outline: none;
-      transition: border .15s ease, box-shadow .15s ease, transform .15s ease;
-    }
-    textarea.input { min-height: 100px; resize: vertical; }
-    .input:focus {
-      border-color: rgba(46,229,157,0.55);
-      box-shadow: 0 0 0 4px rgba(46,229,157,0.12);
-    }
-    
-    /* FIX DROPDOWN ESCURO */
-    select.input {
-      appearance: none;
-      -webkit-appearance: none;
-      -moz-appearance: none;
-      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a3a3a3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-      background-repeat: no-repeat;
-      background-position: right 1rem center;
-      background-size: 1em;
-    }
-    select.input option {
-      background-color: #141414 !important;
-      color: #f5f5f5 !important;
-    }
-
-    /* Radio Tiles */
-    .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-    .radio-grid {
-      display: grid; gap: 12px;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    }
-    .radio-tile {
-      display: flex; gap: 12px; align-items: flex-start; padding: 16px 16px;
-      border-radius: 16px; border: 1px solid var(--border);
-      background: rgba(255,255,255,0.03); cursor: pointer;
-      min-height: 78px;
-      transition: border .15s ease, background .15s ease, transform .15s ease;
-    }
-    .radio-tile:hover {
-      border-color: rgba(255,255,255,0.18); transform: translateY(-1px);
-    }
-    .radio-tile.active {
-      border-color: rgba(46,229,157,0.7); background: var(--accent-2);
-    }
-    .radio-dot {
-      margin-top: 2px; width: 16px; height: 16px; flex-shrink: 0;
-      border-radius: 999px; border: 1.5px solid rgba(255,255,255,0.35);
-      display: grid; place-items: center;
-    }
-    .radio-tile.active .radio-dot { border-color: rgba(46,229,157,0.9); }
-    .radio-dot::after {
-      content: ''; width: 8px; height: 8px; border-radius: 999px;
-      background: transparent;
-    }
-    .radio-tile.active .radio-dot::after { background: var(--accent); }
-    .radio-meta b { display: block; font-size: 14px; font-weight: 650; }
-    .radio-meta span { display: block; color: var(--muted); font-size: 12.5px; margin-top: 4px; line-height: 1.15; }
-
-    /* Toggles */
-    .toggle {
-      display: flex; align-items: center; justify-content: space-between; gap: 12px;
-      padding: 12px 14px; border-radius: 14px; border: 1px solid var(--border);
-      background: rgba(255,255,255,0.03);
-    }
-    .toggle-left b { display: block; font-size: 13.5px; }
-    .toggle-left span { display: block; color: var(--muted); font-size: 12px; margin-top: 3px; }
-    .switch {
-      position: relative; width: 46px; height: 26px;
-      background: rgba(255,255,255,0.10); border: 1px solid var(--border);
-      border-radius: 999px; cursor: pointer;
-      transition: background .15s ease, border .15s ease;
-    }
-    .switch::after {
-      content: ''; position: absolute; top: 50%; left: 3px;
-      width: 20px; height: 20px; background: #fff;
-      border-radius: 999px; transform: translateY(-50%);
-      transition: left .15s ease, background .15s ease;
-    }
-    .switch.on {
-      background: rgba(46,229,157,0.25); border-color: rgba(46,229,157,0.55);
-    }
-    .switch.on::after { left: 23px; background: var(--accent); }
-    .hidden-checkbox { position: absolute; opacity: 0; pointer-events: none; }
-
-    /* Buttons */
-    .actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-    .btn {
-      appearance: none; border: none; border-radius: 14px;
-      padding: 12px 14px; font-weight: 650; cursor: pointer;
-      transition: transform .12s ease, opacity .12s ease, box-shadow .12s ease, background .12s ease;
-    }
-    .btn:active { transform: translateY(1px); }
-    .btn-primary {
-      background: var(--accent); color: #06130d;
-      box-shadow: 0 10px 22px rgba(46,229,157,0.20);
-    }
-    .btn-secondary {
-      background: rgba(255,255,255,0.08); color: var(--foreground);
-      border: 1px solid var(--border);
-    }
-    .btn-danger {
-      background: rgba(239,68,68,0.14); color: #fecaca;
-      border: 1px solid rgba(239,68,68,0.35);
-    }
-    .btn:disabled { opacity: .6; cursor: not-allowed; }
-
-    .badge {
-      display: inline-flex; align-items: center; gap: 8px; font-size: 12px;
-      color: var(--muted); padding: 6px 12px; border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 999px; background: rgba(20,20,20,0.55);
-      backdrop-filter: blur(6px);
-    }
-    hr.sep { border: none; border-top: 1px solid var(--border); margin: 14px 0; }
-
-    /* Resultado */
-    #resultado { display: none; }
-    #resultado.show { display: block; }
-    #prova-html {
-      background: rgba(255,255,255,0.03); border: 1px solid var(--border);
-      border-radius: 16px; padding: 16px; overflow: auto; max-height: 520px;
-    }
-    .notice {
-      padding: 12px 14px; border-radius: 14px;
-      border: 1px solid rgba(46,229,157,0.35); background: rgba(46,229,157,0.08);
-      color: #bff7df; font-size: 13px; line-height: 1.4;
-    }
-    .error {
-      padding: 12px 14px; border-radius: 14px;
-      border: 1px solid rgba(239,68,68,0.35); background: rgba(239,68,68,0.12);
-      color: #fecaca; font-size: 13px; line-height: 1.4;
-    }
-    .small { font-size: 12px; color: var(--muted); }
-
-    /* Dropzone */
-    .dropzone {
-      border: 1px dashed rgba(255,255,255,0.18); background: rgba(255,255,255,0.03);
-      border-radius: var(--radius); padding: 16px;
-      display: flex; align-items: center; justify-content: space-between; gap: 14px;
-      transition: border-color .2s ease, background .2s ease, transform .2s ease;
-    }
-    .dropzone.dragover {
-      border-color: var(--accent); background: rgba(46,229,157,0.08);
-      transform: translateY(-1px);
-    }
-    .dz-left { display: flex; flex-direction: column; gap: 4px; }
-    .dz-title { font-weight: 700; }
-    .dz-hint { color: var(--muted); font-size: 13px; }
-    .dz-actions { display: flex; gap: 10px; flex-wrap: wrap; }
-    .btn-sm {
-      padding: 10px 12px; border-radius: 12px; border: 1px solid var(--border);
-      background: rgba(255,255,255,0.04); color: var(--foreground); cursor: pointer;
-    }
-    .btn-sm:hover { border-color: rgba(255,255,255,0.18); background: rgba(255,255,255,0.06); }
-    .btn-sm.accent {
-      border-color: rgba(46,229,157,0.35); background: rgba(46,229,157,0.10);
-    }
-    .btn-sm.accent:hover { background: rgba(46,229,157,0.14); }
-    .hidden-input { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
-
-    /* Loader */
-    .btn-loader {
-      width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.35);
-      border-top-color: rgba(255,255,255,0.95); border-radius: 999px;
-      display: inline-block; animation: spin .9s linear infinite;
-      vertical-align: -2px; margin-right: 8px;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* Final Adjustments */
-    .card-header-split {
-      display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;
-    }
-    .card-subtitle {
-      margin: 0; margin-top: 6px; margin-left: 44px;
-      font-size: 12px; color: var(--muted);
-    }
-    .opt-check {
-      display: flex; align-items: flex-start; gap: 12px;
-      padding: 14px 14px; border-radius: 16px; border: 1px solid var(--border);
-      background: rgba(255,255,255,0.02);
-    }
-    .opt-check input { position: absolute; opacity: 0; pointer-events: none; }
-    .opt-box {
-      width: 28px; height: 28px; border-radius: 10px; display: grid; place-items: center;
-      background: rgba(16,185,129,0.18); border: 1px solid rgba(16,185,129,0.35);
-      color: rgba(167, 243, 208, 1); flex: 0 0 auto; margin-top: 2px;
-    }
-    .opt-text b { display: block; color: var(--text); font-size: 13px; margin-bottom: 2px; }
-    .opt-text span { display: block; color: var(--muted); font-size: 12px; line-height: 1.35; }
-    
-    .final-row {
-      display: flex; gap: 12px; justify-content: space-between; align-items: center;
-      margin-top: 14px;
-    }
-    .btn-wide { width: 100%; max-width: 520px; height: 44px; border-radius: 999px; }
-    .final-chips { display: flex; gap: 10px; align-items: center; flex: 0 0 auto; }
-    .chip {
-      display: inline-flex; align-items: center; padding: 8px 12px;
-      border-radius: 999px; border: 1px solid var(--border);
-      background: rgba(0,0,0,0.2); color: var(--muted); font-size: 12px; white-space: nowrap;
-    }
-    .actions-pills {
-      display: flex; gap: 10px; justify-content: flex-end; align-items: center;
-      margin-bottom: 12px;
-    }
-    .btn-pill { border-radius: 999px; padding: 10px 14px; }
-    
-    .preview-frame {
-      height: 520px; padding: 0; border-radius: 16px; background: rgba(255,255,255,0.03);
-    }
-
-    @media (max-width: 820px) {
-      .final-row { flex-direction: column; align-items: stretch; }
-      .btn-wide { max-width: 100%; }
-      .final-chips { justify-content: flex-end; }
-    }
-    @media (max-width: 520px) {
-      .container { padding: 20px 12px 60px; }
-      .card-header { padding: 16px 14px 0 14px; }
-      .card-body { padding: 16px 14px 18px 14px; }
-      .final-row .cta { height: 50px; font-size: 15px; }
-      .radio-grid { grid-template-columns: 1fr; }
-      .radio-tile { padding: 14px 14px; }
-      .final-chips { justify-content: flex-start; }
-      .badge { padding: 5px 10px; }
-    }
-    #prova-html { display: none; }
-  </style>
+  <title>ProvaGen — Gerador de Provas com IA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-<div class="header">
+<!-- ===== HEADER ===== -->
+<header class="header" role="banner">
   <div class="header-inner">
     <div class="brand">
-      <div aria-hidden="true" class="logo">
-        <svg fill="none" height="18" viewBox="0 0 24 24" width="18">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="#06130d" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
-          <path d="M14 2v6h6" stroke="#06130d" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
-          <path d="M8 13h8M8 17h8M8 9h2" stroke="#06130d" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+      <div class="logo" aria-hidden="true">
+        <svg fill="none" width="18" height="18" viewBox="0 0 24 24">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="#06130d" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2"/>
+          <path d="M14 2v6h6" stroke="#06130d" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2"/>
+          <path d="M8 13h8M8 17h8M8 9h2" stroke="#06130d" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2"/>
         </svg>
       </div>
-      <div class="brand-title">ProvaGen</div>
+      <span class="brand-title">ProvaGen</span>
     </div>
-    <div class="powered">
-      <svg class="spark" fill="none" viewBox="0 0 24 24">
-        <path d="M12 2l1.2 4.3L17.5 8l-4.3 1.2L12 13.5l-1.2-4.3L6.5 8l4.3-1.7L12 2z" stroke="currentColor" stroke-linejoin="round" stroke-width="2"></path>
-        <path d="M19 12l.7 2.4L22 15l-2.3.6L19 18l-.7-2.4L16 15l2.3-.6L19 12z" stroke="currentColor" stroke-linejoin="round" stroke-width="2"></path>
-        <path d="M5 12l.7 2.4L8 15l-2.3.6L5 18l-.7-2.4L2 15l2.3-.6L5 12z" stroke="currentColor" stroke-linejoin="round" stroke-width="2"></path>
-      </svg>
-      <span>Powered by Masayoshi</span>
+    <div class="header-right">
+      <div class="powered-badge">
+        <svg class="spark-icon" fill="none" viewBox="0 0 24 24" width="14" height="14">
+          <path d="M12 2l1.2 4.3L17.5 8l-4.3 1.2L12 13.5l-1.2-4.3L6.5 8l4.3-1.7L12 2z" stroke="currentColor" stroke-linejoin="round" stroke-width="2"/>
+          <path d="M19 12l.7 2.4L22 15l-2.3.6L19 18l-.7-2.4L16 15l2.3-.6L19 12z" stroke="currentColor" stroke-linejoin="round" stroke-width="2"/>
+        </svg>
+        <span>Powered by Masayoshi</span>
+      </div>
     </div>
   </div>
-</div>
+</header>
 
-<div class="container">
-  <div class="stack">
-    <form class="stack" id="formProva">
-    
-      <!-- Configurações Gerais -->
-      <section class="card">
-        <div class="card-header">
+<!-- ===== MAIN ===== -->
+<main class="main-container" role="main">
+
+  <!-- Progress Tracker -->
+  <div class="progress-track" aria-label="Progresso do formulário">
+    <div class="progress-steps">
+      <div class="prog-step active" data-step="1"><span>1</span><b>IA & Geral</b></div>
+      <div class="prog-divider"></div>
+      <div class="prog-step" data-step="2"><span>2</span><b>Conteúdo</b></div>
+      <div class="prog-divider"></div>
+      <div class="prog-step" data-step="3"><span>3</span><b>Formato</b></div>
+      <div class="prog-divider"></div>
+      <div class="prog-step" data-step="4"><span>4</span><b>Apoio</b></div>
+      <div class="prog-divider"></div>
+      <div class="prog-step" data-step="5"><span>5</span><b>Gerar</b></div>
+    </div>
+  </div>
+
+  <form id="formProva" class="form-stack" novalidate>
+
+    <!-- ===== ETAPA 1 — Configurações Gerais ===== -->
+    <section class="card" id="step-1">
+      <div class="card-header">
+        <div class="card-title-group">
+          <div class="step-badge">Etapa 1</div>
           <h2 class="card-title">
-            <span aria-hidden="true" class="card-icon">
-              <svg fill="none" height="16" viewBox="0 0 24 24" width="16">
-                <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z" stroke="currentColor" stroke-width="2"></path>
-                <path d="M19.4 15a1.8 1.8 0 0 0 .36 1.98l.04.04a2.2 2.2 0 0 1-1.56 3.76 2.2 2.2 0 0 1-1.56-.64l-.04-.04a1.8 1.8 0 0 0-1.98-.36 1.8 1.8 0 0 0-1.09 1.65V21a2.2 2.2 0 0 1-4.4 0v-.06A1.8 1.8 0 0 0 7 19.29a1.8 1.8 0 0 0-1.98.36l-.04.04A2.2 2.2 0 1 1 1.76 16l.04-.04A1.8 1.8 0 0 0 2.16 14 1.8 1.8 0 0 0 .5 12.91H.44a2.2 2.2 0 0 1 0-4.4H.5A1.8 1.8 0 0 0 2.16 7.4a1.8 1.8 0 0 0-.36-1.98l-.04-.04A2.2 2.2 0 1 1 5.52 1.6l.04.04A1.8 1.8 0 0 0 7.4 2a1.8 1.8 0 0 0 1.09-1.65V.44a2.2 2.2 0 0 1 4.4 0v.06A1.8 1.8 0 0 0 14.6 2a1.8 1.8 0 0 0 1.98-.36l.04-.04A2.2 2.2 0 1 1 22.24 5.4l-.04.04A1.8 1.8 0 0 0 21.84 7.4a1.8 1.8 0 0 0 1.65 1.09h.06a2.2 2.2 0 0 1 0 4.4h-.06A1.8 1.8 0 0 0 21.84 14a1.8 1.8 0 0 0-1.65 1z" stroke="currentColor" stroke-linejoin="round" stroke-width="2"></path>
+            <span class="card-icon" aria-hidden="true">
+              <svg fill="none" width="16" height="16" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" stroke="currentColor" stroke-width="2"/>
               </svg>
             </span>
             Configurações Gerais
           </h2>
-          <span class="badge">Etapa 1</span>
         </div>
-        <div class="card-body">
-          <div class="grid">
-            <div>
-              <label class="lbl">Inteligência Artificial</label>
-              <!-- Hidden select for form value -->
-              <select class="input" id="ia" style="display:none">
-                <option value="perplexity">Perplexity Sonar</option>
-                <option selected value="llama">LLaMA</option>
-                <option value="deepseek">DeepSeek</option>
-                <option value="chatgpt">ChatGPT</option>
-                <option value="gemini">Gemini</option>
-              </select>
-              
-              <!-- Custom Radio Grid -->
-              <div aria-label="Inteligência Artificial" class="radio-grid" role="radiogroup">
-                <div aria-checked="false" class="radio-tile" data-ia-tile data-ia-value="perplexity" role="radio" tabindex="0">
-                  <div aria-hidden="true" class="radio-dot"></div>
-                  <div class="radio-meta"><b>Perplexity Sonar</b><span>Ideal para provas contextualizadas e bem explicadas (estilo ENEM).</span></div>
-                </div>
-                <div aria-checked="false" class="radio-tile" data-ia-tile data-ia-value="llama" role="radio" tabindex="0">
-                  <div aria-hidden="true" class="radio-dot"></div>
-                  <div class="radio-meta"><b>LLaMA</b><span>Indicado para provas gerais e rascunhos rápidos.</span></div>
-                </div>
-                <div aria-checked="false" class="radio-tile" data-ia-tile data-ia-value="deepseek" role="radio" tabindex="0">
-                  <div aria-hidden="true" class="radio-dot"></div>
-                  <div class="radio-meta"><b>DeepSeek</b><span>Recomendado para provas técnicas e exatas (código, matemática).</span></div>
-                </div>
-                <div aria-checked="false" class="radio-tile" data-ia-tile data-ia-value="chatgpt" role="radio" tabindex="0">
-                  <div aria-hidden="true" class="radio-dot"></div>
-                  <div class="radio-meta"><b>ChatGPT</b><span>Equilibrado e versátil. Bom para clareza didática.</span></div>
-                </div>
-                <div aria-checked="false" class="radio-tile" data-ia-tile data-ia-value="gemini" role="radio" tabindex="0">
-                  <div aria-hidden="true" class="radio-dot"></div>
-                  <div class="radio-meta"><b>Gemini</b><span>Forte em síntese e organização de enunciados.</span></div>
-                </div>
+      </div>
+      <div class="card-body">
+        <fieldset class="field-group">
+          <legend class="field-label">Inteligência Artificial</legend>
+
+          <!-- Hidden select for native form submission -->
+          <select id="ia" style="display:none" aria-hidden="true">
+            <option value="perplexity">Perplexity Sonar</option>
+            <option value="llama" selected>LLaMA</option>
+            <option value="deepseek">DeepSeek</option>
+            <option value="chatgpt">ChatGPT</option>
+            <option value="gemini">Gemini</option>
+          </select>
+
+          <div class="ia-grid" role="radiogroup" aria-label="Escolha a Inteligência Artificial">
+            <div class="ia-tile" data-ia-tile data-ia-value="perplexity" role="radio" aria-checked="false" tabindex="0">
+              <div class="ia-tile-header">
+                <div class="radio-dot" aria-hidden="true"></div>
+                <span class="ia-name">Perplexity Sonar</span>
               </div>
-              <div class="help">A seleção acima define o motor de geração usado para criar a prova.</div>
+              <p class="ia-desc">Ideal para provas contextualizadas e bem explicadas (estilo ENEM).</p>
             </div>
-            
-            <div class="grid-2">
-              <div>
-                <label class="lbl" for="curso">Curso</label>
-                <input class="input" id="curso" placeholder="Ex: Ensino Médio, Graduação...">
+            <div class="ia-tile" data-ia-tile data-ia-value="llama" role="radio" aria-checked="false" tabindex="0">
+              <div class="ia-tile-header">
+                <div class="radio-dot" aria-hidden="true"></div>
+                <span class="ia-name">LLaMA</span>
               </div>
-              <div>
-                <label class="lbl" for="tituloprova">Título da Prova</label>
-                <input class="input" id="tituloprova" placeholder="Ex: Avaliação Bimestral">
+              <p class="ia-desc">Indicado para provas gerais e rascunhos rápidos.</p>
+            </div>
+            <div class="ia-tile" data-ia-tile data-ia-value="deepseek" role="radio" aria-checked="false" tabindex="0">
+              <div class="ia-tile-header">
+                <div class="radio-dot" aria-hidden="true"></div>
+                <span class="ia-name">DeepSeek</span>
               </div>
+              <p class="ia-desc">Recomendado para provas técnicas e exatas (código, matemática).</p>
+            </div>
+            <div class="ia-tile" data-ia-tile data-ia-value="chatgpt" role="radio" aria-checked="false" tabindex="0">
+              <div class="ia-tile-header">
+                <div class="radio-dot" aria-hidden="true"></div>
+                <span class="ia-name">ChatGPT</span>
+              </div>
+              <p class="ia-desc">Equilibrado e versátil. Bom para clareza didática.</p>
+            </div>
+            <div class="ia-tile" data-ia-tile data-ia-value="gemini" role="radio" aria-checked="false" tabindex="0">
+              <div class="ia-tile-header">
+                <div class="radio-dot" aria-hidden="true"></div>
+                <span class="ia-name">Gemini</span>
+              </div>
+              <p class="ia-desc">Forte em síntese e organização de enunciados.</p>
             </div>
           </div>
-        </div>
-      </section>
+          <p class="field-hint">A seleção define o motor de geração utilizado para criar a prova.</p>
+        </fieldset>
 
-      <!-- Conteúdo da Prova -->
-      <section class="card">
-        <div class="card-header">
+        <div class="form-grid-2">
+          <div class="form-field">
+            <label class="field-label" for="curso">Curso</label>
+            <input class="input" id="curso" type="text" placeholder="Ex: Ensino Médio, Graduação...">
+          </div>
+          <div class="form-field">
+            <label class="field-label" for="tituloprova">Título da Prova</label>
+            <input class="input" id="tituloprova" type="text" placeholder="Ex: Avaliação Bimestral">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== ETAPA 2 — Conteúdo ===== -->
+    <section class="card" id="step-2">
+      <div class="card-header">
+        <div class="card-title-group">
+          <div class="step-badge">Etapa 2</div>
           <h2 class="card-title">
-            <span aria-hidden="true" class="card-icon">
-              <svg fill="none" height="16" viewBox="0 0 24 24" width="16">
-                <path d="M2 19V6a2 2 0 0 1 2-2h6v17H4a2 2 0 0 1-2-2z" stroke="currentColor" stroke-linejoin="round" stroke-width="2"></path>
-                <path d="M22 19V6a2 2 0 0 0-2-2h-6v17h6a2 2 0 0 0 2-2z" stroke="currentColor" stroke-linejoin="round" stroke-width="2"></path>
+            <span class="card-icon" aria-hidden="true">
+              <svg fill="none" width="16" height="16" viewBox="0 0 24 24">
+                <path d="M2 19V6a2 2 0 0 1 2-2h6v17H4a2 2 0 0 1-2-2z" stroke="currentColor" stroke-linejoin="round" stroke-width="2"/>
+                <path d="M22 19V6a2 2 0 0 0-2-2h-6v17h6a2 2 0 0 0 2-2z" stroke="currentColor" stroke-linejoin="round" stroke-width="2"/>
               </svg>
             </span>
             Conteúdo da Prova
           </h2>
-          <span class="badge">Etapa 2</span>
         </div>
-        <div class="card-body">
-          <div class="grid grid-2">
-            <div>
-              <label class="lbl" for="materia">Matéria</label>
-              <input class="input" id="materia" placeholder="Ex: Informática, Matemática...">
-            </div>
-            <div>
-              <label class="lbl" for="assunto">Assunto / Tema</label>
-              <input class="input" id="assunto" placeholder="Ex: Redes, Funções, HTML...">
-            </div>
-            
-            <div>
-              <label class="lbl" for="publico">Público-alvo</label>
-              <select class="input" id="publico">
-                <option value="infantil">Infantil</option>
-                <option value="fundamental">Fundamental</option>
-                <option selected value="medio">Ensino Médio</option>
-                <option value="graduacao">Graduação</option>
-                <option value="tecnico">Técnico</option>
-                <option value="concurso">Concurso</option>
-              </select>
-            </div>
-            
-            <div>
-              <label class="lbl" for="estilo">Estilo</label>
-              <select class="input" id="estilo">
-                <option selected value="escolar">Escolar (direto e didático)</option>
-                <option value="enem">ENEM (contextualizado)</option>
-                <option value="vestibular">Vestibular (mais cobrança)</option>
-                <option value="tecnico">Técnico (objetivo e prático)</option>
-                <option value="desafiador">Desafiador (nível alto)</option>
-              </select>
-            </div>
-            
-            <div class="grid" style="grid-column: 1 / -1;">
-              <div>
-                <label class="lbl" for="observacoesprofessor">Observações do professor</label>
-                <textarea class="input" id="observacoesprofessor" placeholder="Ex: inclua exemplos práticos, enfoque em conceitos-chave, pegadinhas leves, etc."></textarea>
-              </div>
-            </div>
+      </div>
+      <div class="card-body">
+        <div class="form-grid-2">
+          <div class="form-field">
+            <label class="field-label" for="materia">Matéria</label>
+            <input class="input" id="materia" type="text" placeholder="Ex: Informática, Matemática...">
+          </div>
+          <div class="form-field">
+            <label class="field-label" for="assunto">Assunto / Tema</label>
+            <input class="input" id="assunto" type="text" placeholder="Ex: Redes, Funções, HTML...">
+          </div>
+          <div class="form-field">
+            <label class="field-label" for="publico">Público-alvo</label>
+            <select class="input" id="publico">
+              <option value="infantil">Infantil</option>
+              <option value="fundamental">Fundamental</option>
+              <option value="medio" selected>Ensino Médio</option>
+              <option value="graduacao">Graduação</option>
+              <option value="tecnico">Técnico</option>
+              <option value="concurso">Concurso</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label class="field-label" for="estilo">Estilo</label>
+            <select class="input" id="estilo">
+              <option value="escolar" selected>Escolar (direto e didático)</option>
+              <option value="enem">ENEM (contextualizado)</option>
+              <option value="vestibular">Vestibular (mais cobrança)</option>
+              <option value="tecnico">Técnico (objetivo e prático)</option>
+              <option value="desafiador">Desafiador (nível alto)</option>
+            </select>
+          </div>
+          <div class="form-field form-field--full">
+            <label class="field-label" for="observacoesprofessor">Observações do professor</label>
+            <textarea class="input" id="observacoesprofessor" placeholder="Ex: inclua exemplos práticos, enfoque em conceitos-chave, pegadinhas leves, etc."></textarea>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <!-- Formato & Estrutura -->
-      <section class="card">
-        <div class="card-header">
+    <!-- ===== ETAPA 3 — Formato & Estrutura ===== -->
+    <section class="card" id="step-3">
+      <div class="card-header">
+        <div class="card-title-group">
+          <div class="step-badge">Etapa 3</div>
           <h2 class="card-title">
-            <span aria-hidden="true" class="card-icon">
-              <svg fill="none" height="16" viewBox="0 0 24 24" width="16">
-                <path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z" stroke="currentColor" stroke-linejoin="round" stroke-width="2"></path>
+            <span class="card-icon" aria-hidden="true">
+              <svg fill="none" width="16" height="16" viewBox="0 0 24 24">
+                <path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z" stroke="currentColor" stroke-linejoin="round" stroke-width="2"/>
               </svg>
             </span>
             Formato & Estrutura
           </h2>
-          <span class="badge">Etapa 3</span>
         </div>
-        <div class="card-body">
-          <div class="grid grid-2">
-            <div>
-              <label class="lbl" for="tipo">Tipo de Questões</label>
-              <select class="input" id="tipo">
-                <option selected value="multipla">Múltipla escolha</option>
-                <option value="vf">Verdadeiro / Falso</option>
-                <option value="discursiva">Discursiva</option>
-                <option value="mista">Mista</option>
-              </select>
-            </div>
-            <div>
-              <label class="lbl" for="quantidade">Quantidade de Questões</label>
-              <input class="input" id="quantidade" min="1" type="number" value="10">
-            </div>
-            <div>
-              <label class="lbl" for="pontos">Pontos por Questão</label>
-              <input class="input" id="pontos" min="1" type="number" value="1">
-            </div>
-            <div>
-              <label class="lbl" for="nivel">Nível</label>
-              <select class="input" id="nivel">
-                <option value="facil">Fácil</option>
-                <option selected value="medio">Médio</option>
-                <option value="dificil">Difícil</option>
-              </select>
-            </div>
-            
-            <div style="grid-column: 1 / -1;">
-              <label class="lbl" for="distniveis">Distribuição de dificuldade</label>
-              <select class="input" id="distniveis">
-                <option selected value="40/40/20">40% fácil, 40% médio, 20% difícil</option>
-                <option value="30/50/20">30% fácil, 50% médio, 20% difícil</option>
-                <option value="25/50/25">25% fácil, 50% médio, 25% difícil</option>
-                <option value="20/40/40">20% fácil, 40% médio, 40% difícil</option>
-              </select>
-            </div>
+      </div>
+      <div class="card-body">
+        <div class="form-grid-2">
+          <div class="form-field">
+            <label class="field-label" for="tipo">Tipo de Questões</label>
+            <select class="input" id="tipo">
+              <option value="multipla" selected>Múltipla escolha</option>
+              <option value="vf">Verdadeiro / Falso</option>
+              <option value="discursiva">Discursiva</option>
+              <option value="mista">Mista</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label class="field-label" for="quantidade">Quantidade de Questões</label>
+            <input class="input" id="quantidade" type="number" min="1" value="10">
+          </div>
+          <div class="form-field">
+            <label class="field-label" for="pontos">Pontos por Questão</label>
+            <input class="input" id="pontos" type="number" min="1" value="1">
+          </div>
+          <div class="form-field">
+            <label class="field-label" for="nivel">Nível</label>
+            <select class="input" id="nivel">
+              <option value="facil">Fácil</option>
+              <option value="medio" selected>Médio</option>
+              <option value="dificil">Difícil</option>
+            </select>
+          </div>
+          <div class="form-field form-field--full">
+            <label class="field-label" for="distniveis">Distribuição de dificuldade</label>
+            <select class="input" id="distniveis">
+              <option value="40/40/20" selected>40% fácil, 40% médio, 20% difícil</option>
+              <option value="30/50/20">30% fácil, 50% médio, 20% difícil</option>
+              <option value="25/50/25">25% fácil, 50% médio, 25% difícil</option>
+              <option value="20/40/40">20% fácil, 40% médio, 40% difícil</option>
+            </select>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <!-- Material de Apoio -->
-      <section class="card">
-        <div class="card-header">
+    <!-- ===== ETAPA 4 — Material de Apoio ===== -->
+    <section class="card" id="step-4">
+      <div class="card-header">
+        <div class="card-title-group">
+          <div class="step-badge">Etapa 4</div>
           <h2 class="card-title">
-            <span aria-hidden="true" class="card-icon">
-              <svg fill="none" height="16" viewBox="0 0 24 24" width="16">
-                <path d="M21.44 11.05l-8.49 8.49a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 1 1 5.66 5.66l-9.2 9.2a2 2 0 1 1-2.83-2.83l8.49-8.48" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+            <span class="card-icon" aria-hidden="true">
+              <svg fill="none" width="16" height="16" viewBox="0 0 24 24">
+                <path d="M21.44 11.05l-8.49 8.49a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 1 1 5.66 5.66l-9.2 9.2a2 2 0 1 1-2.83-2.83l8.49-8.48" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
               </svg>
             </span>
             Material de Apoio
           </h2>
-          <span class="badge">Etapa 4</span>
-        </div>
-        <div class="card-body">
-          <div class="grid">
-            <div class="toggle">
-              <div class="toggle-left">
-                <b>Usar apostila (PDF)</b>
-                <span>Se ativado, envie um PDF para embasar as questões.</span>
-              </div>
-              <div>
-                <input class="hidden-checkbox" id="usarapostila" type="checkbox">
-                <div aria-label="Usar apostila" class="switch" id="sw-usarapostila" role="switch"></div>
-              </div>
-            </div>
-
-            <div>
-              <label class="lbl">Arquivo PDF</label>
-              <div aria-label="Área de envio de PDF" class="dropzone" id="dropzone" tabindex="0">
-                <div class="dz-left">
-                  <div class="dz-title" id="dzTitle">Arraste e solte seu PDF aqui</div>
-                  <div class="dz-hint" id="dzHint">ou clique em "Selecionar arquivo".</div>
-                </div>
-                <div class="dz-actions">
-                  <button class="btn-sm accent" id="pickFile" type="button">Selecionar arquivo</button>
-                  <button class="btn-sm" id="clearFile" style="display:none" type="button">Remover</button>
-                </div>
-              </div>
-              <input accept="application/pdf" class="hidden-input" id="apostila" type="file">
-              <div class="help">Quando <b>Usar apostila</b> estiver ativado e um PDF estiver selecionado, o arquivo será usado como material de apoio na geração.</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Opções finais -->
-      <section class="card">
-        <div class="card-header card-header-split">
-          <div>
-            <h2 class="card-title">
-              <span class="card-icon" aria-hidden="true">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                  <path d="M9 11l3 3L22 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </span>
-              Finalizar
-            </h2>
-            <div class="card-subtitle">Gabarito e geração.</div>
-          </div>
-          <span class="badge">Etapa 5</span>
-        </div>
-        <div class="card-body">
-          <label class="opt-check" for="gabarito">
-            <input type="checkbox" id="gabarito" checked>
-            <span class="opt-box" aria-hidden="true">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                <path d="M20 6 9 17l-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </span>
-            <span class="opt-text">
-              <b>Incluir gabarito ao final</b>
-              <span>Para correção rápida.</span>
-            </span>
-          </label>
-          
-          <div class="final-row">
-            <div class="final-chips">
-              <span class="chip">Auto Generate</span>
-              <span class="chip">Export PDF</span>
-            </div>
-            <button type="submit" id="btnGerar" class="btn btn-primary btn-wide">Gerar Prova</button>
-          </div>
-        </div>
-      </section>
-    </form>
-
-    <!-- Status / Resultado -->
-    <div class="notice" id="resultado" style="display:none"></div>
-    <div class="error" id="erro" style="display:none"></div>
-
-    <section class="card" id="card-prova" style="display:none; margin-top:20px;">
-      <div class="card-header card-header-split">
-        <div>
-          <h2 class="card-title">
-            <span class="card-icon" aria-hidden="true">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                <path d="M7 3h10a2 2 0 0 1 2 2v14l-4-2-4 2-4-2-4 2V5a2 2 0 0 1 2-2z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-                <path d="M8 9h8M8 13h8M8 17h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              </svg>
-            </span>
-            Resultado
-          </h2>
         </div>
       </div>
       <div class="card-body">
-        <div id="prova-container">
-          <div class="actions actions-pills">
-            <button type="button" class="btn btn-secondary btn-pill" onclick="baixarPDF()">PDF</button>
-            <button type="button" class="btn btn-secondary btn-pill" onclick="baixarWord()">Word</button>
-            <button type="button" class="btn btn-secondary btn-pill" onclick="window.print()">Imprimir</button>
+        <!-- Toggle apostila -->
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <b class="toggle-title">Usar apostila (PDF)</b>
+            <span class="toggle-desc">Se ativado, envie um PDF para embasar as questões geradas.</span>
           </div>
-          <iframe id="preview" class="input preview-frame"></iframe>
+          <input class="hidden-checkbox" id="usarapostila" type="checkbox" aria-hidden="true">
+          <button
+            type="button"
+            class="switch"
+            id="sw-usarapostila"
+            role="switch"
+            aria-checked="false"
+            aria-label="Usar apostila"
+          ></button>
         </div>
-        <!-- Hidden container for export -->
-        <div id="prova-html"></div>
+
+        <!-- Dropzone -->
+        <div class="form-field" style="margin-top: 16px;">
+          <label class="field-label">Arquivo PDF</label>
+          <div
+            class="dropzone"
+            id="dropzone"
+            tabindex="0"
+            role="button"
+            aria-label="Área de envio de PDF — arraste ou clique para selecionar"
+          >
+            <div class="dz-icon" aria-hidden="true">
+              <svg fill="none" width="24" height="24" viewBox="0 0 24 24">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                <polyline points="17 8 12 3 7 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                <line x1="12" y1="3" x2="12" y2="15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="dz-text">
+              <span class="dz-title" id="dzTitle">Arraste e solte seu PDF aqui</span>
+              <span class="dz-hint" id="dzHint">ou clique para selecionar o arquivo</span>
+            </div>
+            <div class="dz-actions">
+              <button class="btn btn-ghost btn-sm" id="pickFile" type="button">Selecionar arquivo</button>
+              <button class="btn btn-danger-ghost btn-sm" id="clearFile" style="display:none" type="button">Remover</button>
+            </div>
+          </div>
+          <input accept="application/pdf" class="visually-hidden" id="apostila" type="file" aria-hidden="true">
+          <p class="field-hint">Quando <b>Usar apostila</b> estiver ativado e um PDF selecionado, ele será usado como base para as questões.</p>
+        </div>
       </div>
     </section>
 
-  </div>
-</div>
+    <!-- ===== ETAPA 5 — Finalizar ===== -->
+    <section class="card card--highlight" id="step-5">
+      <div class="card-header">
+        <div class="card-title-group">
+          <div class="step-badge step-badge--accent">Etapa 5</div>
+          <h2 class="card-title">
+            <span class="card-icon" aria-hidden="true">
+              <svg fill="none" width="16" height="16" viewBox="0 0 24 24">
+                <path d="M9 11l3 3L22 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+            Finalizar
+          </h2>
+        </div>
+        <p class="card-subtitle">Gabarito e geração da prova.</p>
+      </div>
+      <div class="card-body">
+        <label class="opt-check" for="gabarito">
+          <input type="checkbox" id="gabarito" checked>
+          <span class="opt-box" aria-hidden="true">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+              <path d="M20 6 9 17l-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          <span class="opt-text">
+            <b>Incluir gabarito ao final</b>
+            <span>Adiciona resposta de cada questão ao final do documento.</span>
+          </span>
+        </label>
 
-<!-- PDF -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"
-        integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg=="
-        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<!-- Word -->
+        <div class="submit-row">
+          <div class="submit-chips">
+            <span class="chip">
+              <svg fill="none" width="12" height="12" viewBox="0 0 24 24"><path d="M12 2l1.2 4.3L17.5 8l-4.3 1.2L12 13.5l-1.2-4.3L6.5 8l4.3-1.7L12 2z" stroke="currentColor" stroke-linejoin="round" stroke-width="2"/></svg>
+              Auto Generate
+            </span>
+            <span class="chip">
+              <svg fill="none" width="12" height="12" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><polyline points="7 10 12 15 17 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="12" y1="15" x2="12" y2="3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              Export PDF
+            </span>
+          </div>
+          <button type="submit" id="btnGerar" class="btn btn-primary btn-generate">
+            <svg fill="none" width="16" height="16" viewBox="0 0 24 24">
+              <path d="M12 2l1.2 4.3L17.5 8l-4.3 1.2L12 13.5l-1.2-4.3L6.5 8l4.3-1.7L12 2z" stroke="currentColor" stroke-linejoin="round" stroke-width="2"/>
+            </svg>
+            Gerar Prova
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </form><!-- /formProva -->
+
+  <!-- ===== STATUS NOTICES ===== -->
+  <div id="resultado" class="notice" role="status" aria-live="polite" style="display:none"></div>
+  <div id="erro" class="notice notice--error" role="alert" aria-live="assertive" style="display:none"></div>
+
+  <!-- ===== RESULTADO DA PROVA ===== -->
+  <section class="card result-card" id="card-prova" style="display:none">
+    <div class="card-header">
+      <div class="card-title-group">
+        <h2 class="card-title">
+          <span class="card-icon" aria-hidden="true">
+            <svg fill="none" width="16" height="16" viewBox="0 0 24 24">
+              <path d="M7 3h10a2 2 0 0 1 2 2v14l-4-2-4 2-4-2-4 2V5a2 2 0 0 1 2-2z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+              <path d="M8 9h8M8 13h8M8 17h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </span>
+          Prova Gerada
+        </h2>
+      </div>
+      <div class="result-actions">
+        <button type="button" class="btn btn-ghost btn-sm" onclick="baixarPDF()">
+          <svg fill="none" width="14" height="14" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><polyline points="7 10 12 15 17 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="12" y1="15" x2="12" y2="3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          PDF
+        </button>
+        <button type="button" class="btn btn-ghost btn-sm" onclick="baixarWord()">
+          <svg fill="none" width="14" height="14" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/><path d="M14 2v6h6" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+          Word
+        </button>
+        <button type="button" class="btn btn-ghost btn-sm" onclick="window.print()">
+          <svg fill="none" width="14" height="14" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><rect x="6" y="14" width="12" height="8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Imprimir
+        </button>
+      </div>
+    </div>
+    <div class="card-body">
+      <div id="prova-container">
+        <iframe id="preview" class="preview-frame" title="Preview da prova gerada"></iframe>
+      </div>
+      <!-- Container oculto para export -->
+      <div id="prova-html" style="display:none" aria-hidden="true"></div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ===== SCRIPTS EXTERNOS ===== -->
+<script
+  src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"
+  integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg=="
+  crossorigin="anonymous"
+  referrerpolicy="no-referrer"
+></script>
 <script src="https://cdn.jsdelivr.net/npm/html-docx-js@0.1.0/dist/html-docx.min.js"></script>
-
-<script>
-  /* =========================
-     UI radio logic
-  ========================== */
-  const iaSelect = document.getElementById('ia');
-  const iaTiles = Array.from(document.querySelectorAll('[data-ia-tile]'));
-
-  function setIa(value) {
-    if(!iaSelect) return;
-    iaSelect.value = value;
-    iaTiles.forEach(t => {
-      const isActive = t.getAttribute('data-ia-value') === value;
-      t.classList.toggle('active', isActive);
-      t.setAttribute('aria-checked', String(isActive));
-    });
-  }
-
-  iaTiles.forEach(t => {
-    t.addEventListener('click', () => setIa(t.getAttribute('data-ia-value')));
-    t.addEventListener('keydown', e => {
-      if(e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        setIa(t.getAttribute('data-ia-value'));
-      }
-    });
-  });
-
-  if(iaSelect) {
-    iaSelect.addEventListener('change', () => setIa(iaSelect.value));
-    setIa(iaSelect.value);
-  }
-
-  /* =========================
-     Switches
-  ========================== */
-  function bindSwitch(checkboxId, switchId) {
-    const cb = document.getElementById(checkboxId);
-    const sw = document.getElementById(switchId);
-    if(!cb || !sw) return;
-
-    const sync = () => {
-      sw.classList.toggle('on', !!cb.checked);
-      sw.setAttribute('aria-checked', String(!!cb.checked));
-    };
-
-    sw.addEventListener('click', () => {
-      cb.checked = !cb.checked;
-      cb.dispatchEvent(new Event('change'));
-      sync();
-    });
-
-    cb.addEventListener('change', sync);
-    sync();
-  }
-
-  bindSwitch('usarapostila', 'sw-usarapostila');
-
-  /* =========================
-     Dropzone PDF
-  ========================== */
-  function initDropzone() {
-    const dz = document.getElementById('dropzone');
-    const input = document.getElementById('apostila');
-    const pick = document.getElementById('pickFile');
-    const clear = document.getElementById('clearFile');
-    const title = document.getElementById('dzTitle');
-    const hint = document.getElementById('dzHint');
-    const useCheckbox = document.getElementById('usarapostila');
-
-    if(!dz || !input || !pick || !clear || !title || !hint || !useCheckbox) return;
-
-    function setFileUI(file) {
-      if(file) {
-        title.textContent = file.name;
-        hint.textContent = "PDF selecionado. A IA pode usar esse conteúdo.";
-        clear.style.display = 'inline-flex';
-        useCheckbox.checked = true;
-        useCheckbox.dispatchEvent(new Event('change'));
-      } else {
-        title.textContent = "Arraste e solte seu PDF aqui";
-        hint.textContent = "ou clique em 'Selecionar arquivo'.";
-        clear.style.display = 'none';
-        useCheckbox.checked = false;
-        useCheckbox.dispatchEvent(new Event('change'));
-      }
-    }
-
-    pick.addEventListener('click', () => input.click());
-    clear.addEventListener('click', () => {
-      input.value = '';
-      setFileUI(null);
-    });
-
-    input.addEventListener('change', () => {
-      setFileUI(input.files && input.files[0] ? input.files[0] : null);
-    });
-
-    dz.addEventListener('dragover', e => {
-      e.preventDefault();
-      dz.classList.add('dragover');
-    });
-    dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
-    dz.addEventListener('drop', e => {
-      e.preventDefault();
-      dz.classList.remove('dragover');
-      const file = e.dataTransfer.files && e.dataTransfer.files[0];
-      if(!file) return;
-      if(!/\.pdf$/i.test(file.name)) {
-        alert("Envie apenas arquivo .pdf");
-        return;
-      }
-      const dt = new DataTransfer();
-      dt.items.add(file);
-      input.files = dt.files;
-      setFileUI(file);
-    });
-
-    setFileUI(input.files && input.files[0] ? input.files[0] : null);
-  }
-  initDropzone();
-
-  /* =========================
-     Extractor robusto do HTML
-  ========================== */
-  function extrairHtmlProva(data) {
-    // 1) Direto (n8n/webhook)
-    let v =
-      data?.htmlprova ??
-      data?.html_prova ??
-      data?.htmlProva ??
-      data?.examString ??
-      data?.prova_html;
-
-    // 2) Se vier objeto, tenta campos comuns
-    if (v && typeof v === "object") {
-      v = v.html ?? v.content ?? v.data ?? v.value ?? null;
-    }
-
-    // 3) Padrão OpenAI/Groq (quando a resposta vem "embrulhada")
-    if (!v) {
-      const content =
-        data?.choices?.[0]?.message?.content ??
-        data?.choices?.[0]?.text;
-
-      if (typeof content === "string" && content.trim()) {
-        // HTML puro
-        if (content.includes("<html") || content.includes("<!DOCTYPE") || content.includes("<body")) {
-          v = content;
-        } else {
-          // JSON stringificado
-          try {
-            const parsed = JSON.parse(content);
-            v = parsed?.htmlprova ?? parsed?.html_prova ?? parsed?.examString ?? null;
-          } catch (_) {}
-        }
-      }
-    }
-
-    // 4) Validação final
-    if (typeof v !== "string" || !v.trim() || v.trim() === "undefined") {
-      const keys = data && typeof data === "object" ? Object.keys(data) : [];
-      throw new Error("Resposta sem HTML válido. Keys: " + keys.join(", "));
-    }
-
-    return v;
-  }
-
-  /* =========================
-     Submit
-  ========================== */
-  document.getElementById('formProva').addEventListener('submit', function(e) {
-    e.preventDefault();
-    gerar();
-  });
-
-  async function gerar() {
-    const botao = document.getElementById('btnGerar');
-    const resultado = document.getElementById('resultado');
-    const erro = document.getElementById('erro');
-    const cardProva = document.getElementById('card-prova');
-    const provaContainer = document.getElementById('prova-container');
-    const provaHtmlDiv = document.getElementById('prova-html');
-    const iframe = document.getElementById('preview');
-
-    resultado.style.display = 'block';
-    erro.style.display = 'none';
-    erro.innerHTML = '';
-
-    cardProva.style.display = 'none';
-    provaContainer.style.display = 'none';
-    provaHtmlDiv.innerHTML = '';
-    iframe.srcdoc = '';
-
-    botao.disabled = true;
-    const textoOriginal = botao.innerHTML;
-    botao.innerHTML = '<span class="btn-loader"></span> Gerando...';
-    resultado.innerHTML = 'Gerando prova...';
-
-    const payload = {
-      curso: document.getElementById('curso').value.trim(),
-      tituloprova: document.getElementById('tituloprova').value.trim(),
-      pontosporquestao: parseInt(document.getElementById('pontos').value, 10),
-      materia: document.getElementById('materia').value.trim(),
-      assunto: document.getElementById('assunto').value.trim(),
-      quantidade: parseInt(document.getElementById('quantidade').value, 10),
-      nivel: document.getElementById('nivel').value,
-      tipo: document.getElementById('tipo').value,
-      estilo: document.getElementById('estilo').value,
-      publico: document.getElementById('publico').value.trim(),
-      incluirgabarito: document.getElementById('gabarito').checked,
-      versoes: 1,
-      distniveis: document.getElementById('distniveis').value.trim(),
-      usarapostila: document.getElementById('usarapostila').checked,
-      ia: document.getElementById('ia').value,
-      observacoesprofessor: document.getElementById('observacoesprofessor').value.trim()
-    };
-
-    const formData = new FormData();
-    formData.append('dados', JSON.stringify(payload));
-
-    const arquivo = document.getElementById('apostila').files[0];
-    if(arquivo) formData.append('apostila', arquivo);
-
-    try {
-      const resp = await fetch('https://warm-polls-treasury-gay.trycloudflare.com/webhook/gerar-prova', {
-        method: 'POST',
-        body: formData
-      });
-
-      const contentType = resp.headers.get("content-type");
-      let data = null;
-      if(contentType && contentType.includes("application/json")) {
-        data = await resp.json();
-      } else {
-        const txt = await resp.text();
-        throw new Error("Servidor retornou " + resp.status + " não-JSON. Trecho: " + txt.slice(0,200));
-      }
-
-      if(!resp.ok) {
-        throw new Error("Servidor retornou " + resp.status + ". Mensagem: " + (data?.message || data?.error || "sem detalhes"));
-      }
-
-      // Extrai HTML real (corrige o 'undefined' e as chaves diferentes)
-      const htmlProva = extrairHtmlProva(data);
-
-      resultado.innerHTML = `Prova gerada com sucesso.<br>
-        <strong>Título:</strong> ${data?.titulo_prova || data?.titulo || payload.tituloprova || 'sem título'} <br>
-        <strong>Curso:</strong> ${data?.curso || payload.curso || 'não informado'} <br>
-        <strong>Questões:</strong> ${Array.isArray(data?.questoes) ? data.questoes.length : (payload.quantidade || 0)} <br>
-        <strong>IA:</strong> ${payload.ia}`;
-
-      // Guarda HTML para export (PDF/Word)
-      provaHtmlDiv.innerHTML = htmlProva;
-      provaHtmlDiv.style.display = 'none';
-
-      // Preview
-      iframe.style.display = 'block';
-      iframe.srcdoc =
-        `<style>body{background:#fff!important;color:#000!important;font-family:Arial,sans-serif!important;}</style>` +
-        htmlProva;
-
-      cardProva.style.display = 'block';
-      provaContainer.style.display = 'block';
-
-    } catch(e) {
-      erro.style.display = 'block';
-      erro.innerHTML = 'Erro ao gerar prova: ' + (e?.message || e);
-      resultado.innerHTML = 'Falha na geração.';
-    } finally {
-      botao.disabled = false;
-      botao.innerHTML = textoOriginal;
-    }
-  }
-
-  /* =========================
-     Export PDF / Word
-  ========================== */
-  function baixarPDF(){
-  const element = document.getElementById("prova-html");
-  if(!element || !element.innerHTML.trim()){
-    alert("❌ Nenhuma prova gerada ainda.");
-    return;
-  }
-
-  // Clona o conteúdo em um container visível e simples
-  const temp = document.createElement("div");
-  temp.style.background = "#ffffff";
-  temp.style.color = "#000000";
-  temp.style.padding = "20px";
-  temp.style.fontFamily = "Arial, sans-serif";
-  temp.style.fontSize = "12pt";
-  temp.innerHTML = element.innerHTML;
-  document.body.appendChild(temp);
-
-  const opt = {
-    margin: 10,
-    filename: 'prova-masayoshi.pdf',
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-  };
-
-  html2pdf().set(opt).from(temp).save().then(() => {
-    document.body.removeChild(temp);
-  }).catch(() => {
-    document.body.removeChild(temp);
-  });
-}
-
-function baixarWord(){
-  const element = document.getElementById("prova-html");
-  if(!element || !element.innerHTML.trim()){
-    alert("❌ Nenhuma prova gerada ainda.");
-    return;
-  }
-  if (!window.htmlDocx || !window.htmlDocx.asBlob) {
-    alert("❌ Biblioteca de Word não carregou.");
-    return;
-  }
-  const html =
-    '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Prova Masayoshi</title>' +
-    '<style>body{font-family:Arial,sans-serif;font-size:12pt;}</style></head><body>' +
-    element.innerHTML +
-    '</body></html>';
-  const blob = window.htmlDocx.asBlob(html);
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
-  link.download = 'prova-masayoshi.docx';
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-}
-</script>
+<script src="script.js"></script>
 
 </body>
 </html>
