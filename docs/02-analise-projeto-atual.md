@@ -2,6 +2,8 @@
 
 > Esta seção é o resultado da **análise completa do código existente** no repositório. Ela mapeia o que está implementado, com quais tecnologias, e classifica cada peça em **reaproveitar / refatorar / construir do zero**.
 
+> ✅ **Atualização (MVP Fatia 1):** o protótipo vanilla descrito abaixo foi **arquivado em `legacy/`** e uma aplicação **Next.js + TypeScript + Supabase** foi criada na raiz, com autenticação, persistência (Postgres + RLS) e o gerador migrado para uma API autenticada. A classificação "reaproveitar/refatorar" abaixo permanece válida como registro do ponto de partida. Decisões de stack em [12 — ADR: Stack](./12-adr-stack.md).
+
 ## 2.1 O que existe hoje (ProvaGen)
 
 O repositório contém um **front-end estático** ("ProvaGen — Gerador de Provas com IA") composto por três arquivos versionados, mais um workflow n8n descrito no README.

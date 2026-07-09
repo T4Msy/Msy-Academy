@@ -88,6 +88,8 @@ O n8n pode **permanecer** — mas como **detalhe interno** atrás do AI Orchestr
 
 ## 3.4 Recomendações de stack (sugestão, não imposição)
 
+> ✅ **Decisão tomada (MVP Fatia 1):** stack definida como **Next.js (App Router) + React + TypeScript** no front e **Supabase** (Postgres + Auth + Storage + RLS) na fundação. Registro completo, com alternativas descartadas e trade-offs, em [12 — ADR: Stack](./12-adr-stack.md). A tabela abaixo permanece como o leque de opções avaliado.
+
 A escolha final cabe ao time, mas estas opções equilibram velocidade de entrega da V1 com escalabilidade:
 
 | Camada | Sugestão pragmática | Alternativa robusta |
