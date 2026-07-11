@@ -66,13 +66,22 @@ export const anthropicProvider: AIProvider = {
       throw new Error(`O provider anthropic ainda não implementa a tarefa "${task}".`);
     }
 
-    const response = await getClient().messages.create({
+    // Streamed internally (not exposed to the caller — generateStructured
+    // still returns one complete result) specifically to avoid the SDK's own
+    // HTTP timeout on non-streaming requests. Sonnet 5 runs adaptive
+    // thinking by default whenever `thinking` is omitted, so even a
+    // structured-JSON call can run considerably longer than max_tokens alone
+    // would suggest — exactly the case the SDK's own guidance calls out
+    // ("stream for any request that may involve long output... prevents
+    // hitting request timeouts").
+    const stream = getClient().messages.stream({
       model: MODEL,
       max_tokens: MAX_TOKENS,
       system,
       output_config: { format: { type: "json_schema", schema } },
       messages: [{ role: "user", content: JSON.stringify(input) }],
     });
+    const response = await stream.finalMessage();
 
     const textBlock = response.content.find((b) => b.type === "text");
     if (!textBlock || textBlock.type !== "text") {
