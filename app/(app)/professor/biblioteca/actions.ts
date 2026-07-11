@@ -6,6 +6,21 @@ import { createClient } from "@/lib/supabase/server";
 import { ingestMaterial } from "@/lib/ai/rag/ingest";
 
 const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10MB — mirrors the bucket's file_size_limit (migration 0007).
+const PDF_MAGIC = new Uint8Array([0x25, 0x50, 0x44, 0x46, 0x2d]); // "%PDF-"
+
+/**
+ * `File.type` is whatever MIME the browser guessed from the extension at
+ * select time — trivially spoofable by anyone crafting the multipart
+ * request directly. The upload below hardcodes `contentType:
+ * "application/pdf"` regardless of what's actually inside, so the storage
+ * bucket's own `allowed_mime_types` check never sees real content either.
+ * Reading the first bytes and checking the real PDF magic number is what
+ * actually verifies file *content*, not just a client-supplied label.
+ */
+async function isRealPdf(file: File): Promise<boolean> {
+  const head = new Uint8Array(await file.slice(0, PDF_MAGIC.length).arrayBuffer());
+  return PDF_MAGIC.every((byte, i) => head[i] === byte);
+}
 
 /**
  * Uploads a standalone PDF into the Biblioteca. Validates type/size
@@ -30,6 +45,7 @@ export async function uploadMaterialFile(formData: FormData): Promise<void> {
   if (!(file instanceof File) || file.size === 0) throw new Error("Selecione um arquivo PDF.");
   if (file.type !== "application/pdf") throw new Error("Apenas arquivos PDF são aceitos.");
   if (file.size > MAX_SIZE_BYTES) throw new Error("O arquivo deve ter no máximo 10MB.");
+  if (!(await isRealPdf(file))) throw new Error("O arquivo não é um PDF válido.");
 
   const { data: profile } = await supabase.from("profiles").select("tenant_id").eq("id", user.id).single();
   if (!profile) throw new Error("Perfil não encontrado.");
