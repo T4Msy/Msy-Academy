@@ -17,6 +17,15 @@ describe("mockProvider.generateStructured", () => {
     expect(data.questions.every((q) => q.difficulty === "DIFICIL")).toBe(true);
   });
 
+  it("flags the title when apostilaContent is present (US-2.3)", async () => {
+    const { data } = await mockProvider.generateStructured<GeneratedExam>({
+      task: "EXAM_GEN",
+      schema: {},
+      input: { materia: "Biologia", quantidade: 2, apostilaContent: "Fotossíntese é o processo..." },
+    });
+    expect(data.title).toContain("com base na apostila enviada");
+  });
+
   it("gives every MULTIPLA question exactly 4 options and a correctAnswer among them", async () => {
     const { data } = await mockProvider.generateStructured<GeneratedExam>({
       task: "EXAM_GEN",

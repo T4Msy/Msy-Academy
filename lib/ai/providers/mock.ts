@@ -83,15 +83,17 @@ export const mockProvider: AIProvider = {
         quantidade?: number | string;
         tipo?: string;
         nivel?: string;
+        apostilaContent?: string;
       };
       const quantidade = Number(p.quantidade) || 10;
       const difficulty = (p.nivel?.toUpperCase() as Difficulty) || "MEDIO";
       const questions: Question[] = Array.from({ length: quantidade }, (_, i) =>
         buildQuestion(i, pickTipo(p.tipo ?? "multipla", i), p.materia ?? "", p.assunto ?? "", difficulty),
       );
+      const baseTitle = p.tituloprova || p.materia || (task === "EXAM_GEN" ? "Prova gerada" : "Atividade gerada");
       return {
         data: {
-          title: p.tituloprova || p.materia || (task === "EXAM_GEN" ? "Prova gerada" : "Atividade gerada"),
+          title: p.apostilaContent ? `${baseTitle} (com base na apostila enviada)` : baseTitle,
           questions,
         } as unknown as T,
         tokensIn: 0,

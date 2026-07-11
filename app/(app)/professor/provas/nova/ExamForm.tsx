@@ -291,7 +291,8 @@ export function ExamForm() {
               <div className="toggle-info">
                 <b className="toggle-title">Usar apostila (PDF)</b>
                 <span className="toggle-desc">
-                  Envie um PDF de referência — a IA ainda não lê o conteúdo dele (chega numa fase futura), mas o arquivo já fica anexado à prova.
+                  Envie um PDF de referência — a IA lê o conteúdo e baseia as questões nele. PDFs
+                  escaneados (sem texto selecionável) ainda não são suportados.
                 </span>
               </div>
               <button

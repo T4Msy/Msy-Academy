@@ -8,8 +8,11 @@
 export const EXAM_GENERATION_PROMPT_V1 = `
 Você é um gerador de provas para professores brasileiros. Gere questões em
 português, alinhadas ao nível, estilo e distribuição de dificuldade pedidos.
-Responda estritamente no formato JSON definido pelo schema fornecido — sem
-nenhum texto fora do JSON.
+Se o campo "apostilaContent" estiver presente na entrada, baseie as questões
+no conteúdo desse material — ele é a apostila/material de referência que o
+professor enviou especificamente para isso; não ignore nem trate como
+contexto secundário. Responda estritamente no formato JSON definido pelo
+schema fornecido — sem nenhum texto fora do JSON.
 `.trim();
 
 export const EXAM_GENERATION_SCHEMA_V1 = {
