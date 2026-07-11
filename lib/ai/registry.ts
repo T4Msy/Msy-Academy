@@ -1,12 +1,14 @@
 import type { AIProvider } from "./provider";
 import { mockProvider } from "./providers/mock";
 import { echoProvider } from "./providers/echo";
+import { anthropicProvider } from "./providers/anthropic";
 
 /**
  * Provider registry. `AI_PROVIDER` env var selects the active one; defaults
- * to `mock` (no key required) until a real provider is chosen — see the
- * "Pré-requisitos externos" section of the Fase 0+ plan. Adding a real
- * adapter later is just another entry here, never a change to call sites.
+ * to `mock` (no key required). Adding a real adapter later is just another
+ * entry here, never a change to call sites — proven by `anthropic`, the
+ * first real adapter, requiring zero changes anywhere else in the app
+ * (just AI_PROVIDER=anthropic + ANTHROPIC_API_KEY in the environment).
  *
  * `echo` is a second, independently-implemented deterministic provider that
  * exists purely to prove the abstraction isn't secretly coupled to `mock`'s
@@ -16,6 +18,7 @@ import { echoProvider } from "./providers/echo";
 const PROVIDERS: Record<string, AIProvider> = {
   mock: mockProvider,
   echo: echoProvider,
+  anthropic: anthropicProvider,
 };
 
 export function getAIProvider(): AIProvider {

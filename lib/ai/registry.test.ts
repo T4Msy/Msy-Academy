@@ -18,6 +18,11 @@ describe("getAIProvider", () => {
     expect(getAIProvider().id).toBe("echo");
   });
 
+  it("resolves the anthropic provider without constructing a client (no key needed just to select it)", () => {
+    process.env.AI_PROVIDER = "anthropic";
+    expect(getAIProvider().id).toBe("anthropic");
+  });
+
   it("throws a clear error for an unregistered provider id", () => {
     process.env.AI_PROVIDER = "does-not-exist";
     expect(() => getAIProvider()).toThrow(/does-not-exist/);
