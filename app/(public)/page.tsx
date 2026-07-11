@@ -320,6 +320,12 @@ export default async function Home() {
             <Link href="/cadastro" className="nav-link">
               Criar conta
             </Link>
+            <Link href="/termos" className="nav-link">
+              Termos de Uso
+            </Link>
+            <Link href="/privacidade" className="nav-link">
+              Privacidade
+            </Link>
           </nav>
           <span className="landing-footer-copy">
             © {new Date().getFullYear()} MSY Academy. Feito no Brasil.

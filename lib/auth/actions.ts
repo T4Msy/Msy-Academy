@@ -44,6 +44,13 @@ export async function signup(formData: FormData) {
   const fullName = String(formData.get("full_name") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
+  const consent = formData.get("consent") === "on";
+
+  if (!consent) {
+    redirect(
+      `/cadastro?error=${encodeURIComponent("É preciso aceitar os Termos de Uso e a Política de Privacidade.")}`,
+    );
+  }
 
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({
