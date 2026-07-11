@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { ProfileSettingsForm } from "@/components/settings/ProfileSettingsForm";
 import { AiUsageCard } from "@/components/settings/AiUsageCard";
+import { PlanCard } from "@/components/settings/PlanCard";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Configurações" };
@@ -46,6 +47,7 @@ export default async function ConfiguracoesPage() {
           </a>
         </div>
       </section>
+      <PlanCard returnPath="/professor/configuracoes" />
       <AiUsageCard />
     </>
   );

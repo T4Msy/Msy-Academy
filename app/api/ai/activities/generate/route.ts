@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { generateStructured } from "@/lib/ai/orchestrator";
 import { getAIProvider } from "@/lib/ai/registry";
+import { QuotaExceededError } from "@/lib/billing/quota";
 import { ACTIVITY_GENERATION_SCHEMA_V1 } from "@/lib/ai/prompts/activity-generation.v1";
 import type { GeneratedActivity } from "@/lib/ai/types";
 
@@ -41,6 +42,9 @@ export async function POST(request: Request) {
       userId: user.id,
     });
   } catch (err) {
+    if (err instanceof QuotaExceededError) {
+      return NextResponse.json({ error: err.message }, { status: 402 });
+    }
     const message = err instanceof Error ? err.message : String(err);
     return NextResponse.json({ error: `Falha ao gerar a atividade: ${message}` }, { status: 502 });
   }

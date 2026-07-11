@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/server";
 import { getAIProvider } from "./registry";
+import { checkQuota } from "@/lib/billing/quota";
 import type { AITask } from "./types";
 
 interface OrchestrateArgs {
@@ -46,12 +47,13 @@ export async function logAIUsage(args: {
 }
 
 /**
- * Single choke point for every non-streaming AI call in the app. Resolves
- * the active provider, calls it, and logs usage via `logAIUsage`. Cota
- * enforcement/fallback/cache land in later phases; this is the embryo the
- * plan calls for.
+ * Single choke point for every non-streaming AI call in the app. Checks the
+ * tenant's AI quota (RF-IA02), resolves the active provider, calls it, and
+ * logs usage via `logAIUsage`. Fallback/cache land in later phases.
  */
 export async function generateStructured<T>(args: OrchestrateArgs): Promise<T> {
+  await checkQuota(args.tenantId);
+
   const provider = getAIProvider();
   const startedAt = Date.now();
 

@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { generateStructured } from "@/lib/ai/orchestrator";
 import { LESSON_PLAN_GENERATION_SCHEMA_V1 } from "@/lib/ai/prompts/lesson-plan-generation.v1";
 import { getAIProvider } from "@/lib/ai/registry";
+import { QuotaExceededError } from "@/lib/billing/quota";
 import type { GeneratedLessonPlan } from "@/lib/ai/types";
 
 export const runtime = "nodejs";
@@ -38,6 +39,9 @@ export async function POST(request: Request) {
       userId: user.id,
     });
   } catch (err) {
+    if (err instanceof QuotaExceededError) {
+      return NextResponse.json({ error: err.message }, { status: 402 });
+    }
     const message = err instanceof Error ? err.message : String(err);
     return NextResponse.json({ error: `Falha ao gerar o plano de aula: ${message}` }, { status: 502 });
   }

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
+import { ActivationChecklist } from "@/components/professor/ActivationChecklist";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Início" };
@@ -32,6 +33,8 @@ export default async function ProfessorHomePage() {
           <p className="page-subtitle">O que você quer fazer hoje?</p>
         </div>
       </div>
+
+      <ActivationChecklist />
 
       <div className="quick-actions-grid">
         {QUICK_ACTIONS.map((a) => (

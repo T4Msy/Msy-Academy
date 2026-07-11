@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getAIProvider } from "@/lib/ai/registry";
 import { logAIUsage } from "@/lib/ai/orchestrator";
+import { checkQuota, QuotaExceededError } from "@/lib/billing/quota";
 
 export const runtime = "nodejs";
 
@@ -37,6 +38,15 @@ export async function POST(request: Request) {
 
   const { data: profile } = await supabase.from("profiles").select("tenant_id").eq("id", user.id).single();
   if (!profile) return new Response(JSON.stringify({ error: "Perfil não encontrado." }), { status: 500 });
+
+  try {
+    await checkQuota(profile.tenant_id);
+  } catch (err) {
+    if (err instanceof QuotaExceededError) {
+      return new Response(JSON.stringify({ error: err.message }), { status: 402 });
+    }
+    throw err;
+  }
 
   let conversationId = body.conversationId;
   if (!conversationId) {

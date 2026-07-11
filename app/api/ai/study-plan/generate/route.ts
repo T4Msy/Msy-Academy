@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { generateStructured } from "@/lib/ai/orchestrator";
 import { STUDY_PLAN_SCHEMA_V1 } from "@/lib/ai/prompts/study-plan.v1";
+import { QuotaExceededError } from "@/lib/billing/quota";
 import type { GeneratedStudyPlan } from "@/lib/ai/types";
 
 export const runtime = "nodejs";
@@ -37,6 +38,9 @@ export async function POST(request: Request) {
       userId: user.id,
     });
   } catch (err) {
+    if (err instanceof QuotaExceededError) {
+      return NextResponse.json({ error: err.message }, { status: 402 });
+    }
     const message = err instanceof Error ? err.message : String(err);
     return NextResponse.json({ error: `Falha ao gerar o plano: ${message}` }, { status: 502 });
   }

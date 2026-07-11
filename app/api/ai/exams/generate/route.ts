@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { buildExamParams } from "@/lib/exam/buildPayload";
 import { generateStructured } from "@/lib/ai/orchestrator";
 import { getAIProvider } from "@/lib/ai/registry";
+import { QuotaExceededError } from "@/lib/billing/quota";
 import { EXAM_GENERATION_SCHEMA_V1 } from "@/lib/ai/prompts/exam-generation.v1";
 import type { GeneratedExam } from "@/lib/ai/types";
 
@@ -69,6 +70,9 @@ export async function POST(request: Request) {
       userId: user.id,
     });
   } catch (err) {
+    if (err instanceof QuotaExceededError) {
+      return NextResponse.json({ error: err.message }, { status: 402 });
+    }
     const message = err instanceof Error ? err.message : String(err);
     return NextResponse.json({ error: `Falha ao gerar a prova: ${message}` }, { status: 502 });
   }

@@ -15,7 +15,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
+  const [{ data: roles }, { data: profile }] = await Promise.all([
+    supabase.from("user_roles").select("role").eq("user_id", user.id),
+    supabase.from("profiles").select("suspended_at").eq("id", user.id).single(),
+  ]);
+  if (profile?.suspended_at) redirect("/suspenso");
   if (!roles || roles.length === 0) redirect("/onboarding");
 
   return <>{children}</>;
