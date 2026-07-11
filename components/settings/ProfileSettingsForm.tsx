@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { updateProfile } from "@/lib/settings/actions";
+import { useActionState, useState } from "react";
+import { updateProfile, type UpdateProfileState } from "@/lib/settings/actions";
+
+const initialState: UpdateProfileState = {};
 
 export function ProfileSettingsForm({
   initialName,
@@ -11,31 +13,12 @@ export function ProfileSettingsForm({
   email: string;
 }) {
   const [name, setName] = useState(initialName);
-  const [pending, startTransition] = useTransition();
-  const [notice, setNotice] = useState<{ type: "ok" | "error"; text: string } | null>(
-    null,
-  );
-
-  function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setNotice(null);
-    startTransition(async () => {
-      try {
-        await updateProfile(name);
-        setNotice({ type: "ok", text: "Perfil atualizado." });
-      } catch (err) {
-        setNotice({
-          type: "error",
-          text: err instanceof Error ? err.message : "Algo deu errado.",
-        });
-      }
-    });
-  }
+  const [state, formAction, pending] = useActionState(updateProfile, initialState);
 
   const dirty = name.trim() !== initialName.trim() && name.trim().length > 0;
 
   return (
-    <form className="form-stack" onSubmit={onSubmit}>
+    <form className="form-stack" action={formAction}>
       <div className="form-field">
         <label className="field-label" htmlFor="email">
           E-mail
@@ -51,6 +34,7 @@ export function ProfileSettingsForm({
         <input
           className="input"
           id="full_name"
+          name="full_name"
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
@@ -58,11 +42,8 @@ export function ProfileSettingsForm({
         />
       </div>
 
-      {notice && (
-        <div className={`notice${notice.type === "error" ? " notice--error" : ""}`}>
-          {notice.text}
-        </div>
-      )}
+      {state.error && <div className="notice notice--error">{state.error}</div>}
+      {state.ok && !state.error && <div className="notice">Perfil atualizado.</div>}
 
       <div>
         <button type="submit" className="btn btn-primary" disabled={pending || !dirty}>

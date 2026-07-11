@@ -4,10 +4,21 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 
-/** Update the caller's display name. RLS (`profiles_update_own`) enforces ownership. */
-export async function updateProfile(fullName: string): Promise<void> {
-  const clean = fullName.trim();
-  if (!clean) throw new Error("O nome não pode ficar vazio.");
+export interface UpdateProfileState {
+  error?: string;
+  ok?: boolean;
+}
+
+/**
+ * Update the caller's display name. RLS (`profiles_update_own`) enforces
+ * ownership. Returns state instead of throwing — a thrown Server Action
+ * error is redacted to a generic message in `next build`/`next start`
+ * ([[nextjs-server-action-error-redaction]]), which would silently swallow
+ * validation messages like "O nome não pode ficar vazio."
+ */
+export async function updateProfile(_prevState: UpdateProfileState | null, formData: FormData): Promise<UpdateProfileState> {
+  const clean = String(formData.get("full_name") ?? "").trim();
+  if (!clean) return { error: "O nome não pode ficar vazio." };
 
   const supabase = await createClient();
   const {
@@ -20,10 +31,11 @@ export async function updateProfile(fullName: string): Promise<void> {
     .update({ full_name: clean })
     .eq("id", user.id);
 
-  if (error) throw new Error(`Não foi possível salvar: ${error.message}`);
+  if (error) return { error: `Não foi possível salvar: ${error.message}` };
 
   // Topbar reads full_name from each environment layout's own fetch — refresh it.
   revalidatePath("/", "layout");
+  return { ok: true };
 }
 
 /**
