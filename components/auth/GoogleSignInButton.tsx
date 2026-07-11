@@ -46,7 +46,7 @@ export function GoogleSignInButton({ redirectTo = "/" }: { redirectTo?: string }
         </svg>
         {pending ? "Redirecionando…" : "Continuar com Google"}
       </button>
-      {error && <p className="field-hint" style={{ color: "var(--danger)" }}>{error}</p>}
+      {error && <p className="field-hint" style={{ color: "var(--danger-text)" }}>{error}</p>}
     </div>
   );
 }

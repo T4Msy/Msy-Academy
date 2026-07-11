@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
+import { EmptyIllustration } from "@/components/EmptyIllustration";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Dashboard" };
@@ -82,6 +83,7 @@ export default async function ProfessorDashboardPage() {
 
       {classStats.length === 0 ? (
         <div className="empty-state">
+          <EmptyIllustration variant="turma" />
           <div className="empty-title">Sem turmas ainda</div>
           <p className="empty-text">Crie uma turma para ver o desempenho dos alunos aqui.</p>
         </div>
@@ -94,7 +96,7 @@ export default async function ProfessorDashboardPage() {
                   <h2 className="card-title">{klass.name}</h2>
                   <span className="chip">{students.length} alunos</span>
                   {students.some((s) => s.atRisk) && (
-                    <span className="chip" style={{ borderColor: "var(--danger-border)", background: "var(--danger-dim)", color: "#fca5a5" }}>
+                    <span className="chip" style={{ borderColor: "var(--danger-border)", background: "var(--danger-dim)", color: "var(--danger-text)" }}>
                       {students.filter((s) => s.atRisk).length} em risco
                     </span>
                   )}
@@ -107,14 +109,33 @@ export default async function ProfessorDashboardPage() {
                   <ul className="question-options-list">
                     {students.map((s) => (
                       <li key={s.studentId} className={`question-option${s.atRisk ? "" : " question-option--correct"}`}>
-                        <b>{s.name}</b> — {s.accuracyPct !== null ? `${s.accuracyPct}% de acerto` : "sem dados"}
-                        {s.overdueCount > 0 && ` · ${s.overdueCount} tarefa${s.overdueCount > 1 ? "s" : ""} atrasada${s.overdueCount > 1 ? "s" : ""}`}
-                        {s.atRisk && (
-                          <>
-                            {" "}
-                            <span aria-hidden="true">⚠</span>
-                            <span className="visually-hidden"> (em risco)</span>
-                          </>
+                        <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+                          <span>
+                            <b>{s.name}</b>
+                            {s.overdueCount > 0 && ` · ${s.overdueCount} tarefa${s.overdueCount > 1 ? "s" : ""} atrasada${s.overdueCount > 1 ? "s" : ""}`}
+                            {s.atRisk && (
+                              <>
+                                {" "}
+                                <span aria-hidden="true">⚠</span>
+                                <span className="visually-hidden"> (em risco)</span>
+                              </>
+                            )}
+                          </span>
+                          <span style={{ color: "var(--fg-muted)", fontVariantNumeric: "tabular-nums", flexShrink: 0 }}>
+                            {s.accuracyPct !== null ? `${s.accuracyPct}%` : "sem dados"}
+                          </span>
+                        </div>
+                        {s.accuracyPct !== null && (
+                          <div style={{ height: 6, borderRadius: 999, background: "var(--bg-hover)", overflow: "hidden", marginTop: 6 }}>
+                            <div
+                              style={{
+                                height: "100%",
+                                width: `${Math.max(4, s.accuracyPct)}%`,
+                                borderRadius: 999,
+                                background: s.atRisk ? "var(--danger)" : "var(--accent)",
+                              }}
+                            />
+                          </div>
                         )}
                       </li>
                     ))}

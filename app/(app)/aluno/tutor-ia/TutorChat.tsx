@@ -2,6 +2,7 @@
 
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { AiThinking } from "@/components/AiThinking";
 
 export interface ChatMessage {
   role: "user" | "assistant";
@@ -80,7 +81,7 @@ export function TutorChat({
         )}
         {messages.map((m, i) => (
           <div key={i} className={`tutor-bubble tutor-bubble--${m.role}`}>
-            {m.content || (pending && i === messages.length - 1 ? "…" : "")}
+            {m.content || (pending && i === messages.length - 1 ? <AiThinking /> : "")}
           </div>
         ))}
       </div>
@@ -98,7 +99,7 @@ export function TutorChat({
           disabled={pending}
         />
         <button type="submit" className="btn btn-primary" disabled={pending || !input.trim()}>
-          {pending ? "Enviando…" : "Enviar"}
+          {pending ? <AiThinking label="Enviando" /> : "Enviar"}
         </button>
       </form>
     </div>

@@ -37,7 +37,7 @@ export async function AiUsageCard() {
           <div className={`usage-bar-fill${nearLimit ? " usage-bar-fill--warn" : ""}`} style={{ width: `${pct}%` }} />
         </div>
         {nearLimit && (
-          <p className="field-hint" style={{ color: "var(--danger)" }}>
+          <p className="field-hint" style={{ color: "var(--danger-text)" }}>
             Você está perto do limite do seu plano.
           </p>
         )}

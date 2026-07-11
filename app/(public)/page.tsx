@@ -1,10 +1,14 @@
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
+import { ThemeToggle } from "@/components/shell/ThemeToggle";
+import { ScrollReveal } from "@/components/ScrollReveal";
+import { listPlans } from "@/lib/billing/plans";
 
 const FEATURES = [
   {
     title: "Multi-IA sob seu controle",
     desc: "Escolha o motor certo para cada matéria — a MSY Academy roteia entre provedores por trás de uma única interface.",
+    cat: 1,
     icon: (
       <path
         d="M12 2 2 7l10 5 10-5-10-5ZM2 17l10 5 10-5M2 12l10 5 10-5"
@@ -18,6 +22,7 @@ const FEATURES = [
   {
     title: "Provas editáveis, não HTML cru",
     desc: "A IA gera questão por questão como dados estruturados — edite, reordene e reaproveite no Banco de Questões.",
+    cat: 2,
     icon: (
       <path
         d="M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"
@@ -31,6 +36,7 @@ const FEATURES = [
   {
     title: "Turmas e atribuições",
     desc: "Crie turmas, convide alunos por código e atribua provas e atividades com prazo.",
+    cat: 5,
     icon: (
       <path
         d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"
@@ -44,6 +50,7 @@ const FEATURES = [
   {
     title: "Tutor IA para o aluno",
     desc: "Chat com IA que responde com base no material da própria turma — não respostas genéricas.",
+    cat: 3,
     icon: (
       <path
         d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"
@@ -57,6 +64,7 @@ const FEATURES = [
   {
     title: "Correção inteligente",
     desc: "Objetivas corrigem na hora; discursivas recebem nota e feedback sugeridos pela IA, revisados por você.",
+    cat: 4,
     icon: (
       <path
         d="M20 6 9 17l-5-5"
@@ -70,6 +78,7 @@ const FEATURES = [
   {
     title: "Dados isolados e seguros",
     desc: "Cada conta tem seus próprios dados protegidos por Row-Level Security no banco.",
+    cat: 7,
     icon: (
       <path
         d="M12 2 4 6v6c0 5 3.4 8.4 8 10 4.6-1.6 8-5 8-10V6l-8-4Z"
@@ -80,6 +89,12 @@ const FEATURES = [
       />
     ),
   },
+];
+
+const TRUST_POINTS = [
+  { title: "Isolamento por conta", desc: "Cada tenant só acessa os próprios dados — reforçado por Row-Level Security no banco, não só na aplicação." },
+  { title: "Cota de IA visível", desc: "Você acompanha o uso de IA do seu plano em Configurações antes de qualquer surpresa na fatura." },
+  { title: "Multi-provedor por padrão", desc: "A orquestração de IA não depende de um único fornecedor — trocar de motor não exige trocar de produto." },
 ];
 
 const STEPS = [
@@ -100,7 +115,14 @@ const STEPS = [
   },
 ];
 
-export default function Home() {
+function formatPrice(cents: number): string {
+  if (cents === 0) return "Grátis";
+  return (cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) + "/mês";
+}
+
+export default async function Home() {
+  const plans = await listPlans();
+
   return (
     <>
       <header className="header">
@@ -113,6 +135,7 @@ export default function Home() {
             </div>
           </div>
           <div className="landing-header-actions">
+            <ThemeToggle variant="icon" />
             <Link href="/login" className="btn btn-ghost btn-sm">
               Entrar
             </Link>
@@ -180,21 +203,25 @@ export default function Home() {
 
         <section className="section">
           <div className="section-inner">
-            <div className="section-head">
-              <span className="section-eyebrow">Por que a MSY Academy</span>
-              <h2 className="section-title">Uma plataforma para o ciclo inteiro</h2>
-            </div>
+            <ScrollReveal>
+              <div className="section-head">
+                <span className="section-eyebrow">Por que a MSY Academy</span>
+                <h2 className="section-title">Uma plataforma para o ciclo inteiro</h2>
+              </div>
+            </ScrollReveal>
             <div className="features-grid">
-              {FEATURES.map((f) => (
-                <div key={f.title} className="feature-card">
-                  <div className="card-icon">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                      {f.icon}
-                    </svg>
+              {FEATURES.map((f, i) => (
+                <ScrollReveal key={f.title} className={`reveal-delay-${i % 3}`}>
+                  <div className="feature-card">
+                    <div className={`card-icon card-icon--cat-${f.cat}`}>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                        {f.icon}
+                      </svg>
+                    </div>
+                    <h3 className="feature-title">{f.title}</h3>
+                    <p className="feature-desc">{f.desc}</p>
                   </div>
-                  <h3 className="feature-title">{f.title}</h3>
-                  <p className="feature-desc">{f.desc}</p>
-                </div>
+                </ScrollReveal>
               ))}
             </div>
           </div>
@@ -202,17 +229,47 @@ export default function Home() {
 
         <section className="section" id="como-funciona">
           <div className="section-inner">
-            <div className="section-head">
-              <span className="section-eyebrow">Como funciona</span>
-              <h2 className="section-title">Do cadastro à turma em produção</h2>
-            </div>
-            <div className="steps-row">
-              {STEPS.map((s) => (
-                <div key={s.n} className="step-item">
-                  <div className="step-num">{s.n}</div>
-                  <h3 className="step-item-title">{s.title}</h3>
-                  <p className="step-item-desc">{s.desc}</p>
-                </div>
+            <ScrollReveal>
+              <div className="section-head">
+                <span className="section-eyebrow">Como funciona</span>
+                <h2 className="section-title">Do cadastro à turma em produção</h2>
+              </div>
+            </ScrollReveal>
+            <ScrollReveal>
+              <div className="steps-row">
+                {STEPS.map((s) => (
+                  <div key={s.n} className="step-item">
+                    <div className="step-num">{s.n}</div>
+                    <h3 className="step-item-title">{s.title}</h3>
+                    <p className="step-item-desc">{s.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </ScrollReveal>
+          </div>
+        </section>
+
+        <section className="section" id="planos">
+          <div className="section-inner">
+            <ScrollReveal>
+              <div className="section-head">
+                <span className="section-eyebrow">Planos</span>
+                <h2 className="section-title">Comece grátis, cresça quando precisar</h2>
+              </div>
+            </ScrollReveal>
+            <div className="pricing-grid">
+              {plans.map((plan, i) => (
+                <ScrollReveal key={plan.code} className={`reveal-delay-${i % 3}`}>
+                  <div className={`pricing-card${plan.code === "PROFESSOR" ? " pricing-card--highlight" : ""}`}>
+                    {plan.code === "PROFESSOR" && <span className="pricing-badge">Mais popular</span>}
+                    <h3 className="pricing-name">{plan.name}</h3>
+                    <div className="pricing-price">{formatPrice(plan.price_cents)}</div>
+                    <p className="pricing-quota">{plan.ai_quota_monthly.toLocaleString("pt-BR")} tokens de IA/mês</p>
+                    <Link href="/cadastro" className="btn btn-ghost btn-block" style={{ marginTop: 16 }}>
+                      Criar conta grátis
+                    </Link>
+                  </div>
+                </ScrollReveal>
               ))}
             </div>
           </div>
@@ -220,13 +277,30 @@ export default function Home() {
 
         <section className="section">
           <div className="section-inner">
-            <div className="cta-band">
-              <h2 className="cta-title">Comece pela sua primeira prova</h2>
-              <p className="cta-sub">Grátis para começar. Leva menos de um minuto.</p>
-              <Link href="/cadastro" className="btn btn-primary btn-generate">
-                Criar conta grátis
-              </Link>
-            </div>
+            <ScrollReveal>
+              <div className="trust-grid">
+                {TRUST_POINTS.map((t) => (
+                  <div key={t.title} className="trust-item">
+                    <h3 className="trust-title">{t.title}</h3>
+                    <p className="trust-desc">{t.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </ScrollReveal>
+          </div>
+        </section>
+
+        <section className="section">
+          <div className="section-inner">
+            <ScrollReveal>
+              <div className="cta-band">
+                <h2 className="cta-title">Comece pela sua primeira prova</h2>
+                <p className="cta-sub">Grátis para começar. Leva menos de um minuto.</p>
+                <Link href="/cadastro" className="btn btn-primary btn-generate">
+                  Criar conta grátis
+                </Link>
+              </div>
+            </ScrollReveal>
           </div>
         </section>
       </main>

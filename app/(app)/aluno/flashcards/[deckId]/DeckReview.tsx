@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { submitReview } from "../actions";
 import type { SrsState } from "@/lib/srs/sm2";
+import { EmptyIllustration } from "@/components/EmptyIllustration";
 
 export interface ReviewCard {
   id: string;
@@ -28,6 +29,7 @@ export function DeckReview({ deckId, dueCards }: { deckId: string; dueCards: Rev
   if (dueCards.length === 0) {
     return (
       <div className="empty-state">
+        <EmptyIllustration variant="tarefa" />
         <div className="empty-title">Tudo em dia!</div>
         <p className="empty-text">Nenhum cartão para revisar agora. Volte mais tarde.</p>
       </div>
@@ -37,6 +39,7 @@ export function DeckReview({ deckId, dueCards }: { deckId: string; dueCards: Rev
   if (index >= dueCards.length) {
     return (
       <div className="empty-state">
+        <EmptyIllustration variant="tarefa" />
         <div className="empty-title">Sessão concluída</div>
         <p className="empty-text">Você revisou todos os cartões pendentes.</p>
       </div>

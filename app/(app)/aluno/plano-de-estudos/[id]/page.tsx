@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { StudyItemsList, type StudyItem } from "./StudyItemsList";
+import { EmptyIllustration } from "@/components/EmptyIllustration";
 
 export const dynamic = "force-dynamic";
 
@@ -37,6 +38,7 @@ export default async function StudyPlanDetailPage({ params }: { params: Promise<
 
       {list.length === 0 ? (
         <div className="empty-state">
+          <EmptyIllustration variant="plano" />
           <div className="empty-title">Sem itens</div>
           <p className="empty-text">Este plano não tem itens de estudo.</p>
         </div>

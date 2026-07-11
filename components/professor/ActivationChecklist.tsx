@@ -35,24 +35,43 @@ export async function ActivationChecklist() {
     { done: hasClass, label: "Criar uma turma", href: "/professor/turmas" },
     { done: hasEnrollment, label: "Convidar um aluno", href: "/professor/turmas" },
   ];
+  const doneCount = steps.filter((s) => s.done).length;
 
   return (
-    <section className="card" style={{ marginBottom: 16 }}>
+    <section className="card card--highlight" style={{ marginBottom: 16 }}>
       <div className="card-header">
         <div className="card-title-group">
           <h2 className="card-title">Primeiros passos</h2>
+          <span className="chip">{doneCount}/{steps.length}</span>
         </div>
       </div>
-      <div className="card-body">
+      <div className="card-body" style={{ gap: 6 }}>
+        <div style={{ height: 6, borderRadius: 999, background: "var(--bg-hover)", overflow: "hidden", marginBottom: 8 }}>
+          <div
+            style={{
+              height: "100%",
+              width: `${(doneCount / steps.length) * 100}%`,
+              borderRadius: 999,
+              background: "var(--accent)",
+              transition: "width 0.4s ease",
+            }}
+          />
+        </div>
         {steps.map((s) => (
           <a
             key={s.label}
             href={s.href}
             className="popover-item"
-            style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: s.done ? "line-through" : "none", opacity: s.done ? 0.6 : 1 }}
+            style={{ display: "flex", alignItems: "center", gap: 10, opacity: s.done ? 0.6 : 1 }}
           >
-            <span aria-hidden="true">{s.done ? "✅" : "⬜"}</span>
-            {s.label}
+            <span className={`activation-step-icon${s.done ? " activation-step-icon--done" : ""}`} aria-hidden="true">
+              {s.done && (
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                  <path d="M20 6 9 17l-5-5" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              )}
+            </span>
+            <span style={{ textDecoration: s.done ? "line-through" : "none" }}>{s.label}</span>
             <span className="visually-hidden">{s.done ? " (concluído)" : " (pendente)"}</span>
           </a>
         ))}

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { ResolveForm, type ResolveQuestion } from "../../_shared/ResolveForm";
 import { ResultsView, type ResultQuestion, type AnswerRecord } from "../../_shared/ResultsView";
+import { CategoricalBar } from "@/components/charts/CategoricalBar";
 
 export const dynamic = "force-dynamic";
 
@@ -89,11 +90,14 @@ export default async function SimuladoPage({ params }: { params: Promise<{ id: s
                 </div>
               </div>
               <div className="card-body">
-                <div className="exam-meta">
-                  {breakdown.map((b) => (
-                    <span key={b.tag} className="chip">{b.tag}: {b.correct}/{b.total}</span>
-                  ))}
-                </div>
+                <CategoricalBar
+                  items={breakdown.map((b, i) => ({
+                    label: b.tag,
+                    value: b.total > 0 ? Math.round((b.correct / b.total) * 100) : 0,
+                    catSlot: (i % 8) + 1,
+                    suffix: `% (${b.correct}/${b.total})`,
+                  }))}
+                />
               </div>
             </section>
           )}

@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { SimuladoWizard } from "./SimuladoWizard";
+import { EmptyIllustration } from "@/components/EmptyIllustration";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Simulados" };
@@ -45,6 +46,7 @@ export default async function SimuladosPage() {
 
       {list.length === 0 ? (
         <div className="empty-state">
+          <EmptyIllustration variant="tarefa" />
           <div className="empty-title">Nenhum simulado ainda</div>
           <p className="empty-text">Resolva ao menos uma tarefa atribuída para desbloquear questões para o simulado.</p>
         </div>

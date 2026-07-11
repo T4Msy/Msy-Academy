@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { CreateClassForm } from "./CreateClassForm";
+import { EmptyIllustration } from "@/components/EmptyIllustration";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Turmas" };
@@ -31,6 +32,7 @@ export default async function TurmasPage() {
 
       {list.length === 0 ? (
         <div className="empty-state">
+          <EmptyIllustration variant="turma" />
           <div className="empty-title">Nenhuma turma ainda</div>
           <p className="empty-text">Crie sua primeira turma para começar a atribuir conteúdo aos alunos.</p>
         </div>

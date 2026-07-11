@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { AiThinking } from "@/components/AiThinking";
 
 interface SearchResults {
   materials: { id: string; kind: string; ref_id: string | null; title: string }[];
@@ -63,7 +64,7 @@ export function GlobalSearch({ environment }: { environment: "PROFESSOR" | "ALUN
       {open && query.trim().length >= 2 && (
         <div className="popover-pop global-search-results">
           {!results ? (
-            <p className="field-hint" style={{ margin: 8 }}>Buscando…</p>
+            <p className="field-hint" style={{ margin: 8 }}><AiThinking label="Buscando" /></p>
           ) : !hasResults ? (
             <p className="field-hint" style={{ margin: 8 }}>Nada encontrado para &quot;{query}&quot;.</p>
           ) : (

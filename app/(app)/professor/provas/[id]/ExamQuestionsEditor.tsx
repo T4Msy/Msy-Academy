@@ -3,6 +3,8 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { updateQuestion, moveQuestion, regenerateQuestion } from "../actions";
+import { AiThinking } from "@/components/AiThinking";
+import { EmptyIllustration } from "@/components/EmptyIllustration";
 
 type QuestionType = "MULTIPLA" | "VF" | "DISCURSIVA";
 type Difficulty = "FACIL" | "MEDIO" | "DIFICIL";
@@ -135,7 +137,7 @@ function QuestionCard({
           {!editing && (
             <>
               <button type="button" className="btn btn-ghost btn-sm" disabled={pending} onClick={onRegenerate}>
-                {pending ? "Gerando…" : "Regenerar"}
+                {pending ? <AiThinking label="Gerando" /> : "Regenerar"}
               </button>
               <button type="button" className="btn btn-ghost btn-sm" disabled={pending} onClick={startEdit}>
                 Editar
@@ -261,6 +263,7 @@ export function ExamQuestionsEditor({
   if (questions.length === 0) {
     return (
       <div className="empty-state">
+        <EmptyIllustration variant="questoes" />
         <div className="empty-title">Sem questões</div>
         <p className="empty-text">Esta prova não tem questões associadas.</p>
       </div>

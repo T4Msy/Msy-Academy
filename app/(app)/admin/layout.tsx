@@ -3,6 +3,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { logout } from "@/lib/auth/actions";
 import { Sidebar, type SidebarSection } from "@/components/shell/Sidebar";
+import { ThemeToggle } from "@/components/shell/ThemeToggle";
 import { Logo } from "@/components/Logo";
 
 const NAV: SidebarSection[] = [
@@ -48,6 +49,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             </div>
           </div>
           <div className="topbar-right">
+            <ThemeToggle variant="icon" />
             <Link href="/" className="btn btn-ghost btn-sm">Voltar ao app</Link>
             <form action={logout}>
               <button type="submit" className="btn btn-ghost btn-sm">Sair</button>

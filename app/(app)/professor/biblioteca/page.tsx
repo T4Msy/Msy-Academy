@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { UploadMaterialForm } from "./UploadMaterialForm";
 import { MaterialItem } from "./MaterialItem";
+import { EmptyIllustration } from "@/components/EmptyIllustration";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Biblioteca" };
@@ -68,6 +69,7 @@ export default async function BibliotecaPage({
 
       {list.length === 0 ? (
         <div className="empty-state">
+          <EmptyIllustration variant="biblioteca" />
           <div className="empty-title">Nada por aqui ainda</div>
           <p className="empty-text">Crie uma prova, atividade ou plano de aula — ou envie um arquivo — para começar.</p>
         </div>

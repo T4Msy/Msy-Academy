@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { IaProvider } from "@/lib/exam/types";
+import { AiThinking } from "@/components/AiThinking";
 
 const IA_OPTIONS: { value: IaProvider; name: string; desc: string }[] = [
   { value: "perplexity", name: "Perplexity Sonar", desc: "Ideal para provas contextualizadas e bem explicadas (estilo ENEM)." },
@@ -403,13 +404,7 @@ export function ExamForm() {
                 <span className="chip">Salva automaticamente</span>
               </div>
               <button type="submit" className="btn btn-primary btn-generate" disabled={loading}>
-                {loading ? (
-                  <>
-                    <span className="btn-loader" /> Gerando...
-                  </>
-                ) : (
-                  "Gerar Prova"
-                )}
+                {loading ? <AiThinking label="Gerando" /> : "Gerar Prova"}
               </button>
             </div>
           </div>

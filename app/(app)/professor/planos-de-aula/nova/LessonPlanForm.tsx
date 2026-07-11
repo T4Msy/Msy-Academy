@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { AiThinking } from "@/components/AiThinking";
 
 export function LessonPlanForm() {
   const router = useRouter();
@@ -58,7 +59,7 @@ export function LessonPlanForm() {
 
           <div className="submit-row" style={{ marginTop: 8 }}>
             <button type="submit" className="btn btn-primary btn-generate" disabled={loading || !tema.trim()}>
-              {loading ? (<><span className="btn-loader" /> Gerando...</>) : "Gerar Plano de Aula"}
+              {loading ? <AiThinking label="Gerando" /> : "Gerar Plano de Aula"}
             </button>
           </div>
         </div>

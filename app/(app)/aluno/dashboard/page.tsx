@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
+import { StatRing } from "@/components/charts/StatRing";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Dashboard" };
@@ -55,10 +56,7 @@ export default async function AlunoDashboardPage() {
         </div>
         <div className="card">
           <div className="card-body">
-            <div className="card-title">Acerto em objetivas</div>
-            <p className="question-statement" style={{ fontSize: 28, fontFamily: "var(--font-display)", fontWeight: 800, marginTop: 8, marginBottom: 0 }}>
-              {accuracyPct !== null ? `${accuracyPct}%` : "—"}
-            </p>
+            <StatRing value={accuracyPct} label="Acerto em objetivas" size={72} strokeWidth={7} />
           </div>
         </div>
         <div className="card">

@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { AiThinking } from "@/components/AiThinking";
 
 export function GenerateDeckForm({ materials }: { materials: { id: string; title: string }[] }) {
   const [materialId, setMaterialId] = useState("");
@@ -52,7 +53,7 @@ export function GenerateDeckForm({ materials }: { materials: { id: string; title
         {error && <div className="notice notice--error">{error}</div>}
         <div className="submit-row" style={{ marginTop: 8 }}>
           <button type="submit" className="btn btn-primary btn-generate" disabled={pending || !materialId}>
-            {pending ? "Gerando…" : "Gerar deck"}
+            {pending ? <AiThinking label="Gerando" /> : "Gerar deck"}
           </button>
         </div>
       </div>

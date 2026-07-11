@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
+import { EmptyIllustration } from "@/components/EmptyIllustration";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Minhas Provas" };
@@ -44,12 +45,7 @@ export default async function ProvasPage() {
 
       {list.length === 0 ? (
         <div className="empty-state">
-          <div className="empty-icon">
-            <svg fill="none" width="26" height="26" viewBox="0 0 24 24">
-              <path d="M7 3h10a2 2 0 0 1 2 2v14l-4-2-4 2-4-2-4 2V5a2 2 0 0 1 2-2z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
-              <path d="M8 9h8M8 13h8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-            </svg>
-          </div>
+          <EmptyIllustration variant="biblioteca" />
           <div className="empty-title">Nenhuma prova ainda</div>
           <p className="empty-text">
             Gere sua primeira prova com IA. As questões ficam salvas e editáveis, prontas para exportar e reutilizar.

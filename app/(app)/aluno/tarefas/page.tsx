@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
+import { EmptyIllustration } from "@/components/EmptyIllustration";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Tarefas" };
@@ -53,6 +54,7 @@ export default async function TarefasPage() {
 
       {list.length === 0 ? (
         <div className="empty-state">
+          <EmptyIllustration variant="tarefa" />
           <div className="empty-title">Nenhuma tarefa ainda</div>
           <p className="empty-text">Entre em uma turma para ver as tarefas atribuídas pelo seu professor.</p>
         </div>

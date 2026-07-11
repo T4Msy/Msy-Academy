@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { createAdminClient } from "@/lib/supabase/server";
+import { CategoricalBar } from "@/components/charts/CategoricalBar";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Admin" };
@@ -68,11 +69,9 @@ export default async function AdminHomePage() {
             </div>
           </div>
           <div className="card-body">
-            {[...byPlan.entries()].map(([name, count]) => (
-              <p key={name} className="field-hint" style={{ margin: "4px 0" }}>
-                {name}: {count}
-              </p>
-            ))}
+            <CategoricalBar
+              items={[...byPlan.entries()].map(([label, value], i) => ({ label, value, catSlot: (i % 8) + 1 }))}
+            />
           </div>
         </section>
       )}

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { AiThinking } from "@/components/AiThinking";
 
 export function ActivityForm() {
   const router = useRouter();
@@ -77,7 +78,7 @@ export function ActivityForm() {
 
           <div className="submit-row" style={{ marginTop: 8 }}>
             <button type="submit" className="btn btn-primary btn-generate" disabled={loading}>
-              {loading ? (<><span className="btn-loader" /> Gerando...</>) : "Gerar Atividade"}
+              {loading ? <AiThinking label="Gerando" /> : "Gerar Atividade"}
             </button>
           </div>
         </div>

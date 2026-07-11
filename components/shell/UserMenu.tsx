@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { logout } from "@/lib/auth/actions";
+import { ThemeToggle } from "./ThemeToggle";
 
 /** Topbar avatar dropdown: settings link + sign out. */
 export function UserMenu({
@@ -54,6 +55,7 @@ export function UserMenu({
             >
               Configurações
             </Link>
+            <ThemeToggle />
             <form action={logout} className="popover-item-form">
               <button type="submit" className="popover-item popover-item--danger" role="menuitem">
                 Sair

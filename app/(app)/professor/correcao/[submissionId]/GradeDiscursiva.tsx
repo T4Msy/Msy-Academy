@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { suggestGrade } from "../actions";
+import { AiThinking } from "@/components/AiThinking";
 
 export function GradeDiscursiva({
   submissionId,
@@ -63,7 +64,7 @@ export function GradeDiscursiva({
       {error && <div className="notice notice--error">{error}</div>}
       <div className="popover-row">
         <button type="button" className="btn btn-ghost btn-sm" disabled={pending} onClick={onSuggest}>
-          {pending ? "Gerando…" : "Sugerir com IA"}
+          {pending ? <AiThinking label="Avaliando" /> : "Sugerir com IA"}
         </button>
         <button type="button" className="btn btn-primary btn-sm" disabled={!score} onClick={onApprove}>
           Aprovar nota

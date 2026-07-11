@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { QuestionBankItem } from "./QuestionBankItem";
+import { EmptyIllustration } from "@/components/EmptyIllustration";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Banco de Questões" };
@@ -68,6 +69,7 @@ export default async function BancoDeQuestoesPage({
 
       {list.length === 0 ? (
         <div className="empty-state">
+          <EmptyIllustration variant="questoes" />
           <div className="empty-title">Nenhuma questão encontrada</div>
           <p className="empty-text">
             Gere uma prova para começar a preencher seu banco de questões reutilizáveis.
