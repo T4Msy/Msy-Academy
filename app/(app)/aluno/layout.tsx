@@ -30,10 +30,11 @@ export default async function AlunoLayout({ children }: { children: React.ReactN
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const [{ data: profile }, { data: roles }, { data: notifications }] = await Promise.all([
+  const [{ data: profile }, { data: roles }, { data: notifications }, { data: guardianConsent }] = await Promise.all([
     supabase.from("profiles").select("full_name").eq("id", user.id).single(),
     supabase.from("user_roles").select("role").eq("user_id", user.id),
     supabase.from("notifications").select("id, title, body, link, read_at, created_at").order("created_at", { ascending: false }).limit(10),
+    supabase.from("guardian_consents").select("status, token").eq("student_id", user.id).eq("status", "PENDING").maybeSingle(),
   ]);
 
   const roleSet = new Set((roles ?? []).map((r) => r.role));
@@ -54,6 +55,12 @@ export default async function AlunoLayout({ children }: { children: React.ReactN
       <div className="app-body">
         <Sidebar sections={NAV} />
         <main className="app-main" role="main">
+          {guardianConsent && (
+            <div className="notice" style={{ marginBottom: 16 }}>
+              Aguardando confirmação de um responsável. Compartilhe este link com ele:{" "}
+              <a href={`/consentimento/${guardianConsent.token}`}>{`/consentimento/${guardianConsent.token}`}</a>
+            </div>
+          )}
           {children}
         </main>
       </div>

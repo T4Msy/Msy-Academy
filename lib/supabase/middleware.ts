@@ -8,9 +8,11 @@ import { NextResponse, type NextRequest } from "next/server";
  *   - authenticated + hits a pure-auth page (/login, /cadastro, "/") -> into
  *     the app (onboarding if no role yet, otherwise the right environment)
  *   - authenticated + no role yet + any other protected route -> /onboarding
- *   - /termos and /privacidade are always reachable — unauthenticated,
- *     authenticated, onboarded or not — same as a real ToS/Privacy page
- *     should be (RNF-C07); they never redirect anyone away.
+ *   - /termos, /privacidade and /consentimento/[token] are always
+ *     reachable — unauthenticated, authenticated, onboarded or not. The
+ *     first two per RNF-C07; /consentimento is visited by a guardian who
+ *     has no account on the platform at all (RNF-C02), so it can never sit
+ *     behind the login gate.
  * Fine-grained role/environment guards (PROFESSOR vs ALUNO) live in
  * app/(app)/professor/layout.tsx and app/(app)/aluno/layout.tsx — this layer
  * only decides "logged in or not" and "onboarded or not".
@@ -55,7 +57,8 @@ export async function updateSession(request: NextRequest) {
     pathname.startsWith("/recuperar-senha") ||
     pathname.startsWith("/redefinir-senha");
   const isLanding = pathname === "/";
-  const isLegal = pathname === "/termos" || pathname === "/privacidade";
+  const isLegal =
+    pathname === "/termos" || pathname === "/privacidade" || pathname.startsWith("/consentimento/");
   const isPublic = isPublicAuthRoute || isAuthCallback || isLanding || isLegal;
 
   // API routes own their own auth responses (401 JSON, not an HTML redirect).

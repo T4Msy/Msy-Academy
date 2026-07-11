@@ -2,7 +2,8 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { headers } from "next/headers";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 
 type Role = "PROFESSOR" | "ALUNO";
 
@@ -17,7 +18,37 @@ function safeRedirect(target: string | null | undefined): string | null {
   return null;
 }
 
-export async function completeOnboarding(roles: Role[], redirectTo?: string | null): Promise<void> {
+async function origin(): Promise<string> {
+  const h = await headers();
+  const host = h.get("x-forwarded-host") ?? h.get("host") ?? "localhost:3000";
+  const proto = h.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
+  return `${proto}://${host}`;
+}
+
+function calculateAge(birthDate: string): number {
+  const dob = new Date(birthDate);
+  const now = new Date();
+  let age = now.getFullYear() - dob.getFullYear();
+  const hadBirthdayThisYear =
+    now.getMonth() > dob.getMonth() || (now.getMonth() === dob.getMonth() && now.getDate() >= dob.getDate());
+  if (!hadBirthdayThisYear) age -= 1;
+  return age;
+}
+
+/**
+ * When the student declares a birth date under 18, provisions a
+ * `guardian_consents` row (RNF-C02, LGPD Art. 14) and returns a shareable
+ * confirmation link instead of redirecting straight into the app — same
+ * "share this link/code" pattern as class invites (migration 0007), chosen
+ * specifically because there's no transactional email provider wired into
+ * this app. The guardian visits the link with no account of their own; see
+ * app/consentimento/[token] for the confirmation side.
+ */
+export async function completeOnboarding(
+  roles: Role[],
+  birthDate: string | null,
+  redirectTo?: string | null,
+): Promise<{ guardianConsentUrl: string } | void> {
   if (roles.length === 0) {
     throw new Error("Escolha ao menos um papel para continuar.");
   }
@@ -34,7 +65,36 @@ export async function completeOnboarding(roles: Role[], redirectTo?: string | nu
 
   if (error) throw new Error(`Não foi possível salvar seu papel: ${error.message}`);
 
+  let guardianConsentUrl: string | undefined;
+
+  if (roles.includes("ALUNO") && birthDate && calculateAge(birthDate) < 18) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .update({ birth_date: birthDate })
+      .eq("id", user.id)
+      .select("tenant_id")
+      .single();
+
+    if (profile) {
+      const admin = createAdminClient();
+      const { data: consent } = await admin
+        .from("guardian_consents")
+        .insert({ tenant_id: profile.tenant_id, student_id: user.id })
+        .select("token")
+        .single();
+
+      if (consent) {
+        guardianConsentUrl = `${await origin()}/consentimento/${consent.token}`;
+      }
+    }
+  }
+
   revalidatePath("/", "layout");
+
+  if (guardianConsentUrl) {
+    return { guardianConsentUrl };
+  }
+
   // Honor a pending destination (e.g. a class invite link) instead of the
   // default shell, so a brand-new user who clicked "/entrar/CODE" actually
   // lands back there after choosing a role.
