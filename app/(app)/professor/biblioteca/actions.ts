@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ingestMaterial } from "@/lib/ai/rag/ingest";
+import { checkQuota } from "@/lib/billing/quota";
 
 const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10MB — mirrors the bucket's file_size_limit (migration 0007).
 const PDF_MAGIC = new Uint8Array([0x25, 0x50, 0x44, 0x46, 0x2d]); // "%PDF-"
@@ -75,11 +76,20 @@ export async function uploadMaterialFile(formData: FormData): Promise<void> {
 
   if (classId) {
     try {
+      // ingestMaterial calls provider.embed() per chunk — not currently a
+      // real cost (mock/echo/anthropic all embed via a local hash, see
+      // lib/ai/providers/anthropic.ts), but it's the one AI-consuming path
+      // in the app that doesn't run through generateStructured, so it's the
+      // one place quota enforcement (RF-IA02) doesn't come for free. Check
+      // it explicitly now so a future real embeddings provider doesn't
+      // silently reopen an uncapped cost vector on file upload.
+      await checkQuota(profile.tenant_id);
       await ingestMaterial(material.id);
     } catch {
       // Upload + Biblioteca entry already succeeded; ingestion failing (e.g.
-      // a PDF with no extractable text) shouldn't roll back the upload —
-      // it just means this material won't surface via the Tutor IA yet.
+      // a PDF with no extractable text, or quota exceeded) shouldn't roll
+      // back the upload — it just means this material won't surface via
+      // the Tutor IA yet.
     }
   }
 
