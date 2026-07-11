@@ -126,14 +126,10 @@ export default async function ProfessorDashboardPage() {
                           </span>
                         </div>
                         {s.accuracyPct !== null && (
-                          <div style={{ height: 6, borderRadius: 999, background: "var(--bg-hover)", overflow: "hidden", marginTop: 6 }}>
+                          <div className="usage-bar" style={{ marginTop: 6 }}>
                             <div
-                              style={{
-                                height: "100%",
-                                width: `${Math.max(4, s.accuracyPct)}%`,
-                                borderRadius: 999,
-                                background: s.atRisk ? "var(--danger)" : "var(--accent)",
-                              }}
+                              className={`usage-bar-fill${s.atRisk ? " usage-bar-fill--warn" : ""}`}
+                              style={{ width: `${Math.max(4, s.accuracyPct)}%` }}
                             />
                           </div>
                         )}

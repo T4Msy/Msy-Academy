@@ -9,7 +9,7 @@ import { createClient } from "@/lib/supabase/client";
  * self-provision. Until then, Supabase returns an error and this button
  * degrades to an inline notice instead of a broken redirect.
  */
-export function GoogleSignInButton({ redirectTo = "/" }: { redirectTo?: string }) {
+export function GoogleSignInButton({ redirectTo = "/", disabled = false }: { redirectTo?: string; disabled?: boolean }) {
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
@@ -36,7 +36,7 @@ export function GoogleSignInButton({ redirectTo = "/" }: { redirectTo?: string }
         type="button"
         className="btn btn-ghost btn-block"
         onClick={signInWithGoogle}
-        disabled={pending}
+        disabled={pending || disabled}
       >
         <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
           <path

@@ -28,6 +28,11 @@
   --fg-subtle:   #797979;
   --border:      rgba(var(--overlay-rgb),0.08);
   --border-hover:rgba(var(--overlay-rgb),0.15);
+  /* Not --fg-subtle: that's tuned for de-emphasized *text* contrast, not for
+     a small shape sitting on the faint translucent .switch track — #797979
+     on that track lands right at ~3.3:1, too close to the WCAG 1.4.11
+     non-text floor. This is deliberately brighter in dark mode. */
+  --switch-thumb-off: #b0b0b0;
 
   --accent:      #2EE59D;
   --accent-text: #2EE59D;
@@ -67,6 +72,7 @@
   --fg-subtle:   #6b6f68;
   --border:      rgba(var(--overlay-rgb),0.10);
   --border-hover:rgba(var(--overlay-rgb),0.18);
+  --switch-thumb-off: #6b6f68;
 
   /* --accent (button/badge fill) is brand-fixed across themes — only the
      *text* variant changes: mint-on-white fails contrast (~1.6:1), so
@@ -94,6 +100,7 @@
     --fg-subtle:   #6b6f68;
     --border:      rgba(var(--overlay-rgb),0.10);
     --border-hover:rgba(var(--overlay-rgb),0.18);
+    --switch-thumb-off: #6b6f68;
     --accent-text: #0b7a52;
     --accent-dim:  rgba(46,229,157,0.14);
     --accent-border: rgba(46,229,157,0.45);
@@ -742,7 +749,7 @@ select.input option { background-color: var(--bg-card); color: var(--fg); }
   left: 3px;
   width: 18px;
   height: 18px;
-  background: var(--fg-subtle);
+  background: var(--switch-thumb-off);
   border-radius: 999px;
   transform: translateY(-50%);
   transition: left 0.15s, background 0.15s;

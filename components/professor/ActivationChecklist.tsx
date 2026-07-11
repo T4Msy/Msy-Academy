@@ -46,16 +46,8 @@ export async function ActivationChecklist() {
         </div>
       </div>
       <div className="card-body" style={{ gap: 6 }}>
-        <div style={{ height: 6, borderRadius: 999, background: "var(--bg-hover)", overflow: "hidden", marginBottom: 8 }}>
-          <div
-            style={{
-              height: "100%",
-              width: `${(doneCount / steps.length) * 100}%`,
-              borderRadius: 999,
-              background: "var(--accent)",
-              transition: "width 0.4s ease",
-            }}
-          />
+        <div className="usage-bar" style={{ marginTop: 0, marginBottom: 8 }}>
+          <div className="usage-bar-fill" style={{ width: `${(doneCount / steps.length) * 100}%` }} />
         </div>
         {steps.map((s) => (
           <a

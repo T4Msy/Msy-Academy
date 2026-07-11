@@ -13,23 +13,18 @@ export function CategoricalBar({
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      {items.map((item) => (
-        <div key={item.label}>
+      {items.map((item, i) => (
+        <div key={`${i}-${item.label}`}>
           <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 4 }}>
             <span style={{ color: "var(--fg)" }}>{item.label}</span>
             <span style={{ color: "var(--fg-muted)", fontVariantNumeric: "tabular-nums" }}>
               {item.value}{item.suffix ?? ""}
             </span>
           </div>
-          <div style={{ height: 8, borderRadius: 999, background: "var(--bg-hover)", overflow: "hidden" }}>
+          <div className="usage-bar">
             <div
-              style={{
-                height: "100%",
-                width: `${Math.max(4, (item.value / max) * 100)}%`,
-                borderRadius: 999,
-                background: `var(--cat-${item.catSlot})`,
-                transition: "width 0.4s ease",
-              }}
+              className="usage-bar-fill"
+              style={{ width: `${Math.max(4, (item.value / max) * 100)}%`, background: `var(--cat-${item.catSlot})` }}
             />
           </div>
         </div>

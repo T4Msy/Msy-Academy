@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { Logo } from "@/components/Logo";
-import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
+import { SignupConsent } from "@/components/auth/SignupConsent";
 import { signup } from "@/lib/auth/actions";
 
 export const metadata: Metadata = { title: "Criar conta" };
@@ -26,15 +26,10 @@ export default async function SignupPage({
 
         {error && <div className="notice notice--error">{error}</div>}
 
-        <GoogleSignInButton redirectTo="/onboarding" />
-        <p className="field-hint" style={{ textAlign: "center", marginTop: 8 }}>
-          Ao continuar com o Google, você concorda com os{" "}
-          <Link href="/termos">Termos de Uso</Link> e a{" "}
-          <Link href="/privacidade">Política de Privacidade</Link>.
-        </p>
+        <SignupConsent redirectTo="/onboarding" />
         <div className="auth-divider"><span>ou</span></div>
 
-        <form className="auth-form" action={signup}>
+        <form id="signup-form" className="auth-form" action={signup}>
           <div className="form-field">
             <label className="field-label" htmlFor="full_name">
               Nome completo
@@ -78,21 +73,6 @@ export default async function SignupPage({
               placeholder="Mínimo 6 caracteres"
             />
           </div>
-          <label className="opt-check" htmlFor="consent" style={{ marginBottom: 14 }}>
-            <input type="checkbox" id="consent" name="consent" required />
-            <span className="opt-box" aria-hidden="true">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
-                <path d="M20 6 9 17l-5-5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </span>
-            <span className="opt-text">
-              <span>
-                Li e concordo com os <Link href="/termos">Termos de Uso</Link> e a{" "}
-                <Link href="/privacidade">Política de Privacidade</Link>, e confirmo que tenho 18
-                anos ou autorização de um responsável legal.
-              </span>
-            </span>
-          </label>
 
           <button type="submit" className="btn btn-primary btn-block">
             Criar conta
