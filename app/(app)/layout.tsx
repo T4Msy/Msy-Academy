@@ -1,34 +1,22 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { AppHeader } from "@/components/AppHeader";
 
-export default async function AppLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+/**
+ * Outer guard for the whole authenticated area: signed in + onboarded.
+ * Middleware already redirects most of these cases, but layouts run for
+ * every render and are the last line of defense — no visual chrome here,
+ * that's owned by each environment's own layout (professor/aluno), since
+ * each renders a different sidebar.
+ */
+export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
-  // Middleware already guards this, but double-check for safety.
   if (!user) redirect("/login");
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("full_name")
-    .eq("id", user.id)
-    .single();
+  const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
+  if (!roles || roles.length === 0) redirect("/onboarding");
 
-  const name = profile?.full_name || user.email?.split("@")[0] || "Professor";
-
-  return (
-    <>
-      <AppHeader name={name} />
-      <main className="main-container" role="main">
-        {children}
-      </main>
-    </>
-  );
+  return <>{children}</>;
 }

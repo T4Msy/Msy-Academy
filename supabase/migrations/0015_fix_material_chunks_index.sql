@@ -1,0 +1,23 @@
+-- ============================================================================
+-- MSY Academy — Migration 0015: fix material_chunks vector search (0012).
+--
+-- `material_chunks_embedding_idx` (ivfflat) does APPROXIMATE nearest-neighbor
+-- search — it only probes a subset of "lists" (clusters) by default. On a
+-- small table (Supabase warned "ivfflat index created with little data" when
+-- 0012 applied), that clustering is poorly calibrated: for a query vector
+-- dissimilar to the handful of rows present, the probed lists can miss rows
+-- entirely — search_material_chunks (0014) returned ZERO results even though
+-- the only chunk in the table was clearly still there and directly readable.
+-- Caught by a real end-to-end test with a realistic (non-matching) query
+-- embedding; a same-vector round-trip test would have missed this.
+--
+-- Fix: drop the ivfflat index. `material_chunks` is expected to stay small
+-- for a while (Fase 4 baseline — one class's worth of materials at a time);
+-- a plain sequential scan for `ORDER BY embedding <=> query LIMIT n` is both
+-- correct (exact, not approximate) and fast at this scale. Revisit with a
+-- properly-tuned ivfflat/hnsw index (built AFTER real data volume exists,
+-- with `lists`/`probes` set from that volume) if/when the table grows large
+-- enough for a sequential scan to matter — not a concern at Fase 4 scale.
+-- ============================================================================
+
+drop index if exists public.material_chunks_embedding_idx;

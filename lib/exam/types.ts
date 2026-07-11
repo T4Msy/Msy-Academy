@@ -40,7 +40,7 @@ export interface ExamGenerationParams {
   observacoesprofessor: string;
 }
 
-/** A persisted exam row (subset of the target schema for Slice 1). */
+/** A persisted exam row — Fase 1: dados estruturados, não mais HTML cru (ver migration 0005). */
 export interface ExamRow {
   id: string;
   tenant_id: string;
@@ -48,10 +48,12 @@ export interface ExamRow {
   title: string;
   course: string | null;
   style: string | null;
+  subject_id: string | null;
+  grade_level_id: string | null;
   generation_params: ExamGenerationParams;
-  generated_html: string;
   include_answer_key: boolean;
   status: "DRAFT" | "READY" | "ARCHIVED";
+  version: number;
   ai_provider: string | null;
   ai_model: string | null;
   created_at: string;

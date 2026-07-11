@@ -2,9 +2,15 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 /**
- * Refreshes the Supabase session on every request and guards the
- * authenticated area. Unauthenticated users hitting protected routes are
- * redirected to /login.
+ * Refreshes the Supabase session on every request and owns the coarse
+ * routing rules for the whole app:
+ *   - unauthenticated + protected route  -> /login
+ *   - authenticated + hits a pure-auth page (/login, /cadastro, "/") -> into
+ *     the app (onboarding if no role yet, otherwise the right environment)
+ *   - authenticated + no role yet + any other protected route -> /onboarding
+ * Fine-grained role/environment guards (PROFESSOR vs ALUNO) live in
+ * app/(app)/professor/layout.tsx and app/(app)/aluno/layout.tsx — this layer
+ * only decides "logged in or not" and "onboarded or not".
  */
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -36,21 +42,55 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const { pathname } = request.nextUrl;
-  const isAuthRoute = pathname.startsWith("/login") || pathname.startsWith("/signup");
-  const isPublic = pathname === "/" || isAuthRoute;
 
-  if (!user && !isPublic) {
+  const isApi = pathname.startsWith("/api");
+  const isAuthCallback = pathname.startsWith("/auth");
+  const isOnboarding = pathname.startsWith("/onboarding");
+  const isPublicAuthRoute =
+    pathname === "/login" ||
+    pathname === "/cadastro" ||
+    pathname.startsWith("/recuperar-senha") ||
+    pathname.startsWith("/redefinir-senha");
+  const isLanding = pathname === "/";
+  const isPublic = isPublicAuthRoute || isAuthCallback || isLanding;
+
+  // API routes own their own auth responses (401 JSON, not an HTML redirect).
+  if (isApi) return supabaseResponse;
+
+  if (!user) {
+    if (isPublic) return supabaseResponse;
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("redirect", pathname);
     return NextResponse.redirect(url);
   }
 
-  if (user && isAuthRoute) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/dashboard";
-    url.search = "";
-    return NextResponse.redirect(url);
+  // From here on, `user` is authenticated.
+  const needsRoleCheck = isPublicAuthRoute || isLanding || (!isOnboarding && !isAuthCallback);
+  if (needsRoleCheck) {
+    const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
+    const hasRoles = (roles?.length ?? 0) > 0;
+
+    if (isPublicAuthRoute || isLanding) {
+      const url = request.nextUrl.clone();
+      url.pathname = !hasRoles
+        ? "/onboarding"
+        : roles!.some((r) => r.role === "PROFESSOR")
+          ? "/professor"
+          : "/aluno";
+      url.search = "";
+      return NextResponse.redirect(url);
+    }
+
+    if (!hasRoles) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/onboarding";
+      // Preserve the original destination (e.g. a class invite link) so
+      // onboarding can send the user there instead of the default shell.
+      url.search = "";
+      url.searchParams.set("redirect", pathname);
+      return NextResponse.redirect(url);
+    }
   }
 
   return supabaseResponse;

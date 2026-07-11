@@ -11,11 +11,15 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@react-pdf/renderer": "^4.5.1",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.47.10",
+    "docx": "^9.7.1",
     "next": "^15.1.4",
+    "pdf-parse": "^2.4.5",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/node": "^22.10.5",

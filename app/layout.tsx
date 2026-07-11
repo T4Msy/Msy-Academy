@@ -1,10 +1,22 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
+const description =
+  "Provas, atividades, turmas, correção e tutor de IA para o aluno — Professor e Aluno numa única plataforma.";
+
 export const metadata: Metadata = {
-  title: "MSY Academy",
-  description:
-    "Plataforma educacional IA-first. Gere provas com IA, salve e exporte — tudo em um só lugar.",
+  title: {
+    default: "MSY Academy — Ensinar e estudar com IA",
+    template: "%s · MSY Academy",
+  },
+  description,
+  openGraph: {
+    title: "MSY Academy — Ensinar e estudar com IA",
+    description,
+    siteName: "MSY Academy",
+    locale: "pt_BR",
+    type: "website",
+  },
 };
 
 export const viewport: Viewport = {
