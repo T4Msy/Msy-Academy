@@ -8,6 +8,9 @@ import { NextResponse, type NextRequest } from "next/server";
  *   - authenticated + hits a pure-auth page (/login, /cadastro, "/") -> into
  *     the app (onboarding if no role yet, otherwise the right environment)
  *   - authenticated + no role yet + any other protected route -> /onboarding
+ *   - /termos and /privacidade are always reachable — unauthenticated,
+ *     authenticated, onboarded or not — same as a real ToS/Privacy page
+ *     should be (RNF-C07); they never redirect anyone away.
  * Fine-grained role/environment guards (PROFESSOR vs ALUNO) live in
  * app/(app)/professor/layout.tsx and app/(app)/aluno/layout.tsx — this layer
  * only decides "logged in or not" and "onboarded or not".
@@ -52,7 +55,8 @@ export async function updateSession(request: NextRequest) {
     pathname.startsWith("/recuperar-senha") ||
     pathname.startsWith("/redefinir-senha");
   const isLanding = pathname === "/";
-  const isPublic = isPublicAuthRoute || isAuthCallback || isLanding;
+  const isLegal = pathname === "/termos" || pathname === "/privacidade";
+  const isPublic = isPublicAuthRoute || isAuthCallback || isLanding || isLegal;
 
   // API routes own their own auth responses (401 JSON, not an HTML redirect).
   if (isApi) return supabaseResponse;
@@ -66,7 +70,7 @@ export async function updateSession(request: NextRequest) {
   }
 
   // From here on, `user` is authenticated.
-  const needsRoleCheck = isPublicAuthRoute || isLanding || (!isOnboarding && !isAuthCallback);
+  const needsRoleCheck = isPublicAuthRoute || isLanding || (!isOnboarding && !isAuthCallback && !isLegal);
   if (needsRoleCheck) {
     const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
     const hasRoles = (roles?.length ?? 0) > 0;
