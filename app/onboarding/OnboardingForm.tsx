@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useActionState, useState } from "react";
 import { useRouter } from "next/navigation";
-import { completeOnboarding } from "./actions";
+import { completeOnboarding, type OnboardingState } from "./actions";
 
 type Role = "PROFESSOR" | "ALUNO";
 
@@ -19,12 +19,11 @@ const ROLES: { value: Role; title: string; desc: string }[] = [
   },
 ];
 
+const initialState: OnboardingState = {};
+
 export function OnboardingForm({ redirectTo }: { redirectTo?: string }) {
   const [selected, setSelected] = useState<Set<Role>>(new Set());
-  const [birthDate, setBirthDate] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [guardianConsentUrl, setGuardianConsentUrl] = useState<string | null>(null);
-  const [pending, startTransition] = useTransition();
+  const [state, formAction, pending] = useActionState(completeOnboarding, initialState);
   const router = useRouter();
 
   function toggle(role: Role) {
@@ -36,26 +35,11 @@ export function OnboardingForm({ redirectTo }: { redirectTo?: string }) {
     });
   }
 
-  function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
-    startTransition(async () => {
-      try {
-        const result = await completeOnboarding(Array.from(selected), birthDate || null, redirectTo);
-        if (result?.guardianConsentUrl) {
-          setGuardianConsentUrl(result.guardianConsentUrl);
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Algo deu errado.");
-      }
-    });
-  }
-
   function onContinue() {
     router.push(redirectTo || (selected.has("PROFESSOR") ? "/professor" : "/aluno"));
   }
 
-  if (guardianConsentUrl) {
+  if (state.guardianConsentUrl) {
     return (
       <div className="notice" style={{ marginTop: 8 }}>
         <p style={{ margin: 0, fontWeight: 600 }}>Falta um passo: consentimento do responsável</p>
@@ -65,7 +49,7 @@ export function OnboardingForm({ redirectTo }: { redirectTo?: string }) {
           sem precisar criar conta.
         </p>
         <div className="exam-meta" style={{ marginTop: 10 }}>
-          <input className="input" readOnly value={guardianConsentUrl} onFocus={(e) => e.target.select()} />
+          <input className="input" readOnly value={state.guardianConsentUrl} onFocus={(e) => e.target.select()} />
         </div>
         <button
           type="button"
@@ -80,7 +64,12 @@ export function OnboardingForm({ redirectTo }: { redirectTo?: string }) {
   }
 
   return (
-    <form onSubmit={onSubmit}>
+    <form action={formAction}>
+      <input type="hidden" name="redirectTo" value={redirectTo ?? ""} />
+      {Array.from(selected).map((role) => (
+        <input key={role} type="hidden" name="roles" value={role} />
+      ))}
+
       <div className="ia-grid" role="group" aria-label="Escolha seu papel">
         {ROLES.map((r) => (
           <button
@@ -110,9 +99,8 @@ export function OnboardingForm({ redirectTo }: { redirectTo?: string }) {
           <input
             className="input"
             id="birth_date"
+            name="birthDate"
             type="date"
-            value={birthDate}
-            onChange={(e) => setBirthDate(e.target.value)}
             max={new Date().toISOString().slice(0, 10)}
           />
           <p className="field-hint">
@@ -121,7 +109,7 @@ export function OnboardingForm({ redirectTo }: { redirectTo?: string }) {
         </div>
       )}
 
-      {error && <div className="notice notice--error">{error}</div>}
+      {state.error && <div className="notice notice--error">{state.error}</div>}
 
       <button
         type="submit"

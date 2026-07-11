@@ -7,11 +7,28 @@ import { createClient, createAdminClient } from "@/lib/supabase/server";
 
 type Role = "PROFESSOR" | "ALUNO";
 
+export interface OnboardingState {
+  error?: string;
+  guardianConsentUrl?: string;
+}
+
 /**
  * Completes onboarding by inserting the chosen role(s) into user_roles.
  * RLS (`user_roles_insert_own`, migration 0004) restricts this to
  * PROFESSOR/ALUNO for the caller's own user_id — a client can never
  * self-grant ADMIN this way, even if it tried to call this action directly.
+ *
+ * `(prevState, formData)` signature — driven by `useActionState`, not
+ * called imperatively — specifically so the terminal `redirect()` call is
+ * never at risk of landing inside a client-side try/catch. `redirect()`
+ * throws internally; a plain `await completeOnboarding(...)` wrapped in
+ * `try/catch` on the client would catch that throw as a regular error
+ * instead of letting Next.js turn it into navigation (same class of bug
+ * fixed for `deleteMyAccount`, see lib/settings/actions.ts). Errors are
+ * returned as state, not thrown, for the same reason `deleteMyAccount`
+ * moved away from throw: a thrown Server Action error is redacted to a
+ * generic message in `next build`/`next start` — see
+ * [[nextjs-server-action-error-redaction]].
  */
 function safeRedirect(target: string | null | undefined): string | null {
   if (target && target.startsWith("/") && !target.startsWith("//")) return target;
@@ -45,12 +62,15 @@ function calculateAge(birthDate: string): number {
  * app/consentimento/[token] for the confirmation side.
  */
 export async function completeOnboarding(
-  roles: Role[],
-  birthDate: string | null,
-  redirectTo?: string | null,
-): Promise<{ guardianConsentUrl: string } | void> {
+  _prevState: OnboardingState | null,
+  formData: FormData,
+): Promise<OnboardingState> {
+  const roles = formData.getAll("roles") as Role[];
+  const birthDate = (formData.get("birthDate") as string | null) || null;
+  const redirectTo = (formData.get("redirectTo") as string | null) || null;
+
   if (roles.length === 0) {
-    throw new Error("Escolha ao menos um papel para continuar.");
+    return { error: "Escolha ao menos um papel para continuar." };
   }
 
   const supabase = await createClient();
@@ -63,7 +83,7 @@ export async function completeOnboarding(
     .from("user_roles")
     .insert(roles.map((role) => ({ user_id: user.id, role })));
 
-  if (error) throw new Error(`Não foi possível salvar seu papel: ${error.message}`);
+  if (error) return { error: `Não foi possível salvar seu papel: ${error.message}` };
 
   let guardianConsentUrl: string | undefined;
 
