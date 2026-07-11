@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { RenameDeleteMenu } from "@/components/shell/RenameDeleteMenu";
+import { AiBadge } from "@/components/AiBadge";
 import { renameLessonPlan, deleteLessonPlan } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -12,7 +13,7 @@ export default async function PlanoDeAulaPage({ params }: { params: Promise<{ id
 
   const { data: plan } = await supabase
     .from("lesson_plans")
-    .select("id, theme, objectives, content, suggested_activities, suggested_assessments, created_at")
+    .select("id, theme, objectives, content, suggested_activities, suggested_assessments, ai_provider, created_at")
     .eq("id", id)
     .single();
   if (!plan) notFound();
@@ -35,6 +36,11 @@ export default async function PlanoDeAulaPage({ params }: { params: Promise<{ id
             ← Biblioteca
           </Link>
           <h1 className="page-title">{plan.theme}</h1>
+          {plan.ai_provider && (
+            <div className="exam-meta">
+              <AiBadge />
+            </div>
+          )}
         </div>
         <RenameDeleteMenu currentTitle={plan.theme} onRename={renameAction} onDelete={deleteAction} redirectAfterDelete="/professor/biblioteca" />
       </div>

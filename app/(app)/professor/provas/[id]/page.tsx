@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { ExamHeaderMenu } from "./ExamHeaderMenu";
 import { ExamQuestionsEditor, type QuestionData } from "./ExamQuestionsEditor";
 import { ExamExportActions } from "./ExamExportActions";
+import { AiBadge } from "@/components/AiBadge";
 
 export const dynamic = "force-dynamic";
 
@@ -55,6 +56,7 @@ export default async function ExamPage({ params }: { params: Promise<{ id: strin
             {exam.version > 1 && <span className="chip">Versão {exam.version}</span>}
             {exam.include_answer_key && <span className="chip">Com gabarito</span>}
             <span className="chip">{questions.length} questões</span>
+            {exam.ai_provider && <AiBadge />}
           </div>
         </div>
         <div className="page-head-actions">

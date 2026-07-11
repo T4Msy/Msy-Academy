@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { RenameDeleteMenu } from "@/components/shell/RenameDeleteMenu";
+import { AiBadge } from "@/components/AiBadge";
 import { renameActivity, deleteActivity } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -35,6 +36,7 @@ export default async function AtividadePage({ params }: { params: Promise<{ id: 
           <h1 className="page-title">{activity.title}</h1>
           <div className="exam-meta">
             <span className="chip">{items?.length ?? 0} questões</span>
+            {activity.ai_provider && <AiBadge />}
           </div>
         </div>
         <RenameDeleteMenu currentTitle={activity.title} onRename={renameAction} onDelete={deleteAction} redirectAfterDelete="/professor/biblioteca" />
