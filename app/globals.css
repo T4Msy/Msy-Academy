@@ -211,7 +211,10 @@ a { color: inherit; text-decoration: none; }
 .inline-gap-md { display: flex; align-items: center; gap: 16px; }
 .mr-xs { margin-right: 6px; }
 .mb-sm { margin-bottom: 8px; }
+.mb-md { margin-bottom: 16px; }
 .mr-sm { margin-right: 8px; }
+.list-row { display: flex; justify-content: space-between; align-items: center; }
+.back-link { padding: 0 0 8px; display: inline-block; }
 .mt-0 { margin-top: 0; }
 .text-center { text-align: center; }
 
@@ -1200,6 +1203,7 @@ select.input option { background-color: var(--bg-card); color: var(--fg); }
   white-space: nowrap;
 }
 .chip--danger { border-color: var(--danger-border); background: var(--danger-dim); color: var(--danger-text); }
+.chip--code { font-size: 15px; font-family: var(--font-display); font-weight: 700; }
 
 /* ── Notices (status / error) ───────────────────────────────── */
 .notice {

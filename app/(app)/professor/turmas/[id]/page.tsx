@@ -54,33 +54,31 @@ export default async function TurmaPage({ params }: { params: Promise<{ id: stri
     <>
       <div className="page-head">
         <div>
-          <Link href="/professor/turmas" className="sidebar-link" style={{ padding: "0 0 8px", display: "inline-block" }}>
+          <Link href="/professor/turmas" className="sidebar-link back-link">
             ← Turmas
           </Link>
           <h1 className="page-title">{klass.name}</h1>
         </div>
       </div>
 
-      <section className="card" style={{ marginBottom: 16 }}>
+      <section className="card mb-md">
         <div className="card-header">
           <div className="card-title-group">
             <h2 className="card-title">Convidar alunos</h2>
           </div>
         </div>
         <div className="card-body">
-          <p className="field-hint" style={{ marginTop: 0 }}>
+          <p className="field-hint mt-0">
             Compartilhe o código com a turma — cada aluno entra em <b>Entrar em turma</b> ou acessando o link direto.
           </p>
           <div className="exam-meta">
-            <span className="chip" style={{ fontSize: 15, fontFamily: "var(--font-display)", fontWeight: 700 }}>
-              {klass.invite_code}
-            </span>
+            <span className="chip chip--code">{klass.invite_code}</span>
           </div>
           {origin && <p className="field-hint">{inviteUrl}</p>}
         </div>
       </section>
 
-      <section className="card" style={{ marginBottom: 16 }}>
+      <section className="card mb-md">
         <div className="card-header">
           <div className="card-title-group">
             <h2 className="card-title">Alunos</h2>
@@ -89,7 +87,7 @@ export default async function TurmaPage({ params }: { params: Promise<{ id: stri
         </div>
         <div className="card-body">
           {students.length === 0 ? (
-            <p className="field-hint" style={{ marginTop: 0 }}>Nenhum aluno entrou ainda.</p>
+            <p className="field-hint mt-0">Nenhum aluno entrou ainda.</p>
           ) : (
             <ul className="question-options-list">
               {students.map((s) => (
@@ -116,15 +114,15 @@ export default async function TurmaPage({ params }: { params: Promise<{ id: stri
         </div>
         <div className="card-body">
           {(assignments ?? []).length === 0 ? (
-            <p className="field-hint" style={{ marginTop: 0 }}>Nenhuma prova ou atividade atribuída ainda.</p>
+            <p className="field-hint mt-0">Nenhuma prova ou atividade atribuída ainda.</p>
           ) : (
             <ul className="question-options-list">
               {(assignments ?? []).map((a) => {
                 const title = a.content_type === "EXAM" ? examTitleById.get(a.content_id) : activityTitleById.get(a.content_id);
                 return (
-                  <li key={a.id} className="question-option" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <li key={a.id} className="question-option list-row">
                     <span>
-                      <span className="chip" style={{ marginRight: 8 }}>{a.content_type === "EXAM" ? "Prova" : "Atividade"}</span>
+                      <span className="chip mr-sm">{a.content_type === "EXAM" ? "Prova" : "Atividade"}</span>
                       {title ?? "(conteúdo removido)"} — {formatDueDate(a.due_at)}
                     </span>
                     <UnassignButton classId={id} assignmentId={a.id} />
