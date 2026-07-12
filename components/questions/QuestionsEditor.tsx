@@ -281,7 +281,7 @@ function AddQuestionPanel({ onAdd }: { onAdd: (input: NewQuestionInput) => Promi
 
   if (!open) {
     return (
-      <button type="button" className="btn btn-secondary" onClick={() => setOpen(true)}>
+      <button type="button" className="btn btn-ghost" onClick={() => setOpen(true)}>
         + Adicionar questão
       </button>
     );

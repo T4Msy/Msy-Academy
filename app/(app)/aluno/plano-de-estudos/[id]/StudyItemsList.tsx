@@ -114,7 +114,7 @@ function AddItemPanel({ planId }: { planId: string }) {
 
   if (!open) {
     return (
-      <button type="button" className="btn btn-secondary" onClick={() => setOpen(true)}>
+      <button type="button" className="btn btn-ghost" onClick={() => setOpen(true)}>
         + Adicionar item
       </button>
     );
