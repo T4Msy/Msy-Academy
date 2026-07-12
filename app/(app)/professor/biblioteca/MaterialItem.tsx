@@ -56,21 +56,21 @@ export function MaterialItem({
   const href = kind !== "FILE" && refId ? KIND_HREF[kind]?.(refId) : null;
 
   return (
-    <div className="card" style={{ display: "flex" }}>
-      <div className="card-body" style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+    <div className="card card--flex">
+      <div className="card-body card-body--row-between">
         {href ? (
-          <Link href={href} style={{ flex: 1, minWidth: 0 }}>
-            <span className="chip" style={{ marginRight: 8 }}>{KIND_LABEL[kind] ?? kind}</span>
-            <span className="exam-card-title" style={{ display: "inline" }}>{title}</span>
+          <Link href={href} className="flex-fill">
+            <span className="chip mr-sm">{KIND_LABEL[kind] ?? kind}</span>
+            <span className="exam-card-title exam-card-title--inline">{title}</span>
           </Link>
         ) : (
-          <button type="button" onClick={onOpenFile} style={{ flex: 1, minWidth: 0, textAlign: "left", background: "none", border: "none", cursor: "pointer" }}>
-            <span className="chip" style={{ marginRight: 8 }}>{KIND_LABEL[kind] ?? kind}</span>
-            <span className="exam-card-title" style={{ display: "inline" }}>{title}</span>
+          <button type="button" onClick={onOpenFile} className="btn-reset-fill">
+            <span className="chip mr-sm">{KIND_LABEL[kind] ?? kind}</span>
+            <span className="exam-card-title exam-card-title--inline">{title}</span>
           </button>
         )}
 
-        <div style={{ display: "flex", gap: 8, alignItems: "center", flexShrink: 0 }}>
+        <div className="item-actions">
           <InlineDeleteConfirm
             confirming={confirming}
             pending={pending}
