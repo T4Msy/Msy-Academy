@@ -38,6 +38,46 @@ export async function updateProfile(_prevState: UpdateProfileState | null, formD
   return { ok: true };
 }
 
+export interface ChangePasswordState {
+  error?: string;
+  ok?: boolean;
+}
+
+/**
+ * Troca de senha estando logado (sem passar pelo fluxo de recuperação por
+ * e-mail). Reautentica com a senha atual via signInWithPassword antes de
+ * chamar updateUser — sem isso, qualquer sessão logada poderia trocar a
+ * senha sem confirmar a atual, o que é pior segurança que o fluxo de
+ * recuperação que este formulário substitui. Retorna estado em vez de
+ * lançar, mesmo motivo de updateProfile ([[nextjs-server-action-error-redaction]]).
+ */
+export async function changePassword(_prevState: ChangePasswordState | null, formData: FormData): Promise<ChangePasswordState> {
+  const currentPassword = String(formData.get("current_password") ?? "");
+  const newPassword = String(formData.get("new_password") ?? "");
+  const confirmPassword = String(formData.get("confirm_password") ?? "");
+
+  if (!currentPassword || !newPassword) return { error: "Preencha a senha atual e a nova senha." };
+  if (newPassword.length < 8) return { error: "A nova senha precisa ter pelo menos 8 caracteres." };
+  if (newPassword !== confirmPassword) return { error: "A confirmação não bate com a nova senha." };
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user?.email) redirect("/login");
+
+  const { error: signInError } = await supabase.auth.signInWithPassword({
+    email: user.email,
+    password: currentPassword,
+  });
+  if (signInError) return { error: "Senha atual incorreta." };
+
+  const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
+  if (updateError) return { error: `Não foi possível trocar a senha: ${updateError.message}` };
+
+  return { ok: true };
+}
+
 /**
  * Self-service account deletion (LGPD — direito de exclusão). Deletes the
  * auth user, which cascades (on delete cascade) through most tables that

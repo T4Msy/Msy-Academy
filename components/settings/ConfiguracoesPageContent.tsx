@@ -1,5 +1,6 @@
 import { getSession } from "@/lib/auth/session";
 import { ProfileSettingsForm } from "@/components/settings/ProfileSettingsForm";
+import { ChangePasswordForm } from "@/components/settings/ChangePasswordForm";
 import { AiUsageCard } from "@/components/settings/AiUsageCard";
 import { PlanCard } from "@/components/settings/PlanCard";
 import { DataAndDangerZone } from "@/components/settings/DataAndDangerZone";
@@ -34,13 +35,11 @@ export async function ConfiguracoesPageContent({
           </div>
         </div>
         <div className="card-body">
-          <p className="field-hint" style={{ marginTop: 0 }}>
-            Para trocar sua senha, saia e use a opção &quot;Esqueci minha
-            senha&quot; na tela de login.
+          <ChangePasswordForm />
+          <p className="field-hint">
+            Esqueceu a senha atual? Saia e use{" "}
+            <a href="/recuperar-senha">&quot;Esqueci minha senha&quot;</a> na tela de login.
           </p>
-          <a href="/recuperar-senha" className="btn btn-ghost btn-sm">
-            Redefinir senha
-          </a>
         </div>
       </section>
       <PlanCard returnPath={returnPath} />
