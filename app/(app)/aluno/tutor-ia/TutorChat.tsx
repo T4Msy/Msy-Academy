@@ -75,7 +75,7 @@ export function TutorChat({
     <div className="tutor-chat">
       <div className="tutor-messages" role="log" aria-live="polite" aria-label="Conversa com o tutor">
         {messages.length === 0 && (
-          <p className="field-hint" style={{ marginTop: 0 }}>
+          <p className="field-hint mt-0">
             Pergunte algo sobre o material das suas turmas. As respostas são geradas por IA e podem
             conter erros — confirme informações importantes com seu professor.
           </p>

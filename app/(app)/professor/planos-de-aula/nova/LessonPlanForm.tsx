@@ -57,7 +57,7 @@ export function LessonPlanForm() {
 
           {erro && <div className="notice notice--error">{erro}</div>}
 
-          <div className="submit-row" style={{ marginTop: 8 }}>
+          <div className="submit-row">
             <button type="submit" className="btn btn-primary btn-generate" disabled={loading || !tema.trim()}>
               {loading ? <AiThinking label="Gerando" /> : "Gerar Plano de Aula"}
             </button>

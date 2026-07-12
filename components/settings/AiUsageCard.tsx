@@ -29,7 +29,7 @@ export async function AiUsageCard() {
         </div>
       </div>
       <div className="card-body">
-        <p className="field-hint" style={{ marginTop: 0 }}>
+        <p className="field-hint mt-0">
           {requestsCount} chamada{requestsCount !== 1 ? "s" : ""} de IA · {tokensUsed.toLocaleString("pt-BR")} de{" "}
           {monthlyLimit.toLocaleString("pt-BR")} tokens ({plan?.name ?? "Gratuito"})
         </p>

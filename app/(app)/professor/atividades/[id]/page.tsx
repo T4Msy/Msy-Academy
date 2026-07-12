@@ -50,7 +50,7 @@ export default async function AtividadePage({ params }: { params: Promise<{ id: 
     <>
       <div className="page-head">
         <div>
-          <Link href="/professor/biblioteca" className="sidebar-link" style={{ padding: "0 0 8px", display: "inline-block" }}>
+          <Link href="/professor/biblioteca" className="sidebar-link back-link">
             ← Biblioteca
           </Link>
           <h1 className="page-title">{activity.title}</h1>

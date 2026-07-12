@@ -50,7 +50,7 @@ export default async function TutorIaPage({
       <div className="tutor-layout">
         <aside className="tutor-sidebar">
           {(conversations ?? []).length === 0 ? (
-            <p className="field-hint" style={{ marginTop: 0 }}>Nenhuma conversa ainda.</p>
+            <p className="field-hint mt-0">Nenhuma conversa ainda.</p>
           ) : (
             (conversations ?? []).map((c) => (
               <Link

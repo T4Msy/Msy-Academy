@@ -30,7 +30,7 @@ export default async function DeckPage({ params }: { params: Promise<{ deckId: s
     <>
       <div className="page-head">
         <div>
-          <Link href="/aluno/flashcards" className="sidebar-link" style={{ padding: "0 0 8px", display: "inline-block" }}>
+          <Link href="/aluno/flashcards" className="sidebar-link back-link">
             ← Flashcards
           </Link>
           <h1 className="page-title">{deck.title}</h1>

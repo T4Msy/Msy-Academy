@@ -11,7 +11,7 @@ export function DataAndDangerZone({ returnPath, deleteError }: { returnPath: str
           </div>
         </div>
         <div className="card-body">
-          <p className="field-hint" style={{ marginTop: 0 }}>
+          <p className="field-hint mt-0">
             Baixe uma cópia de tudo que você criou e de todo o seu histórico na plataforma.
           </p>
           <a href="/api/settings/export" className="btn btn-ghost btn-sm">

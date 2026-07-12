@@ -42,7 +42,7 @@ export function StudyPlanWizard() {
           <input className="input" id="examDate" type="date" value={examDate} onChange={(e) => setExamDate(e.target.value)} />
         </div>
         {error && <div className="notice notice--error">{error}</div>}
-        <div className="submit-row" style={{ marginTop: 8 }}>
+        <div className="submit-row">
           <button type="submit" className="btn btn-primary btn-generate" disabled={pending || !goal.trim()}>
             {pending ? <AiThinking label="Gerando" /> : "Gerar cronograma"}
           </button>

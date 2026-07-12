@@ -60,7 +60,7 @@ export function LessonPlanEditor({
       {state.error && <div className="notice notice--error">{state.error}</div>}
       {state.ok && !state.error && <div className="notice">Plano de aula salvo.</div>}
 
-      <div className="submit-row" style={{ marginTop: 8 }}>
+      <div className="submit-row">
         <button type="submit" className="btn btn-primary" disabled={pending}>
           {pending ? "Salvando…" : "Salvar alterações"}
         </button>

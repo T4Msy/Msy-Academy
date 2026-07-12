@@ -30,7 +30,7 @@ export default async function StudyPlanDetailPage({ params }: { params: Promise<
     <>
       <div className="page-head">
         <div>
-          <Link href="/aluno/plano-de-estudos" className="sidebar-link" style={{ padding: "0 0 8px", display: "inline-block" }}>
+          <Link href="/aluno/plano-de-estudos" className="sidebar-link back-link">
             ← Plano de Estudos
           </Link>
           <h1 className="page-title">{plan.goal}</h1>

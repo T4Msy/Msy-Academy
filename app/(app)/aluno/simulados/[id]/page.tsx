@@ -70,7 +70,7 @@ export default async function SimuladoPage({ params }: { params: Promise<{ id: s
     <>
       <div className="page-head">
         <div>
-          <Link href="/aluno/simulados" className="sidebar-link" style={{ padding: "0 0 8px", display: "inline-block" }}>
+          <Link href="/aluno/simulados" className="sidebar-link back-link">
             ← Simulados
           </Link>
           <h1 className="page-title">{simulado.title}</h1>

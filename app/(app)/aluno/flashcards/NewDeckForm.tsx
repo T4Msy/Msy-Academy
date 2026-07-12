@@ -37,7 +37,7 @@ export function NewDeckForm() {
           </div>
           <p className="field-hint">Você adiciona os cartões manualmente na tela seguinte.</p>
           {error && <div className="notice notice--error">{error}</div>}
-          <div className="submit-row" style={{ marginTop: 8 }}>
+          <div className="submit-row">
             <button type="submit" className="btn btn-primary" disabled={pending}>
               {pending ? "Criando…" : "Criar deck"}
             </button>

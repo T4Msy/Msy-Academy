@@ -54,7 +54,7 @@ export default async function TarefaPage({ params }: { params: Promise<{ id: str
     <>
       <div className="page-head">
         <div>
-          <Link href="/aluno/tarefas" className="sidebar-link" style={{ padding: "0 0 8px", display: "inline-block" }}>
+          <Link href="/aluno/tarefas" className="sidebar-link back-link">
             ← Tarefas
           </Link>
           <h1 className="page-title">{title ?? "Tarefa"}</h1>

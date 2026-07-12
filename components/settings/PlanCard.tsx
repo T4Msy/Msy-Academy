@@ -40,7 +40,7 @@ export async function PlanCard({ returnPath }: { returnPath: string }) {
         </div>
       </div>
       <div className="card-body">
-        <p className="field-hint" style={{ marginTop: 0 }}>
+        <p className="field-hint mt-0">
           {subscription?.plan.name ?? "Gratuito"} · {formatPrice(subscription?.plan.price_cents ?? 0)}
           {subscription && subscription.status !== "ACTIVE" && ` · ${STATUS_LABEL[subscription.status] ?? subscription.status}`}
         </p>

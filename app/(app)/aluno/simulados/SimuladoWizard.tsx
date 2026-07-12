@@ -66,7 +66,7 @@ export function SimuladoWizard({ subjects }: { subjects: { id: string; name: str
           <label className="field-label" htmlFor="quantidade">Quantidade de questões</label>
           <input className="input" id="quantidade" type="number" min={1} value={quantidade} onChange={(e) => setQuantidade(e.target.value)} />
         </div>
-        <p className="field-hint" style={{ marginTop: 0 }}>
+        <p className="field-hint mt-0">
           As questões vêm das provas e atividades já atribuídas a você.
         </p>
         {error && <div className="notice notice--error">{error}</div>}

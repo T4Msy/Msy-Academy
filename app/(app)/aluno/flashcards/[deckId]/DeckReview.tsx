@@ -65,7 +65,7 @@ export function DeckReview({ deckId, dueCards }: { deckId: string; dueCards: Rev
           </button>
         </div>
       ) : (
-        <div className="submit-row" style={{ flexWrap: "wrap" }}>
+        <div className="submit-row">
           {QUALITY_BUTTONS.map((b) => (
             <button
               key={b.label}

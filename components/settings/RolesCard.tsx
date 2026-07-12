@@ -17,7 +17,7 @@ export async function RolesCard() {
         </div>
       </div>
       <div className="card-body">
-        <p className="field-hint" style={{ marginTop: 0 }}>
+        <p className="field-hint mt-0">
           Você tem acesso ao ambiente de{" "}
           {(["PROFESSOR", "ALUNO"] as const)
             .filter((r) => roleSet.has(r))

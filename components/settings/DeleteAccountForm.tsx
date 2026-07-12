@@ -18,7 +18,7 @@ export function DeleteAccountForm({ returnPath, error }: { returnPath: string; e
 
   return (
     <form className="form-stack" action={deleteMyAccount.bind(null, returnPath)}>
-      <p className="field-hint" style={{ marginTop: 0 }}>
+      <p className="field-hint mt-0">
         Isso exclui permanentemente sua conta e todo o conteúdo associado a ela (provas, turmas,
         atividades, submissões, planos de estudo, flashcards e conversas com o tutor). Não é
         possível desfazer.

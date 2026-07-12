@@ -51,7 +51,7 @@ export function GenerateDeckForm({ materials }: { materials: { id: string; title
           </select>
         </div>
         {error && <div className="notice notice--error">{error}</div>}
-        <div className="submit-row" style={{ marginTop: 8 }}>
+        <div className="submit-row">
           <button type="submit" className="btn btn-primary btn-generate" disabled={pending || !materialId}>
             {pending ? <AiThinking label="Gerando" /> : "Gerar deck"}
           </button>

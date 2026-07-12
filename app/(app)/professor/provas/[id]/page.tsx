@@ -56,7 +56,7 @@ export default async function ExamPage({ params }: { params: Promise<{ id: strin
     <>
       <div className="page-head">
         <div>
-          <Link href="/professor/provas" className="sidebar-link" style={{ padding: "0 0 8px", display: "inline-block" }}>
+          <Link href="/professor/provas" className="sidebar-link back-link">
             ← Minhas Provas
           </Link>
           <h1 className="page-title">{exam.title || "Prova sem título"}</h1>

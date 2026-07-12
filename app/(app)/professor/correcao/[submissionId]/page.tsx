@@ -40,7 +40,7 @@ export default async function CorrecaoDetailPage({ params }: { params: Promise<{
     <>
       <div className="page-head">
         <div>
-          <Link href="/professor/correcao" className="sidebar-link" style={{ padding: "0 0 8px", display: "inline-block" }}>
+          <Link href="/professor/correcao" className="sidebar-link back-link">
             ← Correção
           </Link>
           <h1 className="page-title">{studentProfile?.full_name || "Aluno"}</h1>

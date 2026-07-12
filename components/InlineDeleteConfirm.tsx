@@ -28,7 +28,7 @@ export function InlineDeleteConfirm({
 
   return (
     <>
-      {hint && <span className="field-hint" style={{ marginTop: 0 }}>{hint}</span>}
+      {hint && <span className="field-hint mt-0">{hint}</span>}
       <button type="button" className="btn btn-ghost btn-sm" disabled={pending} onClick={onCancel}>
         Cancelar
       </button>
