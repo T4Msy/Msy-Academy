@@ -27,7 +27,7 @@ export default async function OnboardingPage({
 
   return (
     <div className="auth-wrap">
-      <div className="auth-card" style={{ maxWidth: 560 }}>
+      <div className="auth-card max-w-560">
         <div className="auth-brand">
           <Logo />
           <div>

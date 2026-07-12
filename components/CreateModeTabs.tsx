@@ -27,7 +27,7 @@ export function CreateModeTabs({
 
   return (
     <>
-      <div className="ia-grid" role="radiogroup" aria-label="Modo de criação" style={{ marginBottom: 16 }}>
+      <div className="ia-grid mb-md" role="radiogroup" aria-label="Modo de criação">
         <button
           type="button"
           className={`ia-tile${mode === "ai" ? " active" : ""}`}

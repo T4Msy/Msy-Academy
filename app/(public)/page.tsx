@@ -265,7 +265,7 @@ export default async function Home() {
                     <h3 className="pricing-name">{plan.name}</h3>
                     <div className="pricing-price">{formatPrice(plan.price_cents)}</div>
                     <p className="pricing-quota">{plan.ai_quota_monthly.toLocaleString("pt-BR")} tokens de IA/mês</p>
-                    <Link href="/cadastro" className="btn btn-ghost btn-block" style={{ marginTop: 16 }}>
+                    <Link href="/cadastro" className="btn btn-ghost btn-block mt-md">
                       Criar conta grátis
                     </Link>
                   </div>
@@ -309,7 +309,7 @@ export default async function Home() {
         <div className="landing-footer-inner">
           <div className="brand">
             <Logo size={26} />
-            <span className="brand-title" style={{ fontSize: 14 }}>
+            <span className="brand-title brand-title--sm">
               MSY Academy
             </span>
           </div>

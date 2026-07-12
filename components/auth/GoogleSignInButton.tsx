@@ -35,7 +35,7 @@ export function GoogleSignInButton({ redirectTo = "/", disabled = false }: { red
         <button type="button" className="btn btn-ghost btn-block" disabled title="Em breve">
           <GoogleIcon />
           Continuar com Google
-          <span className="chip" style={{ marginLeft: 8 }}>Em breve</span>
+          <span className="chip ml-sm">Em breve</span>
         </button>
         <p className="field-hint">Login com Google ainda não está disponível — use e-mail e senha por enquanto.</p>
       </div>
@@ -70,7 +70,7 @@ export function GoogleSignInButton({ redirectTo = "/", disabled = false }: { red
         <GoogleIcon />
         {pending ? "Redirecionando…" : "Continuar com Google"}
       </button>
-      {error && <p className="field-hint" style={{ color: "var(--danger-text)" }}>{error}</p>}
+      {error && <p className="field-hint field-hint--danger">{error}</p>}
     </div>
   );
 }

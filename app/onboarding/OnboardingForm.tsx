@@ -42,7 +42,7 @@ export function OnboardingForm({ redirectTo }: { redirectTo?: string }) {
   if (state.guardianConsentUrl) {
     return (
       <div className="notice stack-sm">
-        <p style={{ fontWeight: 600 }}>Falta um passo: consentimento do responsável</p>
+        <p className="text-strong">Falta um passo: consentimento do responsável</p>
         <p className="field-hint">
           Como você indicou ter menos de 18 anos, um responsável legal precisa confirmar o uso da
           plataforma. Copie o link abaixo e envie para ele — a confirmação leva menos de um minuto,

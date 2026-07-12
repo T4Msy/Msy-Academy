@@ -17,7 +17,7 @@ export function SignupConsent({ redirectTo }: { redirectTo: string }) {
 
   return (
     <>
-      <label className="opt-check" htmlFor="consent" style={{ marginBottom: 14 }}>
+      <label className="opt-check mb-md" htmlFor="consent">
         <input
           type="checkbox"
           id="consent"

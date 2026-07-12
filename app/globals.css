@@ -217,8 +217,11 @@ a { color: inherit; text-decoration: none; }
 .max-w-380 { max-width: 380px; }
 .max-w-420 { max-width: 420px; }
 .max-w-480 { max-width: 480px; }
+.max-w-560 { max-width: 560px; }
+.text-strong { font-weight: 600; }
 .card-body--form { gap: 10px; }
 .mr-sm { margin-right: 8px; }
+.ml-sm { margin-left: 8px; }
 .list-row { display: flex; justify-content: space-between; align-items: center; }
 .back-link { padding: 0 0 8px; display: inline-block; }
 .mt-0 { margin-top: 0; }
@@ -282,6 +285,7 @@ a { color: inherit; text-decoration: none; }
   letter-spacing: -0.3px;
   color: var(--fg);
 }
+.brand-title--sm { font-size: 14px; }
 
 .brand-sub {
   font-size: 11px;
@@ -795,6 +799,7 @@ html[data-sidebar="collapsed"] .sidebar-group:focus-within .sidebar-group-items 
   background: rgba(var(--overlay-rgb),0.03);
   white-space: nowrap;
 }
+.step-badge--icon { display: inline-flex; align-items: center; gap: 5px; }
 
 .step-badge--accent {
   color: var(--accent-text);
@@ -1273,6 +1278,7 @@ select.input option { background-color: var(--bg-card); color: var(--fg); }
 .question-statement { font-size: 14.5px; color: var(--fg); line-height: 1.6; margin-bottom: 14px; }
 .question-statement--tight { margin-bottom: 8px; }
 .question-statement--flip { margin-bottom: 0; font-size: 16px; }
+.field-hint--danger { color: var(--danger-text); }
 
 .question-options-list { display: flex; flex-direction: column; gap: 8px; list-style: none; }
 .question-option {
