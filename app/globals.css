@@ -763,6 +763,7 @@ html[data-sidebar="collapsed"] .sidebar-group:focus-within .sidebar-group-items 
 .min-w-180 { min-width: 180px; }
 .min-w-200 { min-width: 200px; }
 .card--flex { display: flex; }
+.card--danger { border-color: var(--danger-border); }
 .card--fill { flex: 1; }
 .flex-fill { flex: 1; min-width: 0; }
 .item-actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }

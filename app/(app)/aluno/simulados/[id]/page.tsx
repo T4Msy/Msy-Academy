@@ -85,7 +85,7 @@ export default async function SimuladoPage({ params }: { params: Promise<{ id: s
       {isDone && (
         <>
           {breakdown.length > 0 && (
-            <section className="card" style={{ marginBottom: 16 }}>
+            <section className="card mb-md">
               <div className="card-header">
                 <div className="card-title-group">
                   <h2 className="card-title">Desempenho por tema</h2>

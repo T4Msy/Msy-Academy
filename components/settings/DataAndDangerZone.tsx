@@ -19,7 +19,7 @@ export function DataAndDangerZone({ returnPath, deleteError }: { returnPath: str
           </a>
         </div>
       </section>
-      <section className="card" style={{ borderColor: "var(--danger-border)" }}>
+      <section className="card card--danger">
         <div className="card-header">
           <div className="card-title-group">
             <h2 className="card-title">Zona de perigo</h2>
