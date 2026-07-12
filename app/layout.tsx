@@ -30,11 +30,11 @@ export const viewport: Viewport = {
 };
 
 /**
- * Applies the saved theme before paint so there's no flash of the wrong
- * theme on load — same reasoning as any dark/light toggle, hand-rolled
- * (15 lines) instead of a dependency. Reads localStorage directly (no
- * cookie) since theme has no server-rendering dependency here; falls back
- * to the OS preference, then dark (the current default).
+ * Applies the saved theme + sidebar collapsed state before paint so there's
+ * no flash of the wrong value on load — same reasoning for both (hand-rolled
+ * instead of a dependency, reads localStorage directly since neither has a
+ * server-rendering dependency here). Theme falls back to the OS preference,
+ * then dark; sidebar falls back to expanded.
  */
 const THEME_INIT_SCRIPT = `
 (function () {
@@ -44,6 +44,10 @@ const THEME_INIT_SCRIPT = `
       ? stored
       : (window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
     document.documentElement.setAttribute("data-theme", theme);
+  } catch (e) {}
+  try {
+    var sidebar = localStorage.getItem("sidebar-collapsed") === "true" ? "collapsed" : "expanded";
+    document.documentElement.setAttribute("data-sidebar", sidebar);
   } catch (e) {}
 })();
 `;

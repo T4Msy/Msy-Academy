@@ -4,21 +4,26 @@ import { UserMenu } from "./UserMenu";
 import { NotificationBell, type NotificationItem } from "./NotificationBell";
 import { GlobalSearch } from "./GlobalSearch";
 
-export function Topbar({
-  name,
-  email,
-  currentEnv,
-  hasOtherEnv,
-  settingsHref,
-  notifications,
-}: {
-  name: string;
-  email: string;
-  currentEnv: "PROFESSOR" | "ALUNO";
-  hasOtherEnv: boolean;
-  settingsHref: string;
-  notifications: NotificationItem[];
-}) {
+type TopbarProps =
+  | {
+      variant?: "full";
+      name: string;
+      email: string;
+      currentEnv: "PROFESSOR" | "ALUNO";
+      hasOtherEnv: boolean;
+      settingsHref: string;
+      notifications: NotificationItem[];
+    }
+  | {
+      variant: "minimal";
+      subtitle?: string;
+      rightSlot?: React.ReactNode;
+    };
+
+/** Full variant (professor/aluno): search + env switcher + notifications + account menu.
+ * Minimal variant (admin): just the brand + a caller-supplied right-side slot — those
+ * features are professor/aluno-shaped and don't apply to admin. */
+export function Topbar(props: TopbarProps) {
   return (
     <header className="topbar" role="banner">
       <div className="topbar-inner">
@@ -27,18 +32,23 @@ export function Topbar({
           <div>
             <div className="brand-title">MSY Academy</div>
             <div className="brand-sub">
-              {currentEnv === "PROFESSOR" ? "Ambiente do Professor" : "Ambiente do Aluno"}
+              {props.variant === "minimal" ? props.subtitle : props.currentEnv === "PROFESSOR" ? "Ambiente do Professor" : "Ambiente do Aluno"}
             </div>
           </div>
         </div>
 
-        <GlobalSearch environment={currentEnv} />
-
-        <div className="topbar-right">
-          {hasOtherEnv && <ContextSwitcher current={currentEnv} />}
-          <NotificationBell notifications={notifications} />
-          <UserMenu name={name} email={email} settingsHref={settingsHref} />
-        </div>
+        {props.variant === "minimal" ? (
+          <div className="topbar-right">{props.rightSlot}</div>
+        ) : (
+          <>
+            <GlobalSearch environment={props.currentEnv} />
+            <div className="topbar-right">
+              {props.hasOtherEnv && <ContextSwitcher current={props.currentEnv} />}
+              <NotificationBell notifications={props.notifications} />
+              <UserMenu name={props.name} email={props.email} settingsHref={props.settingsHref} />
+            </div>
+          </>
+        )}
       </div>
     </header>
   );
