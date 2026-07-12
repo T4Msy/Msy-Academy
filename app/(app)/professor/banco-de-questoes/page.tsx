@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { QuestionBankList } from "./QuestionBankList";
+import { NewQuestionPanel } from "./NewQuestionPanel";
 import { EmptyState } from "@/components/EmptyState";
 
 export const dynamic = "force-dynamic";
@@ -43,10 +44,12 @@ export default async function BancoDeQuestoesPage({
           <p className="page-subtitle">
             {list.length > 0
               ? `${list.length} questão${list.length > 1 ? "ões" : ""} reutilizável${list.length > 1 ? "eis" : ""}`
-              : "Toda questão gerada numa prova cai aqui automaticamente."}
+              : "Crie uma questão manualmente ou gere uma prova para começar a preencher o banco."}
           </p>
         </div>
       </div>
+
+      <NewQuestionPanel />
 
       <form className="card" method="get" style={{ marginBottom: 16 }}>
         <div className="card-body" style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "flex-end", gap: 12 }}>
@@ -80,7 +83,7 @@ export default async function BancoDeQuestoesPage({
         <EmptyState
           variant="questoes"
           title="Nenhuma questão encontrada"
-          text="Gere uma prova para começar a preencher seu banco de questões reutilizáveis."
+          text="Crie uma questão manualmente acima ou gere uma prova para preencher seu banco de questões reutilizáveis."
         />
       ) : (
         <QuestionBankList
