@@ -9,7 +9,6 @@ describe("buildExamParams", () => {
     expect(params.nivel).toBe("medio");
     expect(params.tipo).toBe("multipla");
     expect(params.estilo).toBe("escolar");
-    expect(params.ia).toBe("llama");
     expect(params.incluirgabarito).toBe(false);
     expect(params.usarapostila).toBe(false);
     expect(params.versoes).toBe(1);

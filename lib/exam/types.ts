@@ -5,13 +5,6 @@
  * (JSONB) in the database (see docs/04-banco-de-dados.md).
  */
 
-export type IaProvider =
-  | "perplexity"
-  | "llama"
-  | "deepseek"
-  | "chatgpt"
-  | "gemini";
-
 export type QuestionType = "multipla" | "vf" | "discursiva" | "mista";
 export type Difficulty = "facil" | "medio" | "dificil";
 export type ExamStyle =
@@ -36,7 +29,6 @@ export interface ExamGenerationParams {
   versoes: number;
   distniveis: string;
   usarapostila: boolean;
-  ia: IaProvider;
   observacoesprofessor: string;
 }
 

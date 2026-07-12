@@ -2,19 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { IaProvider } from "@/lib/exam/types";
 import { AiThinking } from "@/components/AiThinking";
 
-const IA_OPTIONS: { value: IaProvider; name: string; desc: string }[] = [
-  { value: "perplexity", name: "Perplexity Sonar", desc: "Ideal para provas contextualizadas e bem explicadas (estilo ENEM)." },
-  { value: "llama", name: "LLaMA", desc: "Indicado para provas gerais e rascunhos rápidos." },
-  { value: "deepseek", name: "DeepSeek", desc: "Recomendado para provas técnicas e exatas (código, matemática)." },
-  { value: "chatgpt", name: "ChatGPT", desc: "Equilibrado e versátil. Bom para clareza didática." },
-  { value: "gemini", name: "Gemini", desc: "Forte em síntese e organização de enunciados." },
-];
-
 const STEPS = [
-  { n: 1, label: "IA & Geral" },
+  { n: 1, label: "Geral" },
   { n: 2, label: "Conteúdo" },
   { n: 3, label: "Formato" },
   { n: 4, label: "Apoio" },
@@ -25,7 +16,6 @@ export function ExamForm() {
   const router = useRouter();
 
   // ── Form state ─────────────────────────────────────────────
-  const [ia, setIa] = useState<IaProvider>("llama");
   const [curso, setCurso] = useState("");
   const [tituloprova, setTituloprova] = useState("");
   const [materia, setMateria] = useState("");
@@ -83,7 +73,7 @@ export function ExamForm() {
     const params = {
       curso, tituloprova, materia, assunto, publico, estilo, observacoesprofessor,
       tipo, quantidade, pontos, nivel, distniveis,
-      usarapostila, ia, gabarito,
+      usarapostila, gabarito,
     };
 
     const body = new FormData();
@@ -126,33 +116,9 @@ export function ExamForm() {
               <div className="step-badge">Etapa 1</div>
               <h2 className="card-title">Configurações Gerais</h2>
             </div>
+            <p className="card-subtitle">O motor de IA é configurado pela plataforma.</p>
           </div>
           <div className="card-body">
-            <fieldset className="field-group">
-              <legend className="field-label">Inteligência Artificial</legend>
-              <div className="ia-grid" role="radiogroup" aria-label="Escolha a Inteligência Artificial">
-                {IA_OPTIONS.map((opt) => (
-                  <button
-                    type="button"
-                    key={opt.value}
-                    className={`ia-tile${ia === opt.value ? " active" : ""}`}
-                    role="radio"
-                    aria-checked={ia === opt.value}
-                    onClick={() => setIa(opt.value)}
-                  >
-                    <div className="ia-tile-header">
-                      <div className="radio-dot" aria-hidden="true" />
-                      <span className="ia-name">{opt.name}</span>
-                    </div>
-                    <p className="ia-desc">{opt.desc}</p>
-                  </button>
-                ))}
-              </div>
-              <p className="field-hint">
-                A seleção fica registrada com a prova; o roteamento entre provedores chega numa fase futura.
-              </p>
-            </fieldset>
-
             <div className="form-grid-2">
               <div className="form-field">
                 <label className="field-label" htmlFor="curso">Curso</label>

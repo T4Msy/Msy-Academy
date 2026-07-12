@@ -3,7 +3,6 @@ import type {
   Difficulty,
   QuestionType,
   ExamStyle,
-  IaProvider,
 } from "./types";
 
 type RawInput = Record<string, string | boolean | number | null | undefined>;
@@ -37,7 +36,6 @@ export function buildExamParams(raw: RawInput): ExamGenerationParams {
     versoes: 1,
     distniveis: str("distniveis"),
     usarapostila: bool("usarapostila"),
-    ia: (str("ia") || "llama") as IaProvider,
     observacoesprofessor: str("observacoesprofessor"),
   };
 }
