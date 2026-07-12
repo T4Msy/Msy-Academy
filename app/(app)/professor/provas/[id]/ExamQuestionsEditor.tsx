@@ -2,7 +2,8 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { updateQuestion, moveQuestion, regenerateQuestion } from "../actions";
+import { updateQuestion } from "@/lib/questions/actions";
+import { moveQuestion, regenerateQuestion } from "../actions";
 import { AiThinking } from "@/components/AiThinking";
 import { EmptyState } from "@/components/EmptyState";
 

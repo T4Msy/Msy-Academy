@@ -102,28 +102,6 @@ export async function duplicateExamVersion(examId: string): Promise<string> {
   return newExam.id;
 }
 
-/** Edit a question inline (statement/options/correctAnswer/explanation). */
-export async function updateQuestion(
-  questionId: string,
-  patch: {
-    statement?: string;
-    options?: { id: string; text: string }[] | null;
-    correctAnswer?: string | string[];
-    explanation?: string | null;
-  },
-): Promise<void> {
-  const { supabase } = await requireUser();
-
-  const update: Record<string, unknown> = {};
-  if (patch.statement !== undefined) update.statement = patch.statement;
-  if (patch.options !== undefined) update.options = patch.options;
-  if (patch.correctAnswer !== undefined) update.correct_answer = patch.correctAnswer;
-  if (patch.explanation !== undefined) update.explanation = patch.explanation;
-
-  const { error } = await supabase.from("questions").update(update).eq("id", questionId);
-  if (error) throw new Error(`Não foi possível salvar a questão: ${error.message}`);
-}
-
 /** Swap a question's position with its neighbor within the same exam. */
 export async function moveQuestion(
   examId: string,
