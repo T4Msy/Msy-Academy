@@ -3,7 +3,8 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { RenameDeleteMenu } from "@/components/shell/RenameDeleteMenu";
 import { AiBadge } from "@/components/AiBadge";
-import { renameLessonPlan, deleteLessonPlan } from "./actions";
+import { LessonPlanEditor } from "@/components/lesson-plans/LessonPlanEditor";
+import { renameLessonPlan, deleteLessonPlan, updateLessonPlan } from "../actions";
 
 export const dynamic = "force-dynamic";
 
@@ -20,13 +21,7 @@ export default async function PlanoDeAulaPage({ params }: { params: Promise<{ id
 
   const renameAction = renameLessonPlan.bind(null, id);
   const deleteAction = deleteLessonPlan.bind(null, id);
-
-  const sections = [
-    { title: "Objetivos", content: plan.objectives },
-    { title: "Conteúdo", content: plan.content },
-    { title: "Atividades sugeridas", content: plan.suggested_activities },
-    { title: "Avaliação sugerida", content: plan.suggested_assessments },
-  ];
+  const saveAction = updateLessonPlan.bind(null, id);
 
   return (
     <>
@@ -45,22 +40,15 @@ export default async function PlanoDeAulaPage({ params }: { params: Promise<{ id
         <RenameDeleteMenu currentTitle={plan.theme} onRename={renameAction} onDelete={deleteAction} redirectAfterDelete="/professor/biblioteca" />
       </div>
 
-      <div className="questions-stack">
-        {sections.map((s) => (
-          <section key={s.title} className="card">
-            <div className="card-header">
-              <div className="card-title-group">
-                <h2 className="card-title">{s.title}</h2>
-              </div>
-            </div>
-            <div className="card-body">
-              <p className="question-statement" style={{ marginBottom: 0, whiteSpace: "pre-wrap" }}>
-                {s.content || "—"}
-              </p>
-            </div>
-          </section>
-        ))}
-      </div>
+      <LessonPlanEditor
+        plan={{
+          objectives: plan.objectives,
+          content: plan.content,
+          suggested_activities: plan.suggested_activities,
+          suggested_assessments: plan.suggested_assessments,
+        }}
+        action={saveAction}
+      />
     </>
   );
 }
