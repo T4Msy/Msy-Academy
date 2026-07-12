@@ -49,9 +49,7 @@ export default async function AlunoDashboardPage() {
         <div className="card">
           <div className="card-body">
             <div className="card-title">Tarefas concluídas</div>
-            <p className="question-statement" style={{ fontSize: 28, fontFamily: "var(--font-display)", fontWeight: 800, marginTop: 8, marginBottom: 0 }}>
-              {completedCount}
-            </p>
+            <p className="stat-tile-value stat-tile-value--bold">{completedCount}</p>
           </div>
         </div>
         <div className="card">
@@ -62,7 +60,7 @@ export default async function AlunoDashboardPage() {
         <div className="card">
           <div className="card-body">
             <div className="card-title">Itens de estudo concluídos</div>
-            <p className="question-statement" style={{ fontSize: 28, fontFamily: "var(--font-display)", fontWeight: 800, marginTop: 8, marginBottom: 0 }}>
+            <p className="stat-tile-value stat-tile-value--bold">
               {doneItems}/{studyItems?.length ?? 0}
             </p>
           </div>
@@ -70,9 +68,7 @@ export default async function AlunoDashboardPage() {
         <div className="card">
           <div className="card-body">
             <div className="card-title">Decks de flashcards</div>
-            <p className="question-statement" style={{ fontSize: 28, fontFamily: "var(--font-display)", fontWeight: 800, marginTop: 8, marginBottom: 0 }}>
-              {decks?.length ?? 0}
-            </p>
+            <p className="stat-tile-value stat-tile-value--bold">{decks?.length ?? 0}</p>
           </div>
         </div>
       </div>

@@ -79,20 +79,18 @@ export default async function ProfessorDashboardPage() {
                   <h2 className="card-title">{klass.name}</h2>
                   <span className="chip">{students.length} alunos</span>
                   {students.some((s) => s.atRisk) && (
-                    <span className="chip" style={{ borderColor: "var(--danger-border)", background: "var(--danger-dim)", color: "var(--danger-text)" }}>
-                      {students.filter((s) => s.atRisk).length} em risco
-                    </span>
+                    <span className="chip chip--danger">{students.filter((s) => s.atRisk).length} em risco</span>
                   )}
                 </div>
               </div>
               <div className="card-body">
                 {students.length === 0 ? (
-                  <p className="field-hint" style={{ marginTop: 0 }}>Nenhum aluno matriculado.</p>
+                  <p className="field-hint mt-0">Nenhum aluno matriculado.</p>
                 ) : (
                   <ul className="question-options-list">
                     {students.map((s) => (
                       <li key={s.studentId} className={`question-option${s.atRisk ? "" : " question-option--correct"}`}>
-                        <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+                        <div className="row-between">
                           <span>
                             <b>{s.name}</b>
                             {s.overdueCount > 0 && ` · ${s.overdueCount} tarefa${s.overdueCount > 1 ? "s" : ""} atrasada${s.overdueCount > 1 ? "s" : ""}`}
@@ -104,12 +102,12 @@ export default async function ProfessorDashboardPage() {
                               </>
                             )}
                           </span>
-                          <span style={{ color: "var(--fg-muted)", fontVariantNumeric: "tabular-nums", flexShrink: 0 }}>
+                          <span className="tabular-nums-muted">
                             {s.accuracyPct !== null ? `${s.accuracyPct}%` : "sem dados"}
                           </span>
                         </div>
                         {s.accuracyPct !== null && (
-                          <div className="usage-bar" style={{ marginTop: 6 }}>
+                          <div className="usage-bar usage-bar--tight">
                             <div
                               className={`usage-bar-fill${s.atRisk ? " usage-bar-fill--warn" : ""}`}
                               style={{ width: `${Math.max(4, s.accuracyPct)}%` }}
