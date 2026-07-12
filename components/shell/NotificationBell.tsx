@@ -55,9 +55,9 @@ export function NotificationBell({ notifications }: { notifications: Notificatio
       {open && (
         <>
           <div className="popover-backdrop" onClick={() => setOpen(false)} />
-          <div className="popover-pop user-menu-pop" role="menu" style={{ minWidth: 280 }}>
+          <div className="popover-pop user-menu-pop user-menu-pop--wide" role="menu">
             {notifications.length === 0 ? (
-              <p className="field-hint" style={{ margin: 8 }}>Nenhuma notificação ainda.</p>
+              <p className="field-hint popover-hint">Nenhuma notificação ainda.</p>
             ) : (
               notifications.map((n) => (
                 <Link
@@ -68,11 +68,11 @@ export function NotificationBell({ notifications }: { notifications: Notificatio
                   onClick={() => onOpenNotification(n)}
                   style={{ opacity: pending ? 0.6 : 1 }}
                 >
-                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <div className="notification-item-head">
                     {!n.read_at && <span className="notification-dot" aria-hidden="true" />}
-                    <b style={{ fontSize: 13 }}>{n.title}</b>
+                    <span className="notification-item-title">{n.title}</span>
                   </div>
-                  {n.body && <span className="field-hint" style={{ margin: "2px 0 0" }}>{n.body}</span>}
+                  {n.body && <span className="field-hint">{n.body}</span>}
                 </Link>
               ))
             )}

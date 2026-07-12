@@ -209,6 +209,22 @@ a { color: inherit; text-decoration: none; }
 .stack-lg { display: flex; flex-direction: column; gap: 24px; }
 .inline-gap-sm { display: flex; align-items: center; gap: 8px; }
 .inline-gap-md { display: flex; align-items: center; gap: 16px; }
+.mr-xs { margin-right: 6px; }
+.mt-0 { margin-top: 0; }
+.text-center { text-align: center; }
+
+.status-icon {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--accent-dim);
+  border: 1px solid var(--accent-border);
+  color: var(--accent-text);
+}
+.status-icon--alert { background: var(--danger-dim); border-color: var(--danger-border); color: var(--danger-text); }
 
 /* ── Header ─────────────────────────────────────────────────── */
 .header {
@@ -707,6 +723,12 @@ html[data-sidebar="collapsed"] .sidebar-group:focus-within .sidebar-group-items 
   flex-direction: column;
   gap: 18px;
 }
+.card-body--tight { gap: 6px; }
+.card--narrow { max-width: 480px; margin-top: 16px; }
+
+/* Stat tile — label + big number, used across admin/dashboard summary grids. */
+.stat-tile-label { margin-top: 0; }
+.stat-tile-value { font-size: 28px; font-weight: 700; font-family: var(--font-display); }
 
 .step-badge {
   font-size: 11px;
@@ -1538,6 +1560,9 @@ select.input option { background-color: var(--bg-card); color: var(--fg); }
 .popover-item-form { display: contents; }
 .popover-item.active { color: var(--accent-text); background: var(--accent-dim); }
 .popover-item .sidebar-link-icon { display: inline-flex; margin-right: 8px; vertical-align: middle; }
+.popover-item--static { cursor: default; }
+.popover-item--static:hover { background: transparent; }
+.popover-hint { margin: 8px; }
 @media (prefers-reduced-motion: reduce) {
   .popover-pop, .tabbar-more-sheet { animation: none; }
 }
@@ -1605,6 +1630,9 @@ select.input option { background-color: var(--bg-card); color: var(--fg); }
 }
 .user-menu-trigger:hover { box-shadow: 0 0 0 3px var(--bg-hover); }
 .user-menu-pop { min-width: 220px; }
+.user-menu-pop--wide { min-width: 280px; }
+.notification-item-head { display: flex; align-items: center; gap: 6px; }
+.notification-item-title { font-size: 13px; font-weight: 700; }
 .user-menu-info { padding: 10px 10px 8px; border-bottom: 1px solid var(--border); margin-bottom: 4px; }
 .user-menu-name { font-size: 13.5px; font-weight: 700; color: var(--fg); }
 .user-menu-email {
@@ -1626,6 +1654,12 @@ select.input option { background-color: var(--bg-card); color: var(--fg); }
 }
 .usage-bar-fill { height: 100%; background: var(--accent); border-radius: 999px; transition: width var(--duration-moderate); }
 .usage-bar-fill--warn { background: var(--danger); }
+.usage-bar--flush { margin-top: 0; margin-bottom: 8px; }
+
+.activation-checklist { margin-bottom: 16px; }
+.activation-step { display: flex; align-items: center; gap: 10px; }
+.activation-step.is-done { opacity: 0.6; }
+.activation-step.is-done .activation-step-label { text-decoration: line-through; }
 
 /* ── Tutor IA (chat) ──────────────────────────────────────────── */
 .tutor-layout { display: flex; gap: 16px; align-items: flex-start; }

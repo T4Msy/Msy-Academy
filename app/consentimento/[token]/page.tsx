@@ -29,20 +29,7 @@ function StatusIcon({ variant }: { variant: "shield" | "check" | "alert" }) {
     ),
   };
   return (
-    <div
-      aria-hidden="true"
-      style={{
-        width: 56,
-        height: 56,
-        margin: "0 auto 16px",
-        borderRadius: "50%",
-        background: variant === "alert" ? "var(--danger-dim)" : "var(--accent-dim)",
-        border: `1px solid ${variant === "alert" ? "var(--danger-border)" : "var(--accent-border)"}`,
-        display: "grid",
-        placeItems: "center",
-        color: variant === "alert" ? "var(--danger-text)" : "var(--accent-text)",
-      }}
-    >
+    <div aria-hidden="true" className={`status-icon${variant === "alert" ? " status-icon--alert" : ""}`}>
       <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
         {paths[variant]}
       </svg>
@@ -67,14 +54,12 @@ export default async function ConsentimentoPage({ params }: { params: Promise<{ 
 
   return (
     <div className="auth-wrap">
-      <div className="auth-card" style={{ textAlign: consent && consent.status !== "PENDING" ? "center" : undefined }}>
+      <div className={`auth-card${consent && consent.status !== "PENDING" ? " text-center" : ""}`}>
         {!consent ? (
           <>
             <StatusIcon variant="alert" />
-            <div className="auth-title" style={{ textAlign: "center" }}>
-              Link inválido ou expirado
-            </div>
-            <p className="field-hint" style={{ textAlign: "center", marginTop: 8 }}>
+            <div className="auth-title text-center">Link inválido ou expirado</div>
+            <p className="field-hint text-center">
               Peça ao estudante para gerar um novo link de confirmação nas configurações da conta dele.
             </p>
           </>
@@ -82,7 +67,7 @@ export default async function ConsentimentoPage({ params }: { params: Promise<{ 
           <>
             <StatusIcon variant="check" />
             <div className="auth-title">Consentimento confirmado</div>
-            <p className="field-hint" style={{ marginTop: 8 }}>
+            <p className="field-hint">
               {consent.guardian_name ?? "Um responsável"} já confirmou este consentimento. Nada mais é
               necessário — o estudante pode continuar usando a plataforma normalmente.
             </p>
@@ -97,7 +82,7 @@ export default async function ConsentimentoPage({ params }: { params: Promise<{ 
               </div>
             </div>
 
-            <p className="field-hint" style={{ marginTop: 0 }}>
+            <p className="field-hint mt-0">
               <b>{studentName}</b> criou uma conta de aluno na MSY Academy e indicou ter menos de 18
               anos. Para continuar usando a plataforma, um responsável legal precisa confirmar que
               está ciente e de acordo — inclusive com o uso de inteligência artificial para tutoria,

@@ -64,21 +64,21 @@ export function GlobalSearch({ environment }: { environment: "PROFESSOR" | "ALUN
       {open && query.trim().length >= 2 && (
         <div className="popover-pop global-search-results">
           {!results ? (
-            <p className="field-hint" style={{ margin: 8 }}><AiThinking label="Buscando" /></p>
+            <p className="field-hint popover-hint"><AiThinking label="Buscando" /></p>
           ) : !hasResults ? (
-            <p className="field-hint" style={{ margin: 8 }}>Nada encontrado para &quot;{query}&quot;.</p>
+            <p className="field-hint popover-hint">Nada encontrado para &quot;{query}&quot;.</p>
           ) : (
             <>
               {results.materials.map((m) => {
                 const href = m.kind === "FILE" || !m.ref_id ? null : MATERIAL_HREF[m.kind]?.(environment, m.ref_id);
                 return href ? (
                   <Link key={m.id} href={href} className="popover-item">
-                    <span className="chip" style={{ marginRight: 6 }}>Material</span>
+                    <span className="chip mr-xs">Material</span>
                     {m.title}
                   </Link>
                 ) : (
-                  <span key={m.id} className="popover-item" style={{ cursor: "default" }}>
-                    <span className="chip" style={{ marginRight: 6 }}>Material</span>
+                  <span key={m.id} className="popover-item popover-item--static">
+                    <span className="chip mr-xs">Material</span>
                     {m.title}
                   </span>
                 );
@@ -86,12 +86,12 @@ export function GlobalSearch({ environment }: { environment: "PROFESSOR" | "ALUN
               {results.classes.map((c) =>
                 classesHref ? (
                   <Link key={c.id} href={`${classesHref}/${c.id}`} className="popover-item">
-                    <span className="chip" style={{ marginRight: 6 }}>Turma</span>
+                    <span className="chip mr-xs">Turma</span>
                     {c.name}
                   </Link>
                 ) : (
-                  <span key={c.id} className="popover-item" style={{ cursor: "default" }}>
-                    <span className="chip" style={{ marginRight: 6 }}>Turma</span>
+                  <span key={c.id} className="popover-item popover-item--static">
+                    <span className="chip mr-xs">Turma</span>
                     {c.name}
                   </span>
                 ),

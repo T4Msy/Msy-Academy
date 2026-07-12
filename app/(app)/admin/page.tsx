@@ -41,20 +41,20 @@ export default async function AdminHomePage() {
       <div className="quick-actions-grid">
         <div className="card">
           <div className="card-body">
-            <p className="field-hint" style={{ marginTop: 0 }}>Tenants</p>
-            <div style={{ fontSize: 28, fontWeight: 700 }}>{tenantCount ?? 0}</div>
+            <p className="field-hint stat-tile-label">Tenants</p>
+            <div className="stat-tile-value">{tenantCount ?? 0}</div>
           </div>
         </div>
         <div className="card">
           <div className="card-body">
-            <p className="field-hint" style={{ marginTop: 0 }}>Assinaturas ativas</p>
-            <div style={{ fontSize: 28, fontWeight: 700 }}>{activeSubs.length}</div>
+            <p className="field-hint stat-tile-label">Assinaturas ativas</p>
+            <div className="stat-tile-value">{activeSubs.length}</div>
           </div>
         </div>
         <div className="card">
           <div className="card-body">
-            <p className="field-hint" style={{ marginTop: 0 }}>MRR estimado</p>
-            <div style={{ fontSize: 28, fontWeight: 700 }}>
+            <p className="field-hint stat-tile-label">MRR estimado</p>
+            <div className="stat-tile-value">
               {(mrrCents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
             </div>
           </div>
@@ -62,7 +62,7 @@ export default async function AdminHomePage() {
       </div>
 
       {byPlan.size > 0 && (
-        <section className="card" style={{ maxWidth: 480, marginTop: 16 }}>
+        <section className="card card--narrow">
           <div className="card-header">
             <div className="card-title-group">
               <h2 className="card-title">Assinaturas por plano</h2>

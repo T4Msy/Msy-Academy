@@ -38,23 +38,22 @@ export async function ActivationChecklist() {
   const doneCount = steps.filter((s) => s.done).length;
 
   return (
-    <section className="card card--highlight" style={{ marginBottom: 16 }}>
+    <section className="card card--highlight activation-checklist">
       <div className="card-header">
         <div className="card-title-group">
           <h2 className="card-title">Primeiros passos</h2>
           <span className="chip">{doneCount}/{steps.length}</span>
         </div>
       </div>
-      <div className="card-body" style={{ gap: 6 }}>
-        <div className="usage-bar" style={{ marginTop: 0, marginBottom: 8 }}>
+      <div className="card-body card-body--tight">
+        <div className="usage-bar usage-bar--flush">
           <div className="usage-bar-fill" style={{ width: `${(doneCount / steps.length) * 100}%` }} />
         </div>
         {steps.map((s) => (
           <a
             key={s.label}
             href={s.href}
-            className="popover-item"
-            style={{ display: "flex", alignItems: "center", gap: 10, opacity: s.done ? 0.6 : 1 }}
+            className={`popover-item activation-step${s.done ? " is-done" : ""}`}
           >
             <span className={`activation-step-icon${s.done ? " activation-step-icon--done" : ""}`} aria-hidden="true">
               {s.done && (
@@ -63,7 +62,7 @@ export async function ActivationChecklist() {
                 </svg>
               )}
             </span>
-            <span style={{ textDecoration: s.done ? "line-through" : "none" }}>{s.label}</span>
+            <span className="activation-step-label">{s.label}</span>
             <span className="visually-hidden">{s.done ? " (concluído)" : " (pendente)"}</span>
           </a>
         ))}
