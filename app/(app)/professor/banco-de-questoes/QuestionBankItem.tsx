@@ -38,24 +38,24 @@ export function QuestionBankItem({
 
   return (
     <div className={`card question-bank-item${selected ? " question-bank-item--selected" : ""}`}>
-      <div className="card-body" style={{ flexDirection: "row", alignItems: "flex-start", gap: 12 }}>
+      <div className="card-body card-body--row">
         <input
           type="checkbox"
           checked={selected}
           onChange={() => onToggleSelect(id)}
           aria-label="Selecionar esta questão para reaproveitar"
-          style={{ accentColor: "var(--accent)", width: 18, height: 18, marginTop: 3, flexShrink: 0 }}
+          className="checkbox-lg"
         />
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div className="exam-meta" style={{ marginBottom: 8 }}>
+        <div className="flex-fill">
+          <div className="exam-meta mb-sm">
             <span className="chip">{TYPE_LABEL[type] ?? type}</span>
             <span className="chip">{DIFFICULTY_LABEL[difficulty] ?? difficulty}</span>
             {tags.map((t) => (
               <span key={t} className="chip">{t}</span>
             ))}
           </div>
-          <p className="question-statement" style={{ marginBottom: 8 }}>{statement}</p>
-          <div className="popover-row" style={{ justifyContent: "flex-start" }}>
+          <p className="question-statement question-statement--tight">{statement}</p>
+          <div className="popover-row popover-row--start">
             <InlineDeleteConfirm
               confirming={confirming}
               pending={pending}

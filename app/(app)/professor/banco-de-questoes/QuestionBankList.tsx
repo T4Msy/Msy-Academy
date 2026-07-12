@@ -48,7 +48,7 @@ export function QuestionBankList({ questions, exams }: { questions: Question[]; 
 
   return (
     <>
-      <div className="questions-stack" style={{ marginBottom: selected.size > 0 ? 88 : 0 }}>
+      <div className={`questions-stack${selected.size > 0 ? " questions-stack--with-toolbar" : ""}`}>
         {questions.map((q) => (
           <QuestionBankItem
             key={q.id}
@@ -64,23 +64,14 @@ export function QuestionBankList({ questions, exams }: { questions: Question[]; 
       </div>
 
       {selected.size > 0 && (
-        <div
-          className="card"
-          style={{
-            position: "sticky",
-            bottom: 16,
-            marginTop: 16,
-            boxShadow: "0 8px 26px rgba(0,0,0,0.28)",
-            zIndex: 10,
-          }}
-        >
-          <div className="card-body" style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 12 }}>
+        <div className="card selection-toolbar">
+          <div className="card-body card-body--row-wrap">
             <span className="chip step-badge--accent">
               {selected.size} {selected.size > 1 ? "questões selecionadas" : "questão selecionada"}
             </span>
             {exams.length > 0 ? (
               <>
-                <select className="input" style={{ maxWidth: 260 }} value={examId} onChange={(e) => setExamId(e.target.value)}>
+                <select className="input select-inline" value={examId} onChange={(e) => setExamId(e.target.value)}>
                   <option value="">Escolha a prova de destino…</option>
                   {exams.map((e) => (
                     <option key={e.id} value={e.id}>{e.title || "Prova sem título"}</option>
@@ -91,14 +82,14 @@ export function QuestionBankList({ questions, exams }: { questions: Question[]; 
                 </button>
               </>
             ) : (
-              <span className="field-hint" style={{ margin: 0 }}>
+              <span className="field-hint mt-0">
                 Crie uma prova primeiro para poder adicionar questões a ela.
               </span>
             )}
             <button type="button" className="btn btn-ghost btn-sm" onClick={() => setSelected(new Set())}>
               Limpar seleção
             </button>
-            {error && <div className="notice notice--error" style={{ margin: 0, flexBasis: "100%" }}>{error}</div>}
+            {error && <div className="notice notice--error notice--inline">{error}</div>}
           </div>
         </div>
       )}
