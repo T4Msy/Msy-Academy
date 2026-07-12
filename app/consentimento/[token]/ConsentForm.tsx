@@ -24,26 +24,13 @@ export function ConsentForm({ token }: { token: string }) {
 
   if (done) {
     return (
-      <div style={{ textAlign: "center", marginTop: 16 }}>
-        <div
-          aria-hidden="true"
-          style={{
-            width: 48,
-            height: 48,
-            margin: "0 auto 12px",
-            borderRadius: "50%",
-            background: "var(--accent-dim)",
-            border: "1px solid var(--accent-border)",
-            display: "grid",
-            placeItems: "center",
-            color: "var(--accent-text)",
-          }}
-        >
+      <div className="text-center mt-md">
+        <div aria-hidden="true" className="status-icon status-icon--sm">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
             <path d="M20 6 9 17l-5-5" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </div>
-        <p className="field-hint" style={{ margin: 0 }}>
+        <p className="field-hint mt-0">
           Consentimento confirmado. Obrigado — o estudante já pode continuar usando a plataforma.
         </p>
       </div>

@@ -25,8 +25,8 @@ export function JoinClassCard({ inviteCode }: { inviteCode: string }) {
   if (state.status === "pending") {
     return (
       <div className="auth-wrap">
-        <div className="auth-card" style={{ textAlign: "center" }}>
-          <span className="btn-loader" style={{ margin: "0 auto" }} />
+        <div className="auth-card text-center">
+          <span className="btn-loader" />
           <p className="field-hint">Entrando na turma…</p>
         </div>
       </div>
@@ -51,7 +51,7 @@ export function JoinClassCard({ inviteCode }: { inviteCode: string }) {
       <div className="auth-card">
         <div className="auth-title">Você entrou em {state.className}!</div>
         <p className="auth-subtitle">A turma já aparece no seu ambiente de aluno.</p>
-        <Link href="/aluno" className="btn btn-primary btn-block" style={{ marginTop: 16 }}>
+        <Link href="/aluno" className="btn btn-primary btn-block mt-md">
           Ir para o início
         </Link>
       </div>

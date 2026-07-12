@@ -59,21 +59,23 @@ export default async function AdminTenantsPage() {
         </div>
       </div>
 
-      {rows.map((t) => (
-        <div key={t.id} className="card" style={{ marginBottom: 12 }}>
-          <div className="card-body">
-            <div className="exam-meta" style={{ marginBottom: 8 }}>
-              <span className="chip">{TYPE_LABEL[t.type] ?? t.type}</span>
-              <span className="chip">{t.classCount} turma{t.classCount !== 1 ? "s" : ""}</span>
-              <span className="chip">{t.status}</span>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-              <b>{t.name}</b>
-              <PlanSelect tenantId={t.id} currentCode={t.planCode} plans={plans} onChangePlan={changeTenantPlan} />
+      <div className="stack-md">
+        {rows.map((t) => (
+          <div key={t.id} className="card">
+            <div className="card-body">
+              <div className="exam-meta mb-sm">
+                <span className="chip">{TYPE_LABEL[t.type] ?? t.type}</span>
+                <span className="chip">{t.classCount} turma{t.classCount !== 1 ? "s" : ""}</span>
+                <span className="chip">{t.status}</span>
+              </div>
+              <div className="row-between-wrap">
+                <b>{t.name}</b>
+                <PlanSelect tenantId={t.id} currentCode={t.planCode} plans={plans} onChangePlan={changeTenantPlan} />
+              </div>
             </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </>
   );
 }

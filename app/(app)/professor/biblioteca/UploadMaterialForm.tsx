@@ -58,8 +58,8 @@ export function UploadMaterialForm({ classes }: { classes: { id: string; name: s
   }
 
   return (
-    <form onSubmit={onSubmit} className="card" style={{ maxWidth: 420 }}>
-      <div className="card-body" style={{ gap: 10 }}>
+    <form onSubmit={onSubmit} className="card max-w-420">
+      <div className="card-body card-body--form">
         <div className="form-field">
           <label className="field-label" htmlFor="material-title">Título (opcional)</label>
           <input className="input" id="material-title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Padrão: nome do arquivo" />

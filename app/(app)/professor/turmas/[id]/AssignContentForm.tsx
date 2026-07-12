@@ -54,7 +54,7 @@ export function AssignContentForm({
   }
 
   return (
-    <form onSubmit={onSubmit} className="popover-form" style={{ maxWidth: 420 }}>
+    <form onSubmit={onSubmit} className="popover-form max-w-420">
       <div className="form-grid-2">
         <div className="form-field">
           <label className="field-label" htmlFor="content-type">Tipo</label>

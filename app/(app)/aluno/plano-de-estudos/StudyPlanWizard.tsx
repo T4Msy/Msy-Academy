@@ -31,7 +31,7 @@ export function StudyPlanWizard() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="card" style={{ maxWidth: 480 }}>
+    <form onSubmit={onSubmit} className="card max-w-480">
       <div className="card-body">
         <div className="form-field">
           <label className="field-label" htmlFor="goal">Objetivo</label>

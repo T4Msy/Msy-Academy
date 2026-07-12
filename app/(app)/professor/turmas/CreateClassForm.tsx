@@ -38,8 +38,8 @@ export function CreateClassForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="card" style={{ maxWidth: 380 }}>
-      <div className="card-body" style={{ gap: 10 }}>
+    <form onSubmit={onSubmit} className="card max-w-380">
+      <div className="card-body card-body--form">
         <div className="form-field">
           <label className="field-label" htmlFor="class-name">Nome da turma</label>
           <input

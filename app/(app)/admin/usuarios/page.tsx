@@ -58,34 +58,36 @@ export default async function AdminUsuariosPage() {
       {rows.length === 0 ? (
         <EmptyState variant="turma" title="Nenhum usuário ainda" />
       ) : (
-        rows.map((u) => (
-          <div key={u.id} className="card" style={{ marginBottom: 12 }}>
-            <div className="card-body">
-              <div className="exam-meta" style={{ marginBottom: 8 }}>
-                <span className="chip">{u.tenantName}</span>
-                {u.roles.map((r) => (
-                  <span key={r} className="chip">{r}</span>
-                ))}
-                {u.suspended && <span className="chip">Suspenso</span>}
-              </div>
-              <p style={{ margin: "0 0 4px" }}>
-                <b>{u.name}</b>
-              </p>
-              <p className="field-hint" style={{ marginTop: 0, marginBottom: 8 }}>{u.email}</p>
-              <div className="popover-row" style={{ justifyContent: "flex-start" }}>
-                <ActionButton
-                  action={toggleSuspend.bind(null, u.id, !u.suspended)}
-                  label={u.suspended ? "Reativar" : "Suspender"}
-                  variant={u.suspended ? "ghost" : "danger"}
-                />
-                <ActionButton
-                  action={toggleAdminRole.bind(null, u.id, !u.roles.includes("ADMIN"))}
-                  label={u.roles.includes("ADMIN") ? "Remover admin" : "Tornar admin"}
-                />
+        <div className="stack-md">
+          {rows.map((u) => (
+            <div key={u.id} className="card">
+              <div className="card-body">
+                <div className="exam-meta mb-sm">
+                  <span className="chip">{u.tenantName}</span>
+                  {u.roles.map((r) => (
+                    <span key={r} className="chip">{r}</span>
+                  ))}
+                  {u.suspended && <span className="chip">Suspenso</span>}
+                </div>
+                <p className="mb-xs">
+                  <b>{u.name}</b>
+                </p>
+                <p className="field-hint mt-0 mb-sm">{u.email}</p>
+                <div className="popover-row popover-row--start">
+                  <ActionButton
+                    action={toggleSuspend.bind(null, u.id, !u.suspended)}
+                    label={u.suspended ? "Reativar" : "Suspender"}
+                    variant={u.suspended ? "ghost" : "danger"}
+                  />
+                  <ActionButton
+                    action={toggleAdminRole.bind(null, u.id, !u.roles.includes("ADMIN"))}
+                    label={u.roles.includes("ADMIN") ? "Remover admin" : "Tornar admin"}
+                  />
+                </div>
               </div>
             </div>
-          </div>
-        ))
+          ))}
+        </div>
       )}
     </>
   );

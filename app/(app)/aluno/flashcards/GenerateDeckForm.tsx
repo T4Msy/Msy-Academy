@@ -39,7 +39,7 @@ export function GenerateDeckForm({ materials }: { materials: { id: string; title
   }
 
   return (
-    <form onSubmit={onSubmit} className="card" style={{ maxWidth: 480 }}>
+    <form onSubmit={onSubmit} className="card max-w-480">
       <div className="card-body">
         <div className="form-field">
           <label className="field-label" htmlFor="material">Gerar a partir de</label>

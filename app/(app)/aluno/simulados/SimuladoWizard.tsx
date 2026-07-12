@@ -42,8 +42,8 @@ export function SimuladoWizard({ subjects }: { subjects: { id: string; name: str
   }
 
   return (
-    <form onSubmit={onSubmit} className="card" style={{ maxWidth: 420 }}>
-      <div className="card-body" style={{ gap: 10 }}>
+    <form onSubmit={onSubmit} className="card max-w-420">
+      <div className="card-body card-body--form">
         <div className="form-field">
           <label className="field-label" htmlFor="subject">Matéria (opcional)</label>
           <select className="input" id="subject" value={subjectId} onChange={(e) => setSubjectId(e.target.value)}>
