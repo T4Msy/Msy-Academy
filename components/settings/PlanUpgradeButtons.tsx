@@ -34,7 +34,7 @@ export function PlanUpgradeButtons({
 
   return (
     <div>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+      <div className="button-row">
         {upgradeOptions.map((p) => (
           <button key={p.code} type="button" className="btn btn-primary btn-sm" disabled={pending} onClick={() => upgrade(p.code)}>
             Fazer upgrade para {p.name}
@@ -46,7 +46,7 @@ export function PlanUpgradeButtons({
           </button>
         )}
       </div>
-      {error && <div className="notice notice--error" style={{ marginTop: 8 }}>{error}</div>}
+      {error && <div className="notice notice--error mt-sm">{error}</div>}
     </div>
   );
 }

@@ -27,20 +27,7 @@ export type EmptyIllustrationVariant = keyof typeof PATHS;
 /** Small, consistent illustration for empty states — reuses the app's existing line-icon language (not a separate art style) at a larger, softer scale. */
 export function EmptyIllustration({ variant = "generico" }: { variant?: EmptyIllustrationVariant }) {
   return (
-    <div
-      aria-hidden="true"
-      style={{
-        width: 56,
-        height: 56,
-        margin: "0 auto 16px",
-        borderRadius: "50%",
-        background: "var(--accent-dim)",
-        border: "1px solid var(--accent-border)",
-        display: "grid",
-        placeItems: "center",
-        color: "var(--accent-text)",
-      }}
-    >
+    <div aria-hidden="true" className="status-icon">
       <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
         {PATHS[variant] ?? PATHS.generico}
       </svg>

@@ -120,8 +120,8 @@ export function QuestionForm({
       </div>
 
       {type !== "DISCURSIVA" && (
-        <fieldset className="form-field" style={{ border: "none", padding: 0, margin: 0 }}>
-          <legend className="field-label" style={{ padding: 0, marginBottom: 6 }}>Alternativas (marque a correta)</legend>
+        <fieldset className="form-field fieldset-reset">
+          <legend className="field-label legend-reset">Alternativas (marque a correta)</legend>
           <div className="question-options-edit">
             {options.map((opt, i) => (
               <label key={opt.id} className="question-option-edit-row">

@@ -12,12 +12,12 @@ export function CategoricalBar({
   const max = Math.max(1, ...items.map((i) => i.value));
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+    <div className="cat-bar-list">
       {items.map((item, i) => (
         <div key={`${i}-${item.label}`}>
-          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 4 }}>
-            <span style={{ color: "var(--fg)" }}>{item.label}</span>
-            <span style={{ color: "var(--fg-muted)", fontVariantNumeric: "tabular-nums" }}>
+          <div className="cat-bar-row-head">
+            <span className="cat-bar-label">{item.label}</span>
+            <span className="tabular-nums-muted">
               {item.value}{item.suffix ?? ""}
             </span>
           </div>
