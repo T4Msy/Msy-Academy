@@ -14,22 +14,18 @@ import {
   IconTurma,
   IconCorrecao,
   IconDashboard,
+  IconConfiguracoes,
 } from "@/components/shell/navIcons";
 
 const NAV: SidebarSection[] = [
   { items: [{ href: "/professor", label: "Início", icon: <IconHome />, exact: true, mobilePrimary: true }] },
   {
-    title: "Provas",
+    title: "Gerar conteúdo",
     items: [
       { href: "/professor/provas", label: "Minhas Provas", icon: <IconProvas />, mobilePrimary: true },
       { href: "/professor/provas/nova", label: "Nova Prova", icon: <IconNovaProva /> },
-    ],
-  },
-  {
-    title: "Criar",
-    items: [
-      { href: "/professor/atividades/nova", label: "Atividade", icon: <IconAtividade /> },
-      { href: "/professor/planos-de-aula/nova", label: "Plano de aula", icon: <IconPlano /> },
+      { href: "/professor/atividades/nova", label: "Nova Atividade", icon: <IconAtividade /> },
+      { href: "/professor/planos-de-aula/nova", label: "Novo Plano de Aula", icon: <IconPlano /> },
     ],
   },
   {
@@ -44,8 +40,15 @@ const NAV: SidebarSection[] = [
     items: [
       { href: "/professor/turmas", label: "Turmas", icon: <IconTurma />, mobilePrimary: true },
       { href: "/professor/correcao", label: "Correção", icon: <IconCorrecao />, mobilePrimary: true },
-      { href: "/professor/dashboard", label: "Dashboard", icon: <IconDashboard /> },
     ],
+  },
+  {
+    title: "Análise",
+    items: [{ href: "/professor/dashboard", label: "Dashboard", icon: <IconDashboard /> }],
+  },
+  {
+    title: "Conta",
+    items: [{ href: "/professor/configuracoes", label: "Configurações", icon: <IconConfiguracoes /> }],
   },
 ];
 
