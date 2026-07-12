@@ -1325,6 +1325,8 @@ select.input option { background-color: var(--bg-card); color: var(--fg); }
 .skeleton-line--title { height: 16px; width: 55%; }
 .skeleton-pill { height: 22px; width: 64px; border-radius: 999px; }
 .skeleton-block { height: 72px; width: 100%; border-radius: var(--radius-sm); }
+.skeleton-head { width: 100%; max-width: 320px; }
+.skeleton-pills { display: flex; gap: 6px; }
 @keyframes skeleton-shimmer {
   0% { background-position: 100% 0; }
   100% { background-position: 0 0; }

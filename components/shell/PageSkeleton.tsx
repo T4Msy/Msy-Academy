@@ -4,8 +4,8 @@
 export function PageHeadSkeleton({ withAction }: { withAction?: boolean } = {}) {
   return (
     <div className="page-head">
-      <div style={{ width: "100%", maxWidth: 320 }}>
-        <div className="skeleton-shimmer skeleton-line--title" style={{ marginBottom: 10 }} />
+      <div className="skeleton-head stack-sm">
+        <div className="skeleton-shimmer skeleton-line--title" />
         <div className="skeleton-shimmer skeleton-line" style={{ width: "80%" }} />
       </div>
       {withAction && <div className="skeleton-shimmer skeleton-block" style={{ width: 140, height: 38 }} />}
@@ -19,7 +19,7 @@ export function GridSkeleton({ count = 6 }: { count?: number }) {
       {Array.from({ length: count }).map((_, i) => (
         <div key={i} className="exam-card">
           <div className="skeleton-shimmer skeleton-line--title" />
-          <div style={{ display: "flex", gap: 6 }}>
+          <div className="skeleton-pills">
             <div className="skeleton-shimmer skeleton-pill" />
             <div className="skeleton-shimmer skeleton-pill" />
           </div>

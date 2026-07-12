@@ -41,22 +41,17 @@ export function OnboardingForm({ redirectTo }: { redirectTo?: string }) {
 
   if (state.guardianConsentUrl) {
     return (
-      <div className="notice" style={{ marginTop: 8 }}>
-        <p style={{ margin: 0, fontWeight: 600 }}>Falta um passo: consentimento do responsável</p>
-        <p className="field-hint" style={{ marginTop: 8 }}>
+      <div className="notice stack-sm">
+        <p style={{ fontWeight: 600 }}>Falta um passo: consentimento do responsável</p>
+        <p className="field-hint">
           Como você indicou ter menos de 18 anos, um responsável legal precisa confirmar o uso da
           plataforma. Copie o link abaixo e envie para ele — a confirmação leva menos de um minuto,
           sem precisar criar conta.
         </p>
-        <div className="exam-meta" style={{ marginTop: 10 }}>
+        <div className="exam-meta">
           <input className="input" readOnly value={state.guardianConsentUrl} onFocus={(e) => e.target.select()} />
         </div>
-        <button
-          type="button"
-          className="btn btn-primary btn-generate"
-          style={{ marginTop: 16 }}
-          onClick={onContinue}
-        >
+        <button type="button" className="btn btn-primary btn-generate" onClick={onContinue}>
           Continuar
         </button>
       </div>
@@ -64,7 +59,7 @@ export function OnboardingForm({ redirectTo }: { redirectTo?: string }) {
   }
 
   return (
-    <form action={formAction}>
+    <form action={formAction} className="stack-md">
       <input type="hidden" name="redirectTo" value={redirectTo ?? ""} />
       {Array.from(selected).map((role) => (
         <input key={role} type="hidden" name="roles" value={role} />
@@ -87,14 +82,14 @@ export function OnboardingForm({ redirectTo }: { redirectTo?: string }) {
           </button>
         ))}
       </div>
-      <p className="field-hint" style={{ marginTop: 14 }}>
+      <p className="field-hint">
         Pode escolher os dois — você troca de ambiente quando quiser, sem precisar de outra conta.
         Se escolher só um agora, dá para ativar o outro depois em Configurações, e isso é sempre
         gratuito — não depende do seu plano.
       </p>
 
       {selected.has("ALUNO") && (
-        <div className="form-field" style={{ marginTop: 16 }}>
+        <div className="form-field">
           <label className="field-label" htmlFor="birth_date">
             Data de nascimento (opcional)
           </label>
@@ -113,12 +108,7 @@ export function OnboardingForm({ redirectTo }: { redirectTo?: string }) {
 
       {state.error && <div className="notice notice--error">{state.error}</div>}
 
-      <button
-        type="submit"
-        className="btn btn-primary btn-generate"
-        disabled={selected.size === 0 || pending}
-        style={{ marginTop: 20 }}
-      >
+      <button type="submit" className="btn btn-primary btn-generate" disabled={selected.size === 0 || pending}>
         {pending ? "Entrando…" : "Continuar"}
       </button>
     </form>
