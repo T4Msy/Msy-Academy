@@ -56,17 +56,16 @@ export default async function TutorIaPage({
               <Link
                 key={c.id}
                 href={`/aluno/tutor-ia?c=${c.id}`}
-                className={`sidebar-link${c.id === conversationId ? " active" : ""}`}
-                style={{ display: "block" }}
+                className={`sidebar-link sidebar-link--block${c.id === conversationId ? " active" : ""}`}
               >
                 <div>{c.title}</div>
-                <div className="field-hint" style={{ margin: 0 }}>{formatDate(c.updated_at)}</div>
+                <div className="field-hint mt-0">{formatDate(c.updated_at)}</div>
               </Link>
             ))
           )}
         </aside>
 
-        <div className="card" style={{ flex: 1 }}>
+        <div className="card card--fill">
           <div className="card-body">
             <TutorChat conversationId={conversationId ?? null} initialMessages={initialMessages} />
           </div>

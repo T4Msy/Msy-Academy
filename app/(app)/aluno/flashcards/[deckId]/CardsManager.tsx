@@ -55,10 +55,10 @@ function CardRow({ deckId, card }: { deckId: string; card: CardData }) {
   return (
     <section className="card">
       <div className="card-body">
-        <p className="question-statement" style={{ marginBottom: 8 }}><b>Frente:</b> {card.front}</p>
-        <p className="question-statement" style={{ marginBottom: 8 }}><b>Verso:</b> {card.back}</p>
+        <p className="question-statement question-statement--tight"><b>Frente:</b> {card.front}</p>
+        <p className="question-statement question-statement--tight"><b>Verso:</b> {card.back}</p>
         {error && <div className="notice notice--error">{error}</div>}
-        <div className="popover-row" style={{ justifyContent: "flex-start" }}>
+        <div className="popover-row popover-row--start">
           <button type="button" className="btn btn-ghost btn-sm" disabled={pending} onClick={() => setEditing(true)}>
             Editar
           </button>

@@ -23,7 +23,7 @@ export function DeckTabs({
 
   return (
     <>
-      <div className="popover-row" style={{ marginBottom: 16 }}>
+      <div className="popover-row mb-md">
         <button
           type="button"
           className={`btn btn-sm ${view === "review" ? "btn-primary" : "btn-ghost"}`}

@@ -39,7 +39,7 @@ export default async function FlashcardsPage() {
       />
 
       {list.length > 0 && (
-        <div className="exam-grid" style={{ marginTop: 16 }}>
+        <div className="exam-grid mt-md">
           {list.map((d) => (
             <Link key={d.id} href={`/aluno/flashcards/${d.id}`} className="exam-card">
               <div className="exam-card-title">{d.title}</div>

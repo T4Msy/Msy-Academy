@@ -30,15 +30,15 @@ export function ResultsView({
   return (
     <>
       {status === "GRADED" && grade && (
-        <section className="card card--highlight" style={{ marginBottom: 16 }}>
+        <section className="card card--highlight mb-md">
           <div className="card-body">
             <div className="card-title">Nota: {grade.total_score}</div>
-            {grade.feedback && <p className="field-hint" style={{ marginTop: 8 }}>{grade.feedback}</p>}
+            {grade.feedback && <p className="field-hint mt-sm">{grade.feedback}</p>}
           </div>
         </section>
       )}
       {status === "SUBMITTED" && (
-        <div className="notice" style={{ marginBottom: 16 }}>
+        <div className="notice mb-md">
           Enviado! Questões discursivas aguardam correção do professor.
         </div>
       )}

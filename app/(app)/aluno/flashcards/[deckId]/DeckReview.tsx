@@ -51,8 +51,8 @@ export function DeckReview({ deckId, dueCards }: { deckId: string; dueCards: Rev
         <span className="chip">{index + 1} de {dueCards.length}</span>
       </div>
       <section className="card question-card">
-        <div className="card-body" style={{ minHeight: 140, display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center" }}>
-          <p className="question-statement" style={{ marginBottom: 0, fontSize: 16 }}>
+        <div className="card-body card-body--center">
+          <p className="question-statement question-statement--flip">
             {flipped ? card.back : card.front}
           </p>
         </div>

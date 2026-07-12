@@ -76,8 +76,8 @@ function StudyItemRow({ planId, item }: { planId: string; item: StudyItem }) {
 
   return (
     <div className="card">
-      <div className="card-body" style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-        <label className="opt-check" style={{ flex: 1, minWidth: 200 }}>
+      <div className="card-body card-body--row-between-wrap">
+        <label className="opt-check opt-check--fill">
           <input type="checkbox" checked={item.status === "DONE"} disabled={pending} onChange={onToggle} />
           <span className="opt-box" aria-hidden="true">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
@@ -85,7 +85,7 @@ function StudyItemRow({ planId, item }: { planId: string; item: StudyItem }) {
             </svg>
           </span>
           <span className="opt-text">
-            <b style={{ textDecoration: item.status === "DONE" ? "line-through" : "none" }}>{item.topic}</b>
+            <b className={item.status === "DONE" ? "done-text" : undefined}>{item.topic}</b>
             <span>{formatDate(item.item_date)} · {TYPE_LABEL[item.item_type] ?? item.item_type}</span>
           </span>
         </label>
@@ -103,7 +103,7 @@ function StudyItemRow({ planId, item }: { planId: string; item: StudyItem }) {
           />
         </div>
       </div>
-      {error && <div className="notice notice--error" style={{ margin: "0 16px 16px" }}>{error}</div>}
+      {error && <div className="notice notice--error notice--card-error">{error}</div>}
     </div>
   );
 }

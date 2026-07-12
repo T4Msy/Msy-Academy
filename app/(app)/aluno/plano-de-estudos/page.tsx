@@ -46,7 +46,7 @@ export default async function PlanoDeEstudosPage() {
       />
 
       {list.length > 0 && (
-        <div className="exam-grid" style={{ marginTop: 16 }}>
+        <div className="exam-grid mt-md">
           {list.map((p) => (
             <Link key={p.id} href={`/aluno/plano-de-estudos/${p.id}`} className="exam-card">
               <div className="exam-card-title">{p.goal}</div>
