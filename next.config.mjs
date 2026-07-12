@@ -1,7 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  // The legacy vanilla prototype lives in /legacy and is not part of the build.
   eslint: { ignoreDuringBuilds: true },
   // pdf-parse pulls in pdfjs-dist, which assumes a browser/worker runtime
   // (DOMMatrix, Worker, etc.) and breaks when webpack tries to bundle it
