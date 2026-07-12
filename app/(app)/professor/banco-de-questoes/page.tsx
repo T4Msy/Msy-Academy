@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
-import { QuestionBankItem } from "./QuestionBankItem";
+import { QuestionBankList } from "./QuestionBankList";
 import { EmptyIllustration } from "@/components/EmptyIllustration";
 
 export const dynamic = "force-dynamic";
@@ -23,7 +23,16 @@ export default async function BancoDeQuestoesPage({
   if (dificuldade) query = query.eq("difficulty", dificuldade);
   if (busca) query = query.ilike("statement", `%${busca}%`);
 
-  const { data: questions } = await query;
+  const [{ data: questions }, { data: exams }] = await Promise.all([
+    query,
+    supabase
+      .from("exams")
+      .select("id, title")
+      .is("deleted_at", null)
+      .neq("status", "ARCHIVED")
+      .order("created_at", { ascending: false })
+      .limit(50),
+  ]);
   const list = questions ?? [];
 
   return (
@@ -76,18 +85,10 @@ export default async function BancoDeQuestoesPage({
           </p>
         </div>
       ) : (
-        <div className="questions-stack">
-          {list.map((q) => (
-            <QuestionBankItem
-              key={q.id}
-              id={q.id}
-              statement={q.statement}
-              type={q.type}
-              difficulty={q.difficulty}
-              tags={q.tags ?? []}
-            />
-          ))}
-        </div>
+        <QuestionBankList
+          questions={list.map((q) => ({ id: q.id, statement: q.statement, type: q.type, difficulty: q.difficulty, tags: q.tags ?? [] }))}
+          exams={exams ?? []}
+        />
       )}
     </>
   );
