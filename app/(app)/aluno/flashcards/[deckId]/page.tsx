@@ -1,8 +1,10 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { DeckReview, type ReviewCard } from "./DeckReview";
+import { RenameDeleteMenu } from "@/components/shell/RenameDeleteMenu";
+import { DeckTabs } from "./DeckTabs";
 import { isDue, DEFAULT_SRS_STATE, type SrsState } from "@/lib/srs/sm2";
+import { renameDeck, deleteDeck } from "../actions";
 
 export const dynamic = "force-dynamic";
 
@@ -16,9 +18,13 @@ export default async function DeckPage({ params }: { params: Promise<{ deckId: s
   const { data: cards } = await supabase.from("flashcards").select("id, front, back, srs_state").eq("deck_id", deckId);
 
   const now = new Date();
-  const dueCards: ReviewCard[] = (cards ?? [])
+  const allCards = cards ?? [];
+  const dueCards = allCards
     .map((c) => ({ ...c, srs_state: (c.srs_state as SrsState) ?? DEFAULT_SRS_STATE }))
     .filter((c) => isDue(c.srs_state, now));
+
+  const renameAction = renameDeck.bind(null, deckId);
+  const deleteAction = deleteDeck.bind(null, deckId);
 
   return (
     <>
@@ -29,13 +35,14 @@ export default async function DeckPage({ params }: { params: Promise<{ deckId: s
           </Link>
           <h1 className="page-title">{deck.title}</h1>
           <div className="exam-meta">
-            <span className="chip">{cards?.length ?? 0} cartões</span>
+            <span className="chip">{allCards.length} cartões</span>
             <span className="chip">{dueCards.length} pendentes</span>
           </div>
         </div>
+        <RenameDeleteMenu currentTitle={deck.title} onRename={renameAction} onDelete={deleteAction} redirectAfterDelete="/aluno/flashcards" />
       </div>
 
-      <DeckReview deckId={deckId} dueCards={dueCards} />
+      <DeckTabs deckId={deckId} dueCards={dueCards} allCards={allCards} />
     </>
   );
 }

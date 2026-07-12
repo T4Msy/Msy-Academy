@@ -1,7 +1,9 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
+import { CreateModeTabs } from "@/components/CreateModeTabs";
 import { GenerateDeckForm } from "./GenerateDeckForm";
+import { NewDeckForm } from "./NewDeckForm";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Flashcards" };
@@ -27,7 +29,14 @@ export default async function FlashcardsPage() {
         </div>
       </div>
 
-      <GenerateDeckForm materials={materials ?? []} />
+      <CreateModeTabs
+        aiLabel="Gerar com IA"
+        aiDesc="A IA monta os cartões a partir de um material já processado."
+        blankLabel="Criar do zero"
+        blankDesc="Comece com um deck em branco e adicione os cartões manualmente."
+        aiForm={<GenerateDeckForm materials={materials ?? []} />}
+        blankForm={<NewDeckForm />}
+      />
 
       {list.length > 0 && (
         <div className="exam-grid" style={{ marginTop: 16 }}>
