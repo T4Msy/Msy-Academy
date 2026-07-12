@@ -51,13 +51,13 @@ export default async function BancoDeQuestoesPage({
 
       <NewQuestionPanel />
 
-      <form className="card" method="get" style={{ marginBottom: 16 }}>
-        <div className="card-body" style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "flex-end", gap: 12 }}>
-          <div className="form-field" style={{ minWidth: 160 }}>
+      <form className="card mb-md" method="get">
+        <div className="card-body card-body--filter-row">
+          <div className="form-field min-w-160">
             <label className="field-label" htmlFor="busca">Buscar</label>
             <input className="input" id="busca" name="busca" defaultValue={busca ?? ""} placeholder="Palavra no enunciado" />
           </div>
-          <div className="form-field" style={{ minWidth: 160 }}>
+          <div className="form-field min-w-160">
             <label className="field-label" htmlFor="tipo">Tipo</label>
             <select className="input" id="tipo" name="tipo" defaultValue={tipo ?? ""}>
               <option value="">Todos</option>
@@ -66,7 +66,7 @@ export default async function BancoDeQuestoesPage({
               <option value="DISCURSIVA">Discursiva</option>
             </select>
           </div>
-          <div className="form-field" style={{ minWidth: 160 }}>
+          <div className="form-field min-w-160">
             <label className="field-label" htmlFor="dificuldade">Dificuldade</label>
             <select className="input" id="dificuldade" name="dificuldade" defaultValue={dificuldade ?? ""}>
               <option value="">Todas</option>

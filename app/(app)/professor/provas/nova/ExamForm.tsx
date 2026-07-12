@@ -97,7 +97,7 @@ export function ExamForm() {
       <div className="progress-track" aria-label="Progresso do formulário">
         <div className="progress-steps">
           {STEPS.map((s, i) => (
-            <div key={s.n} style={{ display: "contents" }}>
+            <div key={s.n} className="contents">
               <div className={`prog-step${activeStep === s.n ? " active" : ""}`}>
                 <span>{s.n}</span>
                 <b>{s.label}</b>
@@ -271,7 +271,7 @@ export function ExamForm() {
               />
             </div>
 
-            <div className="form-field" style={{ marginTop: 16 }}>
+            <div className="form-field mt-md">
               <label className="field-label">Arquivo PDF</label>
               <div
                 className={`dropzone${dragOver ? " dragover" : ""}`}

@@ -50,7 +50,7 @@ export function GradeDiscursiva({
   }
 
   return (
-    <div className="popover-form" style={{ padding: 0 }}>
+    <div className="popover-form popover-form--flush">
       <div className="form-grid-2">
         <div className="form-field">
           <label className="field-label" htmlFor={`score-${questionId}`}>Nota (0 a 1)</label>

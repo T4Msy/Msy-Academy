@@ -11,14 +11,14 @@ export function NewQuestionPanel() {
 
   if (!open) {
     return (
-      <button type="button" className="btn btn-primary btn-sm" onClick={() => setOpen(true)} style={{ marginBottom: 16 }}>
+      <button type="button" className="btn btn-primary btn-sm mb-md" onClick={() => setOpen(true)}>
         + Nova questão
       </button>
     );
   }
 
   return (
-    <section className="card" style={{ marginBottom: 16 }}>
+    <section className="card mb-md">
       <div className="card-header">
         <h2 className="card-title">Nova questão</h2>
       </div>

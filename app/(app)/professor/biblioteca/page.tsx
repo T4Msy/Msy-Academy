@@ -47,13 +47,13 @@ export default async function BibliotecaPage({
         <UploadMaterialForm classes={classes ?? []} />
       </div>
 
-      <form className="card" method="get" style={{ marginBottom: 16 }}>
-        <div className="card-body" style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "flex-end", gap: 12 }}>
-          <div className="form-field" style={{ minWidth: 200 }}>
+      <form className="card mb-md" method="get">
+        <div className="card-body card-body--filter-row">
+          <div className="form-field min-w-200">
             <label className="field-label" htmlFor="busca">Buscar</label>
             <input className="input" id="busca" name="busca" defaultValue={busca ?? ""} placeholder="Palavra no título ou tag" />
           </div>
-          <div className="form-field" style={{ minWidth: 180 }}>
+          <div className="form-field min-w-180">
             <label className="field-label" htmlFor="tipo">Tipo</label>
             <select className="input" id="tipo" name="tipo" defaultValue={tipo ?? ""}>
               <option value="">Todos</option>

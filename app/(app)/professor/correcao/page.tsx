@@ -53,11 +53,11 @@ export default async function CorrecaoPage() {
           {list.map((s: any) => {
             const title = s.assignments?.content_type === "EXAM" ? examTitleById.get(s.assignments.content_id) : activityTitleById.get(s.assignments?.content_id);
             return (
-              <Link key={s.id} href={`/professor/correcao/${s.id}`} className="card question-card" style={{ display: "block" }}>
-                <div className="card-body" style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+              <Link key={s.id} href={`/professor/correcao/${s.id}`} className="card question-card question-card--link">
+                <div className="card-body card-body--row-between">
                   <div>
                     <div className="exam-card-title">{nameById.get(s.student_id) || "Aluno"}</div>
-                    <div className="field-hint" style={{ marginTop: 4 }}>{title ?? "Tarefa"}</div>
+                    <div className="field-hint">{title ?? "Tarefa"}</div>
                   </div>
                   <span className="chip">Pendente</span>
                 </div>
