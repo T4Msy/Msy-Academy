@@ -140,7 +140,7 @@ export default async function Home() {
               Entrar
             </Link>
             <Link href="/cadastro" className="btn btn-primary btn-sm">
-              Criar conta grátis
+              Criar conta
             </Link>
           </div>
         </div>
