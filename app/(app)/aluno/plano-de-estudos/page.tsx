@@ -1,7 +1,9 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
+import { CreateModeTabs } from "@/components/CreateModeTabs";
 import { StudyPlanWizard } from "./StudyPlanWizard";
+import { BlankStudyPlanForm } from "./BlankStudyPlanForm";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Plano de Estudos" };
@@ -34,7 +36,14 @@ export default async function PlanoDeEstudosPage() {
         </div>
       </div>
 
-      <StudyPlanWizard />
+      <CreateModeTabs
+        aiLabel="Gerar com IA"
+        aiDesc="A IA monta um cronograma a partir do seu objetivo e data de prova."
+        blankLabel="Criar do zero"
+        blankDesc="Comece com um plano em branco e adicione os itens manualmente."
+        aiForm={<StudyPlanWizard />}
+        blankForm={<BlankStudyPlanForm />}
+      />
 
       {list.length > 0 && (
         <div className="exam-grid" style={{ marginTop: 16 }}>

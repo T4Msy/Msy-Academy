@@ -1,8 +1,9 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { RenameDeleteMenu } from "@/components/shell/RenameDeleteMenu";
 import { StudyItemsList, type StudyItem } from "./StudyItemsList";
-import { EmptyState } from "@/components/EmptyState";
+import { renameStudyPlan, deleteStudyPlan } from "../actions";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +23,9 @@ export default async function StudyPlanDetailPage({ params }: { params: Promise<
   const list = (items ?? []) as StudyItem[];
   const doneCount = list.filter((i) => i.status === "DONE").length;
 
+  const renameAction = renameStudyPlan.bind(null, id);
+  const deleteAction = deleteStudyPlan.bind(null, id);
+
   return (
     <>
       <div className="page-head">
@@ -34,13 +38,10 @@ export default async function StudyPlanDetailPage({ params }: { params: Promise<
             <span className="chip">{doneCount}/{list.length} concluídos</span>
           </div>
         </div>
+        <RenameDeleteMenu currentTitle={plan.goal} onRename={renameAction} onDelete={deleteAction} redirectAfterDelete="/aluno/plano-de-estudos" />
       </div>
 
-      {list.length === 0 ? (
-        <EmptyState variant="plano" title="Sem itens" text="Este plano não tem itens de estudo." />
-      ) : (
-        <StudyItemsList planId={id} items={list} />
-      )}
+      <StudyItemsList planId={id} items={list} />
     </>
   );
 }
