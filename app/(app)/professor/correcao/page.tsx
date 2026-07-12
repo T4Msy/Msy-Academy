@@ -40,9 +40,9 @@ export default async function CorrecaoPage() {
       <div className="page-head">
         <div>
           <h1 className="page-title">Correção</h1>
-          <p className="page-subtitle">
-            {list.length > 0 ? `${list.length} envio${list.length > 1 ? "s" : ""} aguardando correção` : "Nenhum envio pendente."}
-          </p>
+          {list.length > 0 && (
+            <p className="page-subtitle">{`${list.length} envio${list.length > 1 ? "s" : ""} aguardando correção`}</p>
+          )}
         </div>
       </div>
 

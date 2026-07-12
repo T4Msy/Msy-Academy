@@ -33,7 +33,7 @@ export async function PlanCard({ returnPath }: { returnPath: string }) {
     .map((p) => ({ code: p.code, name: p.name }));
 
   return (
-    <section className="card" style={{ maxWidth: 480, marginTop: 16 }}>
+    <section className="card">
       <div className="card-header">
         <div className="card-title-group">
           <h2 className="card-title">Plano</h2>

@@ -79,6 +79,10 @@ export default async function SignupPage({
           </button>
         </form>
 
+        <p className="field-hint" style={{ textAlign: "center" }}>
+          Depois de criar a conta, você escolhe se vai usar como professor, aluno, ou os dois.
+        </p>
+
         <p className="auth-foot">
           Já tem conta? <Link href="/login">Entrar</Link>
         </p>

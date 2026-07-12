@@ -22,7 +22,7 @@ export async function AiUsageCard() {
   const nearLimit = pct >= 80;
 
   return (
-    <section className="card" style={{ maxWidth: 480, marginTop: 16 }}>
+    <section className="card">
       <div className="card-header">
         <div className="card-title-group">
           <h2 className="card-title">Uso de IA este mês</h2>

@@ -44,7 +44,7 @@ const NAV: SidebarSection[] = [
   },
   {
     title: "Análise",
-    items: [{ href: "/professor/dashboard", label: "Dashboard", icon: <IconDashboard /> }],
+    items: [{ href: "/professor/dashboard", label: "Desempenho das Turmas", icon: <IconDashboard /> }],
   },
   {
     title: "Conta",

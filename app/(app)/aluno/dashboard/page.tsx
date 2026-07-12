@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { StatRing } from "@/components/charts/StatRing";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "Dashboard" };
+export const metadata: Metadata = { title: "Meu Progresso" };
 
 export default async function AlunoDashboardPage() {
   const supabase = await createClient();
@@ -40,7 +40,7 @@ export default async function AlunoDashboardPage() {
     <>
       <div className="page-head">
         <div>
-          <h1 className="page-title">Dashboard</h1>
+          <h1 className="page-title">Meu Progresso</h1>
           <p className="page-subtitle">Sua evolução, desempenho e metas.</p>
         </div>
       </div>

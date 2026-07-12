@@ -4,7 +4,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { deriveClassStats } from "./deriveClassStats";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "Dashboard" };
+export const metadata: Metadata = { title: "Desempenho das Turmas" };
 
 /**
  * One batched round trip per table across ALL of the professor's classes,
@@ -63,7 +63,7 @@ export default async function ProfessorDashboardPage() {
     <>
       <div className="page-head">
         <div>
-          <h1 className="page-title">Dashboard</h1>
+          <h1 className="page-title">Desempenho das Turmas</h1>
           <p className="page-subtitle">Desempenho das turmas e alunos em risco.</p>
         </div>
       </div>

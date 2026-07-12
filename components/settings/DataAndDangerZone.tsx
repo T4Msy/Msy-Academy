@@ -4,7 +4,7 @@ import { DeleteAccountForm } from "./DeleteAccountForm";
 export function DataAndDangerZone({ returnPath, deleteError }: { returnPath: string; deleteError?: string }) {
   return (
     <>
-      <section className="card" style={{ maxWidth: 480, marginTop: 16 }}>
+      <section className="card">
         <div className="card-header">
           <div className="card-title-group">
             <h2 className="card-title">Meus dados</h2>
@@ -19,7 +19,7 @@ export function DataAndDangerZone({ returnPath, deleteError }: { returnPath: str
           </a>
         </div>
       </section>
-      <section className="card" style={{ maxWidth: 480, marginTop: 16, borderColor: "var(--danger-border)" }}>
+      <section className="card" style={{ borderColor: "var(--danger-border)" }}>
         <div className="card-header">
           <div className="card-title-group">
             <h2 className="card-title">Zona de perigo</h2>

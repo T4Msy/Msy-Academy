@@ -33,7 +33,7 @@ const NAV: SidebarSection[] = [
   },
   {
     title: "Análise",
-    items: [{ href: "/aluno/dashboard", label: "Dashboard", icon: <IconDashboard /> }],
+    items: [{ href: "/aluno/dashboard", label: "Meu Progresso", icon: <IconDashboard /> }],
   },
   {
     title: "Conta",
