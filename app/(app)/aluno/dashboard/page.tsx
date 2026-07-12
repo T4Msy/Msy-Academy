@@ -11,28 +11,28 @@ export default async function AlunoDashboardPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { data: submissions } = await supabase
-    .from("submissions")
-    .select("id, status")
-    .eq("student_id", user!.id);
-  const submissionIds = (submissions ?? []).map((s) => s.id);
+  const [{ data: submissions }, { data: studyPlans }, { data: decks }] = await Promise.all([
+    supabase.from("submissions").select("id, status").eq("student_id", user!.id),
+    supabase.from("study_plans").select("id").eq("student_id", user!.id),
+    supabase.from("flashcard_decks").select("id").eq("student_id", user!.id),
+  ]);
 
-  const { data: answers } = submissionIds.length
-    ? await supabase.from("submission_answers").select("is_correct").in("submission_id", submissionIds)
-    : { data: [] as { is_correct: boolean | null }[] };
+  const submissionIds = (submissions ?? []).map((s) => s.id);
+  const planIds = (studyPlans ?? []).map((p) => p.id);
+
+  const [{ data: answers }, { data: studyItems }] = await Promise.all([
+    submissionIds.length
+      ? supabase.from("submission_answers").select("is_correct").in("submission_id", submissionIds)
+      : Promise.resolve({ data: [] as { is_correct: boolean | null }[] }),
+    planIds.length
+      ? supabase.from("study_plan_items").select("status").in("study_plan_id", planIds)
+      : Promise.resolve({ data: [] as { status: string }[] }),
+  ]);
 
   const graded = (answers ?? []).filter((a) => a.is_correct !== null);
   const correctCount = graded.filter((a) => a.is_correct).length;
   const accuracyPct = graded.length > 0 ? Math.round((correctCount / graded.length) * 100) : null;
-
-  const { data: studyPlans } = await supabase.from("study_plans").select("id").eq("student_id", user!.id);
-  const planIds = (studyPlans ?? []).map((p) => p.id);
-  const { data: studyItems } = planIds.length
-    ? await supabase.from("study_plan_items").select("status").in("study_plan_id", planIds)
-    : { data: [] as { status: string }[] };
   const doneItems = (studyItems ?? []).filter((i) => i.status === "DONE").length;
-
-  const { data: decks } = await supabase.from("flashcard_decks").select("id").eq("student_id", user!.id);
 
   const completedCount = (submissions ?? []).filter((s) => s.status !== "PENDING").length;
 

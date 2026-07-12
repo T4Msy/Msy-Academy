@@ -19,14 +19,18 @@ export default async function TurmaPage({ params }: { params: Promise<{ id: stri
   const { id } = await params;
   const supabase = await createClient();
 
-  const { data: klass } = await supabase.from("classes").select("id, name, invite_code, created_at").eq("id", id).single();
+  const [{ data: klass }, { data: enrollments }, { data: exams }, { data: activities }, { data: assignments }] = await Promise.all([
+    supabase.from("classes").select("id, name, invite_code, created_at").eq("id", id).single(),
+    supabase.from("enrollments").select("student_id, status, created_at").eq("class_id", id).order("created_at"),
+    supabase.from("exams").select("id, title").order("created_at", { ascending: false }),
+    supabase.from("activities").select("id, title").order("created_at", { ascending: false }),
+    supabase
+      .from("assignments")
+      .select("id, content_type, content_id, due_at, created_at")
+      .eq("class_id", id)
+      .order("created_at", { ascending: false }),
+  ]);
   if (!klass) notFound();
-
-  const { data: enrollments } = await supabase
-    .from("enrollments")
-    .select("student_id, status, created_at")
-    .eq("class_id", id)
-    .order("created_at");
 
   const activeEnrollments = (enrollments ?? []).filter((e) => e.status === "ACTIVE");
 
@@ -42,16 +46,6 @@ export default async function TurmaPage({ params }: { params: Promise<{ id: stri
 
   const origin = process.env.NEXT_PUBLIC_SITE_URL ?? "";
   const inviteUrl = `${origin}/entrar/${klass.invite_code}`;
-
-  const [{ data: exams }, { data: activities }, { data: assignments }] = await Promise.all([
-    supabase.from("exams").select("id, title").order("created_at", { ascending: false }),
-    supabase.from("activities").select("id, title").order("created_at", { ascending: false }),
-    supabase
-      .from("assignments")
-      .select("id, content_type, content_id, due_at, created_at")
-      .eq("class_id", id)
-      .order("created_at", { ascending: false }),
-  ]);
 
   const examTitleById = new Map((exams ?? []).map((e) => [e.id, e.title]));
   const activityTitleById = new Map((activities ?? []).map((a) => [a.id, a.title]));

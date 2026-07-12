@@ -1,76 +1,63 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
-import { EmptyIllustration } from "@/components/EmptyIllustration";
+import { EmptyState } from "@/components/EmptyState";
+import { deriveClassStats } from "./deriveClassStats";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Dashboard" };
 
-interface StudentStat {
-  studentId: string;
-  name: string;
-  overdueCount: number;
-  accuracyPct: number | null;
-  atRisk: boolean;
-}
-
-async function computeClassStats(
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  classId: string,
-): Promise<StudentStat[]> {
-  const now = new Date().toISOString();
+/**
+ * One batched round trip per table across ALL of the professor's classes,
+ * instead of a 4-hop chain repeated per class (was 1+4N queries for N
+ * classes, now a constant 4 here + the `classes` query in the page).
+ * Grouping/derivation is pure — see deriveClassStats.ts.
+ */
+async function fetchClassStatsInputs(supabase: Awaited<ReturnType<typeof createClient>>, classIds: string[]) {
+  if (classIds.length === 0) {
+    return { enrollments: [], assignments: [], submissions: [], answers: [], profiles: [] };
+  }
 
   const [{ data: enrollments }, { data: assignments }] = await Promise.all([
-    supabase.from("enrollments").select("student_id").eq("class_id", classId).eq("status", "ACTIVE"),
-    supabase.from("assignments").select("id, due_at").eq("class_id", classId),
+    supabase.from("enrollments").select("class_id, student_id").in("class_id", classIds).eq("status", "ACTIVE"),
+    supabase.from("assignments").select("id, class_id, due_at").in("class_id", classIds),
   ]);
 
-  const studentIds = (enrollments ?? []).map((e) => e.student_id);
-  if (studentIds.length === 0) return [];
-
-  const { data: profiles } = await supabase.from("profiles").select("id, full_name").in("id", studentIds);
-  const nameById = new Map((profiles ?? []).map((p) => [p.id, p.full_name || "Aluno"]));
-
+  const studentIds = [...new Set((enrollments ?? []).map((e) => e.student_id))];
   const assignmentIds = (assignments ?? []).map((a) => a.id);
-  const overdueAssignmentIds = new Set((assignments ?? []).filter((a) => a.due_at && a.due_at < now).map((a) => a.id));
 
-  const { data: submissions } = assignmentIds.length
-    ? await supabase.from("submissions").select("id, assignment_id, student_id, status").in("assignment_id", assignmentIds)
-    : { data: [] as { id: string; assignment_id: string; student_id: string; status: string }[] };
+  const [{ data: profiles }, { data: submissions }] = await Promise.all([
+    studentIds.length
+      ? supabase.from("profiles").select("id, full_name").in("id", studentIds)
+      : Promise.resolve({ data: [] as { id: string; full_name: string | null }[] }),
+    assignmentIds.length
+      ? supabase.from("submissions").select("id, assignment_id, student_id, status").in("assignment_id", assignmentIds)
+      : Promise.resolve({ data: [] as { id: string; assignment_id: string; student_id: string; status: string }[] }),
+  ]);
 
   const submissionIds = (submissions ?? []).map((s) => s.id);
   const { data: answers } = submissionIds.length
     ? await supabase.from("submission_answers").select("submission_id, is_correct").in("submission_id", submissionIds)
     : { data: [] as { submission_id: string; is_correct: boolean | null }[] };
 
-  const submissionById = new Map((submissions ?? []).map((s) => [s.id, s]));
-
-  return studentIds.map((studentId) => {
-    const submitted = new Set(
-      (submissions ?? []).filter((s) => s.student_id === studentId && s.status !== "PENDING").map((s) => s.assignment_id),
-    );
-    const overdueCount = [...overdueAssignmentIds].filter((aid) => !submitted.has(aid)).length;
-
-    const studentAnswers = (answers ?? []).filter((a) => submissionById.get(a.submission_id)?.student_id === studentId && a.is_correct !== null);
-    const correctCount = studentAnswers.filter((a) => a.is_correct).length;
-    const accuracyPct = studentAnswers.length > 0 ? Math.round((correctCount / studentAnswers.length) * 100) : null;
-
-    return {
-      studentId,
-      name: nameById.get(studentId) ?? "Aluno",
-      overdueCount,
-      accuracyPct,
-      atRisk: overdueCount > 0 || (accuracyPct !== null && accuracyPct < 50),
-    };
-  });
+  return {
+    enrollments: enrollments ?? [],
+    assignments: assignments ?? [],
+    submissions: submissions ?? [],
+    answers: answers ?? [],
+    profiles: profiles ?? [],
+  };
 }
 
 export default async function ProfessorDashboardPage() {
   const supabase = await createClient();
   const { data: classes } = await supabase.from("classes").select("id, name").order("name");
+  const classList = classes ?? [];
 
-  const classStats = await Promise.all(
-    (classes ?? []).map(async (klass) => ({ klass, students: await computeClassStats(supabase, klass.id) })),
+  const { enrollments, assignments, submissions, answers, profiles } = await fetchClassStatsInputs(
+    supabase,
+    classList.map((c) => c.id),
   );
+  const classStats = deriveClassStats(classList, enrollments, assignments, submissions, answers, profiles, new Date().toISOString());
 
   return (
     <>
@@ -82,11 +69,7 @@ export default async function ProfessorDashboardPage() {
       </div>
 
       {classStats.length === 0 ? (
-        <div className="empty-state">
-          <EmptyIllustration variant="turma" />
-          <div className="empty-title">Sem turmas ainda</div>
-          <p className="empty-text">Crie uma turma para ver o desempenho dos alunos aqui.</p>
-        </div>
+        <EmptyState variant="turma" title="Sem turmas ainda" text="Crie uma turma para ver o desempenho dos alunos aqui." />
       ) : (
         <div className="questions-stack">
           {classStats.map(({ klass, students }) => (

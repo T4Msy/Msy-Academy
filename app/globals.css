@@ -1156,6 +1156,27 @@ select.input option { background-color: var(--bg-card); color: var(--fg); }
   color: var(--fg-subtle);
 }
 
+/* ── Skeletons (route loading.tsx fallbacks) ──────────────────
+   Shape from the real classes above (.card/.exam-card/etc) so a skeleton
+   only needs to fill in the shimmer blocks, not redeclare padding/radius. */
+.skeleton-shimmer {
+  background: linear-gradient(90deg, var(--bg-card-2) 25%, var(--bg-hover) 37%, var(--bg-card-2) 63%);
+  background-size: 400% 100%;
+  animation: skeleton-shimmer 1.4s ease infinite;
+  border-radius: 999px;
+}
+.skeleton-line { height: 12px; width: 100%; }
+.skeleton-line--title { height: 16px; width: 55%; }
+.skeleton-pill { height: 22px; width: 64px; border-radius: 999px; }
+.skeleton-block { height: 72px; width: 100%; border-radius: var(--radius-sm); }
+@keyframes skeleton-shimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: 0 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-shimmer { animation: none; }
+}
+
 .empty-state {
   text-align: center;
   padding: 64px 24px;

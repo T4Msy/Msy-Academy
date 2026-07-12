@@ -10,18 +10,22 @@ export const dynamic = "force-dynamic";
 export default async function SimuladoPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const { data: simulado } = await supabase.from("simulados").select("id, title").eq("id", id).single();
+  const [
+    {
+      data: { user },
+    },
+    { data: simulado },
+    { data: items },
+  ] = await Promise.all([
+    supabase.auth.getUser(),
+    supabase.from("simulados").select("id, title").eq("id", id).single(),
+    supabase
+      .from("simulado_questions")
+      .select("position, questions(id, type, statement, options, correct_answer, explanation, tags)")
+      .eq("simulado_id", id)
+      .order("position"),
+  ]);
   if (!simulado) notFound();
-
-  const { data: items } = await supabase
-    .from("simulado_questions")
-    .select("position, questions(id, type, statement, options, correct_answer, explanation, tags)")
-    .eq("simulado_id", id)
-    .order("position");
 
   const questions: (ResultQuestion & { tags: string[] })[] = (items ?? [])
     .filter((it) => it.questions)
@@ -41,13 +45,11 @@ export default async function SimuladoPage({ params }: { params: Promise<{ id: s
   let breakdown: { tag: string; correct: number; total: number }[] = [];
 
   if (isDone) {
-    const { data: submissionAnswers } = await supabase
-      .from("submission_answers")
-      .select("question_id, answer, is_correct, score")
-      .eq("submission_id", submission!.id);
+    const [{ data: submissionAnswers }, { data: gradeRow }] = await Promise.all([
+      supabase.from("submission_answers").select("question_id, answer, is_correct, score").eq("submission_id", submission!.id),
+      supabase.from("grades").select("total_score, feedback").eq("submission_id", submission!.id).maybeSingle(),
+    ]);
     answersById = new Map((submissionAnswers ?? []).map((a) => [a.question_id, { answer: a.answer, is_correct: a.is_correct, score: a.score }]));
-
-    const { data: gradeRow } = await supabase.from("grades").select("total_score, feedback").eq("submission_id", submission!.id).maybeSingle();
     grade = gradeRow;
 
     // Breakdown por tema (tag) — RF-A05.

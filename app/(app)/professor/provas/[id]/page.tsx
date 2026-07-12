@@ -12,19 +12,20 @@ export default async function ExamPage({ params }: { params: Promise<{ id: strin
   const { id } = await params;
   const supabase = await createClient();
 
-  const { data: exam } = await supabase
-    .from("exams")
-    .select("id, title, course, style, include_answer_key, ai_provider, version, created_at")
-    .eq("id", id)
-    .single();
+  const [{ data: exam }, { data: examQuestions }] = await Promise.all([
+    supabase
+      .from("exams")
+      .select("id, title, course, style, include_answer_key, ai_provider, version, created_at")
+      .eq("id", id)
+      .single(),
+    supabase
+      .from("exam_questions")
+      .select("position, questions(id, type, statement, options, correct_answer, explanation, difficulty, tags)")
+      .eq("exam_id", id)
+      .order("position"),
+  ]);
 
   if (!exam) notFound();
-
-  const { data: examQuestions } = await supabase
-    .from("exam_questions")
-    .select("position, questions(id, type, statement, options, correct_answer, explanation, difficulty, tags)")
-    .eq("exam_id", id)
-    .order("position");
 
   const questions: QuestionData[] = (examQuestions ?? [])
     .filter((eq) => eq.questions)
