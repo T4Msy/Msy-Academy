@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { getMaterialDownloadUrl, deleteMaterial } from "./actions";
+import { InlineDeleteConfirm } from "@/components/InlineDeleteConfirm";
 
 const KIND_LABEL: Record<string, string> = {
   EXAM: "Prova",
@@ -69,18 +70,15 @@ export function MaterialItem({
           </button>
         )}
 
-        {confirming ? (
-          <div style={{ display: "flex", gap: 8, alignItems: "center", flexShrink: 0 }}>
-            <button type="button" className="btn btn-ghost btn-sm" disabled={pending} onClick={() => setConfirming(false)}>Cancelar</button>
-            <button type="button" className="btn btn-danger-ghost btn-sm" disabled={pending} onClick={onDelete}>
-              {pending ? "Excluindo…" : "Confirmar"}
-            </button>
-          </div>
-        ) : (
-          <button type="button" className="btn btn-ghost btn-sm" onClick={() => setConfirming(true)} style={{ flexShrink: 0 }}>
-            Excluir
-          </button>
-        )}
+        <div style={{ display: "flex", gap: 8, alignItems: "center", flexShrink: 0 }}>
+          <InlineDeleteConfirm
+            confirming={confirming}
+            pending={pending}
+            onRequestConfirm={() => setConfirming(true)}
+            onCancel={() => setConfirming(false)}
+            onConfirm={onDelete}
+          />
+        </div>
       </div>
     </div>
   );

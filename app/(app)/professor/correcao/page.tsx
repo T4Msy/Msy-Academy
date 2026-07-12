@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
-import { EmptyIllustration } from "@/components/EmptyIllustration";
+import { EmptyState } from "@/components/EmptyState";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Correção" };
@@ -47,11 +47,7 @@ export default async function CorrecaoPage() {
       </div>
 
       {list.length === 0 ? (
-        <div className="empty-state">
-          <EmptyIllustration variant="notificacao" />
-          <div className="empty-title">Fila vazia</div>
-          <p className="empty-text">Envios com questões discursivas aparecem aqui para correção.</p>
-        </div>
+        <EmptyState variant="notificacao" title="Fila vazia" text="Envios com questões discursivas aparecem aqui para correção." />
       ) : (
         <div className="questions-stack">
           {list.map((s: any) => {

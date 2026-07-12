@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { getSession } from "@/lib/auth/session";
 
 /**
  * Outer guard for the whole authenticated area: signed in + onboarded.
@@ -9,18 +9,10 @@ import { createClient } from "@/lib/supabase/server";
  * each renders a different sidebar.
  */
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { user, suspendedAt, roles } = await getSession();
   if (!user) redirect("/login");
-
-  const [{ data: roles }, { data: profile }] = await Promise.all([
-    supabase.from("user_roles").select("role").eq("user_id", user.id),
-    supabase.from("profiles").select("suspended_at").eq("id", user.id).single(),
-  ]);
-  if (profile?.suspended_at) redirect("/suspenso");
-  if (!roles || roles.length === 0) redirect("/onboarding");
+  if (suspendedAt) redirect("/suspenso");
+  if (roles.length === 0) redirect("/onboarding");
 
   return <>{children}</>;
 }

@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { getSession } from "@/lib/auth/session";
 import { logout } from "@/lib/auth/actions";
 import { Sidebar, type SidebarSection } from "@/components/shell/Sidebar";
 import { ThemeToggle } from "@/components/shell/ThemeToggle";
@@ -27,14 +27,10 @@ const NAV: SidebarSection[] = [
  * as lib/ai/orchestrator.ts.
  */
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { user, roles } = await getSession();
   if (!user) redirect("/login");
 
-  const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
-  const isAdmin = (roles ?? []).some((r) => r.role === "ADMIN");
+  const isAdmin = roles.includes("ADMIN");
   if (!isAdmin) redirect("/");
 
   return (

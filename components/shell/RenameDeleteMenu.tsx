@@ -5,17 +5,27 @@ import { useRouter } from "next/navigation";
 
 type Mode = "closed" | "menu" | "rename" | "confirmDelete";
 
-/** Shared rename+soft-delete popover for content types that don't need the full ExamHeaderMenu (activities, lesson plans). */
+interface ExtraAction {
+  label: string;
+  pendingLabel: string;
+  onRun: () => Promise<void>;
+}
+
+/** Shared rename+soft-delete popover for content types (activities, lesson plans, exams). */
 export function RenameDeleteMenu({
   currentTitle,
   onRename,
   onDelete,
   redirectAfterDelete,
+  extraActions,
+  deleteConfirmLabel = "Excluir?",
 }: {
   currentTitle: string;
   onRename: (title: string) => Promise<void>;
   onDelete: () => Promise<void>;
   redirectAfterDelete: string;
+  extraActions?: ExtraAction[];
+  deleteConfirmLabel?: string;
 }) {
   const [mode, setMode] = useState<Mode>("closed");
   const [title, setTitle] = useState(currentTitle);
@@ -27,6 +37,18 @@ export function RenameDeleteMenu({
     setMode("closed");
     setError(null);
     setTitle(currentTitle);
+  }
+
+  function runExtraAction(action: ExtraAction) {
+    setError(null);
+    startTransition(async () => {
+      try {
+        await action.onRun();
+        close();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Algo deu errado.");
+      }
+    });
   }
 
   function handleRename() {
@@ -78,6 +100,18 @@ export function RenameDeleteMenu({
                 <button type="button" className="popover-item" role="menuitem" disabled={pending} onClick={() => setMode("rename")}>
                   Renomear
                 </button>
+                {extraActions?.map((action) => (
+                  <button
+                    key={action.label}
+                    type="button"
+                    className="popover-item"
+                    role="menuitem"
+                    disabled={pending}
+                    onClick={() => runExtraAction(action)}
+                  >
+                    {pending ? action.pendingLabel : action.label}
+                  </button>
+                ))}
                 <button type="button" className="popover-item popover-item--danger" role="menuitem" disabled={pending} onClick={() => setMode("confirmDelete")}>
                   Excluir
                 </button>
@@ -108,7 +142,7 @@ export function RenameDeleteMenu({
 
             {mode === "confirmDelete" && (
               <div className="popover-form">
-                <p className="popover-confirm">Excluir?</p>
+                <p className="popover-confirm">{deleteConfirmLabel}</p>
                 <div className="popover-row">
                   <button type="button" className="btn btn-ghost btn-sm" disabled={pending} onClick={close}>Cancelar</button>
                   <button type="button" className="btn btn-danger-ghost btn-sm" disabled={pending} onClick={handleDelete}>

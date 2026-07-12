@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { updateQuestion, moveQuestion, regenerateQuestion } from "../actions";
 import { AiThinking } from "@/components/AiThinking";
-import { EmptyIllustration } from "@/components/EmptyIllustration";
+import { EmptyState } from "@/components/EmptyState";
 
 type QuestionType = "MULTIPLA" | "VF" | "DISCURSIVA";
 type Difficulty = "FACIL" | "MEDIO" | "DIFICIL";
@@ -262,11 +262,7 @@ export function ExamQuestionsEditor({
 }) {
   if (questions.length === 0) {
     return (
-      <div className="empty-state">
-        <EmptyIllustration variant="questoes" />
-        <div className="empty-title">Sem questões</div>
-        <p className="empty-text">Esta prova não tem questões associadas.</p>
-      </div>
+      <EmptyState variant="questoes" title="Sem questões" text="Esta prova não tem questões associadas." />
     );
   }
 

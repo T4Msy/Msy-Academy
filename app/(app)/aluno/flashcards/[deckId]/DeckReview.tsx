@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { submitReview } from "../actions";
 import type { SrsState } from "@/lib/srs/sm2";
-import { EmptyIllustration } from "@/components/EmptyIllustration";
+import { EmptyState } from "@/components/EmptyState";
 
 export interface ReviewCard {
   id: string;
@@ -27,23 +27,11 @@ export function DeckReview({ deckId, dueCards }: { deckId: string; dueCards: Rev
   const router = useRouter();
 
   if (dueCards.length === 0) {
-    return (
-      <div className="empty-state">
-        <EmptyIllustration variant="tarefa" />
-        <div className="empty-title">Tudo em dia!</div>
-        <p className="empty-text">Nenhum cartão para revisar agora. Volte mais tarde.</p>
-      </div>
-    );
+    return <EmptyState variant="tarefa" title="Tudo em dia!" text="Nenhum cartão para revisar agora. Volte mais tarde." />;
   }
 
   if (index >= dueCards.length) {
-    return (
-      <div className="empty-state">
-        <EmptyIllustration variant="tarefa" />
-        <div className="empty-title">Sessão concluída</div>
-        <p className="empty-text">Você revisou todos os cartões pendentes.</p>
-      </div>
-    );
+    return <EmptyState variant="tarefa" title="Sessão concluída" text="Você revisou todos os cartões pendentes." />;
   }
 
   const card = dueCards[index];

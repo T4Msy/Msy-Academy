@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { QuestionBankList } from "./QuestionBankList";
-import { EmptyIllustration } from "@/components/EmptyIllustration";
+import { EmptyState } from "@/components/EmptyState";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Banco de Questões" };
@@ -77,13 +77,11 @@ export default async function BancoDeQuestoesPage({
       </form>
 
       {list.length === 0 ? (
-        <div className="empty-state">
-          <EmptyIllustration variant="questoes" />
-          <div className="empty-title">Nenhuma questão encontrada</div>
-          <p className="empty-text">
-            Gere uma prova para começar a preencher seu banco de questões reutilizáveis.
-          </p>
-        </div>
+        <EmptyState
+          variant="questoes"
+          title="Nenhuma questão encontrada"
+          text="Gere uma prova para começar a preencher seu banco de questões reutilizáveis."
+        />
       ) : (
         <QuestionBankList
           questions={list.map((q) => ({ id: q.id, statement: q.statement, type: q.type, difficulty: q.difficulty, tags: q.tags ?? [] }))}

@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { getSession, getRecentNotifications } from "@/lib/auth/session";
 import { Topbar } from "@/components/shell/Topbar";
 import { Sidebar, type SidebarSection } from "@/components/shell/Sidebar";
 
@@ -24,23 +24,18 @@ const NAV: SidebarSection[] = [
 ];
 
 export default async function AlunoLayout({ children }: { children: React.ReactNode }) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { supabase, user, fullName, roles } = await getSession();
   if (!user) redirect("/login");
 
-  const [{ data: profile }, { data: roles }, { data: notifications }, { data: guardianConsent }] = await Promise.all([
-    supabase.from("profiles").select("full_name").eq("id", user.id).single(),
-    supabase.from("user_roles").select("role").eq("user_id", user.id),
-    supabase.from("notifications").select("id, title, body, link, read_at, created_at").order("created_at", { ascending: false }).limit(10),
+  const roleSet = new Set(roles);
+  if (!roleSet.has("ALUNO")) redirect("/professor");
+
+  const [notifications, { data: guardianConsent }] = await Promise.all([
+    getRecentNotifications(),
     supabase.from("guardian_consents").select("status, token").eq("student_id", user.id).eq("status", "PENDING").maybeSingle(),
   ]);
 
-  const roleSet = new Set((roles ?? []).map((r) => r.role));
-  if (!roleSet.has("ALUNO")) redirect("/professor");
-
-  const name = profile?.full_name || user.email?.split("@")[0] || "Aluno";
+  const name = fullName || user.email?.split("@")[0] || "Aluno";
 
   return (
     <div className="app-shell">
@@ -50,7 +45,7 @@ export default async function AlunoLayout({ children }: { children: React.ReactN
         currentEnv="ALUNO"
         hasOtherEnv={roleSet.has("PROFESSOR")}
         settingsHref="/aluno/configuracoes"
-        notifications={notifications ?? []}
+        notifications={notifications}
       />
       <div className="app-body">
         <Sidebar sections={NAV} />

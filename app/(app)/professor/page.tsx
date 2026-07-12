@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { createClient } from "@/lib/supabase/server";
+import { getSession } from "@/lib/auth/session";
 import { ActivationChecklist } from "@/components/professor/ActivationChecklist";
 
 export const dynamic = "force-dynamic";
@@ -13,17 +13,8 @@ const QUICK_ACTIONS = [
 ];
 
 export default async function ProfessorHomePage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("full_name")
-    .eq("id", user!.id)
-    .single();
-
-  const firstName = (profile?.full_name || "Professor").split(" ")[0];
+  const { fullName } = await getSession();
+  const firstName = (fullName || "Professor").split(" ")[0];
 
   return (
     <>

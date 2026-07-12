@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { createAdminClient } from "@/lib/supabase/server";
 import { ActionButton } from "@/components/admin/ActionButton";
 import { toggleSuspend, toggleAdminRole } from "./actions";
-import { EmptyIllustration } from "@/components/EmptyIllustration";
+import { EmptyState } from "@/components/EmptyState";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Usuários — Admin" };
@@ -56,10 +56,7 @@ export default async function AdminUsuariosPage() {
       </div>
 
       {rows.length === 0 ? (
-        <div className="empty-state">
-          <EmptyIllustration variant="turma" />
-          <div className="empty-title">Nenhum usuário ainda</div>
-        </div>
+        <EmptyState variant="turma" title="Nenhum usuário ainda" />
       ) : (
         rows.map((u) => (
           <div key={u.id} className="card" style={{ marginBottom: 12 }}>

@@ -22,8 +22,10 @@ const PATHS: Record<string, React.ReactNode> = {
   ),
 };
 
+export type EmptyIllustrationVariant = keyof typeof PATHS;
+
 /** Small, consistent illustration for empty states — reuses the app's existing line-icon language (not a separate art style) at a larger, softer scale. */
-export function EmptyIllustration({ variant = "generico" }: { variant?: keyof typeof PATHS }) {
+export function EmptyIllustration({ variant = "generico" }: { variant?: EmptyIllustrationVariant }) {
   return (
     <div
       aria-hidden="true"

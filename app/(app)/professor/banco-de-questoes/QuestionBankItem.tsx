@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { deleteQuestion } from "./actions";
+import { InlineDeleteConfirm } from "@/components/InlineDeleteConfirm";
 
 const DIFFICULTY_LABEL: Record<string, string> = { FACIL: "Fácil", MEDIO: "Médio", DIFICIL: "Difícil" };
 const TYPE_LABEL: Record<string, string> = { MULTIPLA: "Múltipla escolha", VF: "Verdadeiro/Falso", DISCURSIVA: "Discursiva" };
@@ -55,21 +56,14 @@ export function QuestionBankItem({
           </div>
           <p className="question-statement" style={{ marginBottom: 8 }}>{statement}</p>
           <div className="popover-row" style={{ justifyContent: "flex-start" }}>
-            {confirming ? (
-              <>
-                <span className="field-hint" style={{ marginTop: 0 }}>Excluir esta questão?</span>
-                <button type="button" className="btn btn-ghost btn-sm" disabled={pending} onClick={() => setConfirming(false)}>
-                  Cancelar
-                </button>
-                <button type="button" className="btn btn-danger-ghost btn-sm" disabled={pending} onClick={onDelete}>
-                  {pending ? "Excluindo…" : "Confirmar"}
-                </button>
-              </>
-            ) : (
-              <button type="button" className="btn btn-ghost btn-sm" onClick={() => setConfirming(true)}>
-                Excluir
-              </button>
-            )}
+            <InlineDeleteConfirm
+              confirming={confirming}
+              pending={pending}
+              onRequestConfirm={() => setConfirming(true)}
+              onCancel={() => setConfirming(false)}
+              onConfirm={onDelete}
+              hint="Excluir esta questão?"
+            />
           </div>
         </div>
       </div>

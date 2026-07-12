@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { getSession, getRecentNotifications } from "@/lib/auth/session";
 import { Topbar } from "@/components/shell/Topbar";
 import { Sidebar, type SidebarSection } from "@/components/shell/Sidebar";
 
@@ -37,22 +37,15 @@ const NAV: SidebarSection[] = [
 ];
 
 export default async function ProfessorLayout({ children }: { children: React.ReactNode }) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { user, fullName, roles } = await getSession();
   if (!user) redirect("/login");
 
-  const [{ data: profile }, { data: roles }, { data: notifications }] = await Promise.all([
-    supabase.from("profiles").select("full_name").eq("id", user.id).single(),
-    supabase.from("user_roles").select("role").eq("user_id", user.id),
-    supabase.from("notifications").select("id, title, body, link, read_at, created_at").order("created_at", { ascending: false }).limit(10),
-  ]);
-
-  const roleSet = new Set((roles ?? []).map((r) => r.role));
+  const roleSet = new Set(roles);
   if (!roleSet.has("PROFESSOR")) redirect("/aluno");
 
-  const name = profile?.full_name || user.email?.split("@")[0] || "Professor";
+  const notifications = await getRecentNotifications();
+
+  const name = fullName || user.email?.split("@")[0] || "Professor";
 
   return (
     <div className="app-shell">
@@ -62,7 +55,7 @@ export default async function ProfessorLayout({ children }: { children: React.Re
         currentEnv="PROFESSOR"
         hasOtherEnv={roleSet.has("ALUNO")}
         settingsHref="/professor/configuracoes"
-        notifications={notifications ?? []}
+        notifications={notifications}
       />
       <div className="app-body">
         <Sidebar sections={NAV} />

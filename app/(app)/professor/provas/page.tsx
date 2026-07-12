@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
-import { EmptyIllustration } from "@/components/EmptyIllustration";
+import { EmptyState } from "@/components/EmptyState";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Minhas Provas" };
@@ -44,16 +44,16 @@ export default async function ProvasPage() {
       </div>
 
       {list.length === 0 ? (
-        <div className="empty-state">
-          <EmptyIllustration variant="biblioteca" />
-          <div className="empty-title">Nenhuma prova ainda</div>
-          <p className="empty-text">
-            Gere sua primeira prova com IA. As questões ficam salvas e editáveis, prontas para exportar e reutilizar.
-          </p>
-          <Link href="/professor/provas/nova" className="btn btn-primary">
-            Gerar primeira prova
-          </Link>
-        </div>
+        <EmptyState
+          variant="biblioteca"
+          title="Nenhuma prova ainda"
+          text="Gere sua primeira prova com IA. As questões ficam salvas e editáveis, prontas para exportar e reutilizar."
+          action={
+            <Link href="/professor/provas/nova" className="btn btn-primary">
+              Gerar primeira prova
+            </Link>
+          }
+        />
       ) : (
         <div className="exam-grid">
           {list.map((exam) => (
