@@ -3,10 +3,17 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { IconChevronDown } from "./navIcons";
 
 /** mobilePrimary marks the ≤4 items MobileTabBar shows directly — the rest land under "Mais". */
 export type SidebarItem = { href: string; label: string; icon: React.ReactNode; exact?: boolean; mobilePrimary?: boolean };
-export type SidebarSection = { title?: string; items: SidebarItem[] };
+
+/** A section entry is either a leaf link or a group with its own sub-items (e.g. "Criar" > Nova Prova/Atividade/Plano). */
+export type SidebarEntry =
+  | ({ kind?: "item" } & SidebarItem)
+  | { kind: "group"; label: string; icon: React.ReactNode; items: SidebarItem[] };
+
+export type SidebarSection = { title?: string; items: SidebarEntry[] };
 
 type Collapsed = "collapsed" | "expanded";
 
@@ -24,14 +31,33 @@ function currentCollapsed(): Collapsed {
 export function Sidebar({ sections }: { sections: SidebarSection[] }) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState<Collapsed | null>(null);
+  const [openGroups, setOpenGroups] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     setCollapsed(currentCollapsed());
   }, []);
 
-  function isActive(item: SidebarItem): boolean {
-    if (item.exact) return pathname === item.href;
-    return pathname === item.href || pathname.startsWith(item.href + "/");
+  // Auto-open any group containing the active route, so navigating straight
+  // to a sub-item (e.g. a deep link to /professor/atividades/nova) doesn't
+  // leave its parent group collapsed with no visible active state.
+  useEffect(() => {
+    const activeGroupLabels = sections
+      .flatMap((s) => s.items)
+      .filter((entry): entry is Extract<SidebarEntry, { kind: "group" }> => entry.kind === "group")
+      .filter((group) => group.items.some((item) => isActiveHref(pathname, item)))
+      .map((group) => group.label);
+    if (activeGroupLabels.length === 0) return;
+    setOpenGroups((prev) => new Set([...prev, ...activeGroupLabels]));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
+
+  function toggleGroup(label: string) {
+    setOpenGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(label)) next.delete(label);
+      else next.add(label);
+      return next;
+    });
   }
 
   function toggleCollapsed() {
@@ -48,18 +74,53 @@ export function Sidebar({ sections }: { sections: SidebarSection[] }) {
       {sections.map((section, i) => (
         <div className="sidebar-section" key={section.title ?? i}>
           {section.title && <div className="sidebar-section-title">{section.title}</div>}
-          {section.items.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`sidebar-link${isActive(item) ? " active" : ""}`}
-              aria-current={isActive(item) ? "page" : undefined}
-              title={item.label}
-            >
-              <span className="sidebar-link-icon">{item.icon}</span>
-              <span className="sidebar-link-label">{item.label}</span>
-            </Link>
-          ))}
+          {section.items.map((entry) =>
+            entry.kind === "group" ? (
+              <div
+                key={entry.label}
+                className={`sidebar-group${openGroups.has(entry.label) ? " is-open" : ""}`}
+              >
+                <button
+                  type="button"
+                  className={`sidebar-link sidebar-group-trigger${entry.items.some((item) => isActiveHref(pathname, item)) ? " active" : ""}`}
+                  aria-expanded={openGroups.has(entry.label)}
+                  onClick={() => toggleGroup(entry.label)}
+                  title={entry.label}
+                >
+                  <span className="sidebar-link-icon">{entry.icon}</span>
+                  <span className="sidebar-link-label">{entry.label}</span>
+                  <span className="sidebar-group-chevron" aria-hidden="true">
+                    <IconChevronDown />
+                  </span>
+                </button>
+                <div className="sidebar-group-items" role="menu">
+                  {entry.items.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={`sidebar-link sidebar-group-item${isActiveHref(pathname, item) ? " active" : ""}`}
+                      aria-current={isActiveHref(pathname, item) ? "page" : undefined}
+                      role="menuitem"
+                    >
+                      <span className="sidebar-link-icon">{item.icon}</span>
+                      <span className="sidebar-link-label">{item.label}</span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <Link
+                key={entry.href}
+                href={entry.href}
+                className={`sidebar-link${isActiveHref(pathname, entry) ? " active" : ""}`}
+                aria-current={isActiveHref(pathname, entry) ? "page" : undefined}
+                title={entry.label}
+              >
+                <span className="sidebar-link-icon">{entry.icon}</span>
+                <span className="sidebar-link-label">{entry.label}</span>
+              </Link>
+            ),
+          )}
         </div>
       ))}
 
@@ -76,4 +137,9 @@ export function Sidebar({ sections }: { sections: SidebarSection[] }) {
       </button>
     </nav>
   );
+}
+
+function isActiveHref(pathname: string, item: SidebarItem): boolean {
+  if (item.exact) return pathname === item.href;
+  return pathname === item.href || pathname.startsWith(item.href + "/");
 }

@@ -8,12 +8,16 @@ import { IconMais } from "./navIcons";
 
 /** Fixed bottom tab bar for mobile — replaces the old horizontal-scroll sidebar.
  * Shows the items each layout marked `mobilePrimary` (≤4) directly; everything
- * else opens in a "Mais" bottom sheet. */
+ * else opens in a "Mais" bottom sheet. A `kind: "group"` entry (e.g. "Criar")
+ * has no href of its own on mobile — only its children can be `mobilePrimary`
+ * and land in either list, same as any other leaf item. */
 export function MobileTabBar({ sections }: { sections: SidebarSection[] }) {
   const pathname = usePathname();
   const [moreOpen, setMoreOpen] = useState(false);
 
-  const allItems = sections.flatMap((s) => s.items);
+  const allItems: SidebarItem[] = sections.flatMap((s) =>
+    s.items.flatMap((entry) => (entry.kind === "group" ? entry.items : [entry])),
+  );
   const primary = allItems.filter((i) => i.mobilePrimary);
   const rest = allItems.filter((i) => !i.mobilePrimary);
 

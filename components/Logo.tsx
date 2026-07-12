@@ -6,7 +6,7 @@ export function Logo({ size = 34 }: { size?: number }) {
       <svg fill="none" width={inner} height={inner} viewBox="0 0 24 24">
         <path
           d="M4 18.5 9 7 12.5 14 16 7 21 18.5"
-          stroke="#06130d"
+          stroke="#1a0d08"
           strokeLinecap="round"
           strokeLinejoin="round"
           strokeWidth="2.3"

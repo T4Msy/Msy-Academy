@@ -156,6 +156,14 @@ export function IconConfiguracoes() {
   );
 }
 
+export function IconChevronDown() {
+  return (
+    <Icon>
+      <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </Icon>
+  );
+}
+
 export function IconMais() {
   return (
     <Icon>

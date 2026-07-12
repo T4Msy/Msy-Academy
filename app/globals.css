@@ -1,11 +1,9 @@
 /* ============================================================
    MSY Academy — globals.css
-   Design system ported from the legacy ProvaGen prototype
-   (legacy/styles.css). Same tokens, same component classes —
-   reused directly to preserve full visual fidelity, extended
-   with app-shell, auth and dashboard styles.
-   Fonts: Syne (display) + DM Sans (body)
-   Palette: #0a0a0a bg / #2EE59D accent / #f5f5f5 fg
+   Design system, hand-written CSS (no Tailwind/shadcn) — custom
+   properties on :root / :root[data-theme] drive both themes.
+   Fonts: Inter Tight (display) + Inter (body), via next/font/google.
+   Palette: #0a0a0a bg / #D97757 accent (terracotta) / #f0f0f0 fg
    ============================================================ */
 
 /* ── Reset & Variables ──────────────────────────────────────── */
@@ -20,6 +18,7 @@
   --bg-rgb:      10,10,10;
 
   --bg:          #0a0a0a;
+  --bg-shell:    #0d0d0d;
   --bg-card:     #111111;
   --bg-card-2:   #161616;
   --bg-hover:    rgba(var(--overlay-rgb),0.04);
@@ -34,11 +33,21 @@
      non-text floor. This is deliberately brighter in dark mode. */
   --switch-thumb-off: #b0b0b0;
 
-  --accent:      #2EE59D;
-  --accent-text: #2EE59D;
-  --accent-dim:  rgba(46,229,157,0.12);
-  --accent-border: rgba(46,229,157,0.40);
-  --accent-glow: rgba(46,229,157,0.18);
+  /* Terracotta accent — #D97757 is brand-fixed across themes (same pattern
+     the previous mint green used). Contrast verified: 6.05:1 on --bg-card,
+     6.34:1 on --bg (both pass AA for normal text). --accent-ink is a dark
+     warm-neutral for text/icons drawn *on top of* an --accent fill (buttons,
+     logo mark) — white-on-D97757 only reaches ~3.1:1 (fails AA text), so
+     button/logo foregrounds use this dark ink instead, same reasoning the
+     old green used a near-black ink. Used sparingly per the "moderation"
+     brief — --accent-dim/--accent-glow are reserved for primary actions and
+     active states, not general decoration. */
+  --accent:      #D97757;
+  --accent-text: #D97757;
+  --accent-ink:  #1a0d08;
+  --accent-dim:  rgba(217,119,87,0.10);
+  --accent-border: rgba(217,119,87,0.36);
+  --accent-glow: rgba(217,119,87,0.14);
 
   --danger:      #ef4444;
   --danger-text: #ef4444;
@@ -52,13 +61,28 @@
   --shadow-card: 0 1px 3px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.2);
   --shadow-glow: 0 0 24px var(--accent-glow);
 
-  /* Shared entrance-animation timing — popovers, sheets, sidebar collapse. */
+  /* Motion tokens — tiered by interaction weight, theme-independent (never
+     redefined in the light-theme blocks below). --ease-standard/
+     --duration-base are the pre-existing tokens (popovers, sheets, sidebar
+     collapse) kept for compatibility; the rest are new, tuned for the
+     "refined, Apple/Linear-grade" motion brief. */
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
-  --duration-base: 180ms;
+  --ease-emphasis: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-soft: cubic-bezier(0.33, 1, 0.68, 1);
+  --duration-instant:  100ms;
+  --duration-fast:     160ms;
+  --duration-base:     200ms;
+  --duration-moderate: 320ms;
+  --duration-slow:     480ms;
+  --stagger-step:      60ms;
 
   --maxw:        1120px;
-  --font-display:'Syne', system-ui, sans-serif;
-  --font-body:   'DM Sans', system-ui, sans-serif;
+  /* --font-display / --font-body come from next/font/google (app/layout.tsx,
+     applied as CSS custom properties on <html>) — not redefined here. A
+     fallback stack is provided in case a page ever renders outside that
+     wrapper (shouldn't happen — every route goes through the root layout). */
+  --font-display: system-ui, sans-serif;
+  --font-body:    system-ui, sans-serif;
 
   color-scheme: dark;
 }
@@ -69,6 +93,7 @@
   --bg-rgb:      247,248,246;
 
   --bg:          #f7f8f6;
+  --bg-shell:    #f2f3f1;
   --bg-card:     #ffffff;
   --bg-card-2:   #f2f3f1;
   --fg:          #101410;
@@ -79,11 +104,12 @@
   --switch-thumb-off: #6b6f68;
 
   /* --accent (button/badge fill) is brand-fixed across themes — only the
-     *text* variant changes: mint-on-white fails contrast (~1.6:1), so
-     accent-text gets a darker step, verified >=4.5:1 against --bg-card. */
-  --accent-text: #0b7a52;
-  --accent-dim:  rgba(46,229,157,0.14);
-  --accent-border: rgba(46,229,157,0.45);
+     *text* variant changes: mid-tone terracotta on white lands ~3.1:1
+     (fails AA text), so accent-text gets a darker step, verified 5.90:1
+     against --bg-card. */
+  --accent-text: #A8461F;
+  --accent-dim:  rgba(217,119,87,0.12);
+  --accent-border: rgba(217,119,87,0.40);
 
   --danger-text: #c92e2e;
 
@@ -97,6 +123,7 @@
     --overlay-rgb: 11,13,11;
     --bg-rgb:      247,248,246;
     --bg:          #f7f8f6;
+    --bg-shell:    #f2f3f1;
     --bg-card:     #ffffff;
     --bg-card-2:   #f2f3f1;
     --fg:          #101410;
@@ -105,9 +132,9 @@
     --border:      rgba(var(--overlay-rgb),0.10);
     --border-hover:rgba(var(--overlay-rgb),0.18);
     --switch-thumb-off: #6b6f68;
-    --accent-text: #0b7a52;
-    --accent-dim:  rgba(46,229,157,0.14);
-    --accent-border: rgba(46,229,157,0.45);
+    --accent-text: #A8461F;
+    --accent-dim:  rgba(217,119,87,0.12);
+    --accent-border: rgba(217,119,87,0.40);
     --danger-text: #c92e2e;
     --shadow-card: 0 1px 3px rgba(11,13,11,0.06), 0 8px 24px rgba(11,13,11,0.05);
     color-scheme: light;
@@ -156,8 +183,8 @@ body {
   line-height:  1.6;
   color:        var(--fg);
   background:
-    radial-gradient(ellipse 900px 500px at 10% -5%, rgba(46,229,157,0.07), transparent 55%),
-    radial-gradient(ellipse 600px 400px at 90% 5%,  rgba(46,229,157,0.04), transparent 50%),
+    radial-gradient(ellipse 900px 500px at 10% -5%, rgba(217,119,87,0.07), transparent 55%),
+    radial-gradient(ellipse 600px 400px at 90% 5%,  rgba(217,119,87,0.04), transparent 50%),
     var(--bg);
   min-height: 100vh;
 }
@@ -172,6 +199,16 @@ a { color: inherit; text-decoration: none; }
   clip: rect(0,0,0,0);
   white-space: nowrap;
 }
+
+/* Spacing utilities — flex-column/row gap, replaces the large number of
+   ad hoc `style={{ display: 'flex', flexDirection: 'column', gap: N }}`
+   one-offs scattered across page components. */
+.stack-xs { display: flex; flex-direction: column; gap: 4px; }
+.stack-sm { display: flex; flex-direction: column; gap: 8px; }
+.stack-md { display: flex; flex-direction: column; gap: 16px; }
+.stack-lg { display: flex; flex-direction: column; gap: 24px; }
+.inline-gap-sm { display: flex; align-items: center; gap: 8px; }
+.inline-gap-md { display: flex; align-items: center; gap: 16px; }
 
 /* ── Header ─────────────────────────────────────────────────── */
 .header {
@@ -204,7 +241,7 @@ a { color: inherit; text-decoration: none; }
   background: var(--accent);
   display: grid;
   place-items: center;
-  box-shadow: 0 6px 18px rgba(46,229,157,0.3);
+  box-shadow: 0 6px 18px rgba(217,119,87,0.3);
   flex-shrink: 0;
 }
 
@@ -329,14 +366,15 @@ a { color: inherit; text-decoration: none; }
 .app-body { flex: 1; display: flex; max-width: 1400px; margin: 0 auto; width: 100%; }
 
 .sidebar {
-  width: 220px;
+  width: 224px;
   flex-shrink: 0;
   padding: 24px 12px;
   display: flex;
   flex-direction: column;
   gap: 20px;
+  background: var(--bg-shell);
   border-right: 1px solid var(--border);
-  transition: width var(--duration-base, 180ms) var(--ease-standard, ease);
+  transition: width var(--duration-moderate) var(--ease-emphasis);
 }
 .sidebar-section { display: flex; flex-direction: column; gap: 2px; }
 .sidebar-section-title {
@@ -349,20 +387,63 @@ a { color: inherit; text-decoration: none; }
   margin-bottom: 4px;
 }
 .sidebar-link {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 10px;
+  width: 100%;
+  font-family: var(--font-body);
   font-size: 13.5px;
   font-weight: 600;
   color: var(--fg-muted);
   padding: 8px 10px;
+  border: none;
+  background: none;
+  cursor: pointer;
   border-radius: var(--radius-sm);
-  transition: color 0.15s, background 0.15s;
+  transition: color var(--duration-fast) var(--ease-out-soft), background var(--duration-fast) var(--ease-out-soft);
 }
 .sidebar-link:hover { color: var(--fg); background: var(--bg-hover); }
 .sidebar-link.active { color: var(--accent-text); background: var(--accent-dim); }
+/* Left-edge accent rail on the active item — stays legible even collapsed
+   to icon-only width, where the dim background alone reads too subtly. */
+.sidebar-link.active::before {
+  content: "";
+  position: absolute;
+  left: -12px;
+  top: 6px;
+  bottom: 6px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--accent);
+}
 .sidebar-link-icon { display: flex; flex-shrink: 0; color: inherit; }
 .sidebar-link-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ── Sidebar groups (e.g. "Criar" > Nova Prova/Atividade/Plano) ──
+   Expanded sidebar: JS-driven accordion (.is-open toggles .sidebar-group-items).
+   Collapsed sidebar: pure-CSS hover/focus flyout, independent of .is-open —
+   see the html[data-sidebar="collapsed"] override below. */
+.sidebar-group { position: relative; display: flex; flex-direction: column; }
+.sidebar-group-trigger { justify-content: flex-start; }
+.sidebar-group-chevron {
+  margin-left: auto;
+  display: flex;
+  flex-shrink: 0;
+  color: var(--fg-subtle);
+  transition: transform var(--duration-fast) var(--ease-out-soft);
+}
+.sidebar-group.is-open .sidebar-group-chevron { transform: rotate(180deg); }
+.sidebar-group-items {
+  display: none;
+  flex-direction: column;
+  gap: 2px;
+  padding-left: 14px;
+  margin-top: 2px;
+  border-left: 1px solid var(--border);
+}
+.sidebar-group.is-open .sidebar-group-items { display: flex; }
+.sidebar-group-item { font-size: 13px; padding: 7px 10px; }
 
 .sidebar-toggle {
   display: flex;
@@ -377,18 +458,47 @@ a { color: inherit; text-decoration: none; }
   font-size: 12.5px;
   font-weight: 600;
   cursor: pointer;
-  transition: color 0.15s, background 0.15s;
+  transition: color var(--duration-fast) var(--ease-out-soft), background var(--duration-fast) var(--ease-out-soft);
 }
 .sidebar-toggle:hover { color: var(--fg); background: var(--bg-hover); }
-.sidebar-toggle svg { transition: transform 0.2s; flex-shrink: 0; }
+.sidebar-toggle svg { transition: transform var(--duration-base) var(--ease-standard); flex-shrink: 0; }
 
 html[data-sidebar="collapsed"] .sidebar { width: 64px; }
 html[data-sidebar="collapsed"] .sidebar-link-label,
-html[data-sidebar="collapsed"] .sidebar-section-title {
+html[data-sidebar="collapsed"] .sidebar-section-title,
+html[data-sidebar="collapsed"] .sidebar-group-chevron {
   display: none;
 }
 html[data-sidebar="collapsed"] .sidebar-link { justify-content: center; }
 html[data-sidebar="collapsed"] .sidebar-toggle { justify-content: center; }
+
+/* Collapsed flyout: hover/focus over the group icon reveals its sub-items
+   as a floating panel to the right, regardless of .is-open (VS Code/Linear
+   pattern) — keyboard users get the same panel via :focus-within. */
+html[data-sidebar="collapsed"] .sidebar-group-items {
+  position: absolute;
+  left: calc(100% + 8px);
+  top: 0;
+  min-width: 200px;
+  padding: 6px;
+  margin: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-card);
+  box-shadow: var(--shadow-card);
+  z-index: 120;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(-4px);
+  transition: opacity var(--duration-fast) var(--ease-out-soft), transform var(--duration-fast) var(--ease-out-soft), visibility var(--duration-fast);
+}
+html[data-sidebar="collapsed"] .sidebar-group:hover .sidebar-group-items,
+html[data-sidebar="collapsed"] .sidebar-group:focus-within .sidebar-group-items {
+  display: flex;
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(0);
+}
 
 .app-main { flex: 1; min-width: 0; padding: 32px 24px 80px; }
 
@@ -531,7 +641,7 @@ html[data-sidebar="collapsed"] .sidebar-toggle { justify-content: center; }
 
 .card--highlight {
   border-color: var(--accent-border);
-  background: linear-gradient(135deg, var(--bg-card) 0%, rgba(46,229,157,0.03) 100%);
+  background: linear-gradient(135deg, var(--bg-card) 0%, rgba(217,119,87,0.03) 100%);
 }
 
 .card-header {
@@ -664,7 +774,7 @@ html[data-sidebar="collapsed"] .sidebar-toggle { justify-content: center; }
 .input:hover { border-color: var(--border-hover); }
 .input:focus {
   border-color: var(--accent-border);
-  box-shadow: 0 0 0 3px rgba(46,229,157,0.10);
+  box-shadow: 0 0 0 3px rgba(217,119,87,0.10);
 }
 
 textarea.input { min-height: 96px; resize: vertical; line-height: 1.5; }
@@ -862,7 +972,7 @@ select.input option { background-color: var(--bg-card); color: var(--fg); }
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: opacity 0.12s, transform 0.1s, box-shadow 0.15s, background 0.12s, border-color 0.12s;
+  transition: opacity var(--duration-fast) var(--ease-out-soft), transform var(--duration-fast) var(--ease-out-soft), box-shadow var(--duration-fast) var(--ease-out-soft), background var(--duration-fast) var(--ease-out-soft), border-color var(--duration-fast) var(--ease-out-soft);
   white-space: nowrap;
   outline: none;
 }
@@ -873,13 +983,14 @@ select.input option { background-color: var(--bg-card); color: var(--fg); }
 
 .btn-primary {
   background: var(--accent);
-  color: #05120c;
-  box-shadow: 0 6px 20px rgba(46,229,157,0.22);
+  color: var(--accent-ink);
+  box-shadow: 0 4px 14px rgba(217,119,87,0.16);
   font-weight: 700;
 }
 .btn-primary:hover:not(:disabled) {
-  box-shadow: 0 8px 26px rgba(46,229,157,0.32);
+  box-shadow: 0 6px 18px rgba(217,119,87,0.22);
   opacity: 0.92;
+  transform: translateY(-1px);
 }
 
 .btn-ghost {
@@ -1632,7 +1743,16 @@ select.input option { background-color: var(--bg-card); color: var(--fg); }
 .hero-mock-lines { display: flex; flex-direction: column; gap: 8px; }
 .hero-mock-line { height: 8px; border-radius: 999px; background: rgba(var(--overlay-rgb),0.06); }
 
-.reveal { opacity: 0; transform: translateY(16px); transition: opacity 0.6s ease, transform 0.6s ease; }
+/* --i (default 0) drives stagger for mapped list/grid items — set inline via
+   style={{ '--i': index }}; ScrollReveal.tsx / any future consumer can pass
+   it without a fixed set of .reveal-delay-N classes. */
+.reveal {
+  --i: 0;
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity var(--duration-slow) var(--ease-emphasis), transform var(--duration-slow) var(--ease-emphasis);
+  transition-delay: calc(var(--stagger-step) * var(--i));
+}
 .reveal--visible { opacity: 1; transform: translateY(0); }
 @media (prefers-reduced-motion: reduce) {
   .reveal { opacity: 1; transform: none; transition: none; }
@@ -1749,7 +1869,7 @@ select.input option { background-color: var(--bg-card); color: var(--fg); }
   padding: 48px 24px;
   border-radius: var(--radius-lg);
   border: 1px solid var(--accent-border);
-  background: linear-gradient(135deg, var(--bg-card) 0%, rgba(46,229,157,0.05) 100%);
+  background: linear-gradient(135deg, var(--bg-card) 0%, rgba(217,119,87,0.05) 100%);
 }
 .cta-title {
   font-family: var(--font-display);

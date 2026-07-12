@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <rect width="64" height="64" rx="16" fill="#2EE59D" />
+  <rect width="64" height="64" rx="16" fill="#D97757" />
   <path
     d="M11 49 24 19 33.5 37 43 19 56 49"
-    stroke="#06130d"
+    stroke="#1a0d08"
     stroke-linecap="round"
     stroke-linejoin="round"
     stroke-width="6.2"

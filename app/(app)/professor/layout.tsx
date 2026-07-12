@@ -23,9 +23,16 @@ const NAV: SidebarSection[] = [
     title: "Gerar conteúdo",
     items: [
       { href: "/professor/provas", label: "Minhas Provas", icon: <IconProvas />, mobilePrimary: true },
-      { href: "/professor/provas/nova", label: "Nova Prova", icon: <IconNovaProva /> },
-      { href: "/professor/atividades/nova", label: "Nova Atividade", icon: <IconAtividade /> },
-      { href: "/professor/planos-de-aula/nova", label: "Novo Plano de Aula", icon: <IconPlano /> },
+      {
+        kind: "group",
+        label: "Criar",
+        icon: <IconNovaProva />,
+        items: [
+          { href: "/professor/provas/nova", label: "Nova Prova", icon: <IconNovaProva /> },
+          { href: "/professor/atividades/nova", label: "Nova Atividade", icon: <IconAtividade /> },
+          { href: "/professor/planos-de-aula/nova", label: "Novo Plano de Aula", icon: <IconPlano /> },
+        ],
+      },
     ],
   },
   {
