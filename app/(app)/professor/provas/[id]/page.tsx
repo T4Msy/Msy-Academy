@@ -2,7 +2,9 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { ExamHeaderMenu } from "./ExamHeaderMenu";
-import { ExamQuestionsEditor, type QuestionData } from "./ExamQuestionsEditor";
+import { QuestionsEditor, type QuestionsEditorActions } from "@/components/questions/QuestionsEditor";
+import type { QuestionData } from "@/lib/questions/types";
+import { addQuestionToExam, moveQuestion, regenerateQuestion, removeQuestionFromExam } from "../actions";
 import { ExamExportActions } from "./ExamExportActions";
 import { AiBadge } from "@/components/AiBadge";
 
@@ -43,6 +45,13 @@ export default async function ExamPage({ params }: { params: Promise<{ id: strin
       return { ...q, position: eq.position };
     });
 
+  const questionsActions: QuestionsEditorActions = {
+    onAdd: addQuestionToExam.bind(null, exam.id),
+    onRemove: removeQuestionFromExam.bind(null, exam.id),
+    onMove: moveQuestion.bind(null, exam.id),
+    onRegenerate: regenerateQuestion.bind(null, exam.id),
+  };
+
   return (
     <>
       <div className="page-head">
@@ -66,7 +75,7 @@ export default async function ExamPage({ params }: { params: Promise<{ id: strin
         </div>
       </div>
 
-      <ExamQuestionsEditor examId={exam.id} questions={questions} shuffleOptions={exam.version > 1} />
+      <QuestionsEditor kind="EXAM" parentId={exam.id} questions={questions} actions={questionsActions} shuffleOptions={exam.version > 1} />
     </>
   );
 }

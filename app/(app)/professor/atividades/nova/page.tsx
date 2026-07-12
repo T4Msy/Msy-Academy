@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ActivityForm } from "./ActivityForm";
+import { NovaAtividadeTabs } from "./NovaAtividadeTabs";
 
 export const metadata: Metadata = { title: "Nova Atividade" };
 
@@ -9,10 +9,10 @@ export default function NovaAtividadePage() {
       <div className="page-head">
         <div>
           <h1 className="page-title">Nova Atividade</h1>
-          <p className="page-subtitle">Gere uma lista de exercícios com IA.</p>
+          <p className="page-subtitle">Gere com IA ou crie do zero uma lista de exercícios.</p>
         </div>
       </div>
-      <ActivityForm />
+      <NovaAtividadeTabs />
     </>
   );
 }

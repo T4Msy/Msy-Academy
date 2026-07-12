@@ -3,36 +3,35 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { updateQuestion } from "@/lib/questions/actions";
-import { moveQuestion, regenerateQuestion } from "../actions";
+import type { QuestionData, NewQuestionInput } from "@/lib/questions/types";
 import { AiThinking } from "@/components/AiThinking";
 import { EmptyState } from "@/components/EmptyState";
+import { InlineDeleteConfirm } from "@/components/InlineDeleteConfirm";
+import { QuestionForm } from "./QuestionForm";
 
-type QuestionType = "MULTIPLA" | "VF" | "DISCURSIVA";
-type Difficulty = "FACIL" | "MEDIO" | "DIFICIL";
-
-export interface QuestionData {
-  id: string;
-  type: QuestionType;
-  statement: string;
-  options: { id: string; text: string }[] | null;
-  correct_answer: string | string[];
-  explanation: string | null;
-  difficulty: Difficulty;
-  tags: string[];
-  position: number;
-}
-
-const DIFFICULTY_LABEL: Record<Difficulty, string> = {
+const DIFFICULTY_LABEL: Record<QuestionData["difficulty"], string> = {
   FACIL: "Fácil",
   MEDIO: "Médio",
   DIFICIL: "Difícil",
 };
 
-const TYPE_LABEL: Record<QuestionType, string> = {
+const TYPE_LABEL: Record<QuestionData["type"], string> = {
   MULTIPLA: "Múltipla escolha",
   VF: "Verdadeiro/Falso",
   DISCURSIVA: "Discursiva",
 };
+
+/**
+ * Ações parametrizadas pelo parent (prova ou atividade) — o componente que
+ * monta `QuestionsEditor` já faz `.bind(null, parentId)` nas server actions
+ * (mesmo padrão de RenameDeleteMenu), então aqui só se lida com questionId.
+ */
+export interface QuestionsEditorActions {
+  onAdd: (input: NewQuestionInput) => Promise<void>;
+  onRemove: (questionId: string) => Promise<void>;
+  onMove: (questionId: string, direction: "up" | "down") => Promise<void>;
+  onRegenerate: (questionId: string) => Promise<void>;
+}
 
 /** Fisher-Yates — display-only shuffle for "Versão B" exams (RF-P08); never mutates stored data. */
 function shuffled<T>(arr: T[]): T[] {
@@ -48,16 +47,17 @@ function QuestionCard({
   question,
   index,
   total,
-  examId,
+  actions,
   shuffleOptions,
 }: {
   question: QuestionData;
   index: number;
   total: number;
-  examId: string;
+  actions: QuestionsEditorActions;
   shuffleOptions: boolean;
 }) {
   const [editing, setEditing] = useState(false);
+  const [confirmingRemove, setConfirmingRemove] = useState(false);
   const [statement, setStatement] = useState(question.statement);
   const [options, setOptions] = useState(question.options ?? []);
   const [correctAnswer, setCorrectAnswer] = useState(question.correct_answer);
@@ -99,7 +99,7 @@ function QuestionCard({
     setError(null);
     startTransition(async () => {
       try {
-        await regenerateQuestion(examId, question.id);
+        await actions.onRegenerate(question.id);
         setEditing(false);
         router.refresh();
       } catch (err) {
@@ -112,7 +112,19 @@ function QuestionCard({
     setError(null);
     startTransition(async () => {
       try {
-        await moveQuestion(examId, question.id, direction);
+        await actions.onMove(question.id, direction);
+        router.refresh();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Algo deu errado.");
+      }
+    });
+  }
+
+  function onRemove() {
+    setError(null);
+    startTransition(async () => {
+      try {
+        await actions.onRemove(question.id);
         router.refresh();
       } catch (err) {
         setError(err instanceof Error ? err.message : "Algo deu errado.");
@@ -135,7 +147,7 @@ function QuestionCard({
           <button type="button" className="btn btn-ghost btn-sm" disabled={pending || index === total - 1} onClick={() => onMove("down")} aria-label="Mover para baixo">
             ↓
           </button>
-          {!editing && (
+          {!editing && !confirmingRemove && (
             <>
               <button type="button" className="btn btn-ghost btn-sm" disabled={pending} onClick={onRegenerate}>
                 {pending ? <AiThinking label="Gerando" /> : "Regenerar"}
@@ -144,6 +156,17 @@ function QuestionCard({
                 Editar
               </button>
             </>
+          )}
+          {!editing && (
+            <InlineDeleteConfirm
+              confirming={confirmingRemove}
+              pending={pending}
+              onRequestConfirm={() => setConfirmingRemove(true)}
+              onCancel={() => setConfirmingRemove(false)}
+              onConfirm={onRemove}
+              confirmLabel="Remover"
+              hint="Remover esta questão?"
+            />
           )}
         </div>
       </div>
@@ -252,33 +275,66 @@ function QuestionCard({
   );
 }
 
-export function ExamQuestionsEditor({
-  examId,
-  questions,
-  shuffleOptions = false,
-}: {
-  examId: string;
-  questions: QuestionData[];
-  shuffleOptions?: boolean;
-}) {
-  if (questions.length === 0) {
+function AddQuestionPanel({ onAdd }: { onAdd: (input: NewQuestionInput) => Promise<void> }) {
+  const [open, setOpen] = useState(false);
+  const router = useRouter();
+
+  if (!open) {
     return (
-      <EmptyState variant="questoes" title="Sem questões" text="Esta prova não tem questões associadas." />
+      <button type="button" className="btn btn-secondary" onClick={() => setOpen(true)}>
+        + Adicionar questão
+      </button>
     );
   }
 
   return (
-    <div className="questions-stack">
-      {questions.map((q, i) => (
-        <QuestionCard
-          key={q.id}
-          question={q}
-          index={i}
-          total={questions.length}
-          examId={examId}
-          shuffleOptions={shuffleOptions}
+    <section className="card">
+      <div className="card-header">
+        <h2 className="card-title">Nova questão</h2>
+      </div>
+      <div className="card-body">
+        <QuestionForm
+          submitLabel="Adicionar"
+          onCancel={() => setOpen(false)}
+          onSubmit={async (input) => {
+            await onAdd(input);
+            setOpen(false);
+            router.refresh();
+          }}
         />
-      ))}
+      </div>
+    </section>
+  );
+}
+
+export function QuestionsEditor({
+  questions,
+  actions,
+  shuffleOptions = false,
+}: {
+  kind: "EXAM" | "ACTIVITY";
+  parentId: string;
+  questions: QuestionData[];
+  actions: QuestionsEditorActions;
+  shuffleOptions?: boolean;
+}) {
+  return (
+    <div className="questions-stack">
+      {questions.length === 0 ? (
+        <EmptyState variant="questoes" title="Sem questões" text="Adicione a primeira questão manualmente ou gere com IA." />
+      ) : (
+        questions.map((q, i) => (
+          <QuestionCard
+            key={q.id}
+            question={q}
+            index={i}
+            total={questions.length}
+            actions={actions}
+            shuffleOptions={shuffleOptions}
+          />
+        ))
+      )}
+      <AddQuestionPanel onAdd={actions.onAdd} />
     </div>
   );
 }

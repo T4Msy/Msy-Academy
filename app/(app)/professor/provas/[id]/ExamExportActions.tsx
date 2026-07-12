@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { QuestionData } from "./ExamQuestionsEditor";
+import type { QuestionData } from "@/lib/questions/types";
 
 function slugify(s: string): string {
   return (
