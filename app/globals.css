@@ -269,7 +269,7 @@ a { color: inherit; text-decoration: none; }
   color: var(--fg-muted);
   padding: 7px 12px;
   border-radius: var(--radius-sm);
-  transition: color 0.15s, background 0.15s;
+  transition: color var(--duration-fast), background var(--duration-fast);
 }
 .nav-link:hover { color: var(--fg); background: var(--bg-hover); }
 .nav-link.active { color: var(--accent-text); }
@@ -359,7 +359,7 @@ a { color: inherit; text-decoration: none; }
   border: 1px solid var(--border);
   border-radius: 999px;
   padding: 7px 13px;
-  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  transition: color var(--duration-fast), border-color var(--duration-fast), background var(--duration-fast);
 }
 .context-switch:hover { color: var(--fg); border-color: var(--border-hover); background: var(--bg-hover); }
 
@@ -521,7 +521,7 @@ html[data-sidebar="collapsed"] .sidebar-group:focus-within .sidebar-group-items 
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  transition: border-color 0.15s, transform 0.12s, background 0.15s;
+  transition: border-color var(--duration-fast), transform var(--duration-instant), background var(--duration-fast);
 }
 .quick-action-card:hover { border-color: var(--border-hover); transform: translateY(-2px); background: var(--bg-card-2); }
 .quick-action-title {
@@ -587,7 +587,7 @@ html[data-sidebar="collapsed"] .sidebar-group:focus-within .sidebar-group-items 
   color: var(--fg-subtle);
   font-weight: 500;
   cursor: default;
-  transition: color 0.2s;
+  transition: color var(--duration-base);
 }
 
 .prog-step span {
@@ -600,7 +600,7 @@ html[data-sidebar="collapsed"] .sidebar-group:focus-within .sidebar-group-items 
   font-size: 11px;
   font-weight: 700;
   flex-shrink: 0;
-  transition: border-color 0.2s, background 0.2s, color 0.2s;
+  transition: border-color var(--duration-base), background var(--duration-base), color var(--duration-base);
 }
 
 .prog-step b {
@@ -614,7 +614,7 @@ html[data-sidebar="collapsed"] .sidebar-group:focus-within .sidebar-group-items 
 .prog-step.active span {
   background: var(--accent);
   border-color: var(--accent-text);
-  color: #06130d;
+  color: var(--accent-ink);
 }
 
 .prog-divider {
@@ -632,7 +632,7 @@ html[data-sidebar="collapsed"] .sidebar-group:focus-within .sidebar-group-items 
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
   overflow: hidden;
-  transition: border-color 0.2s;
+  transition: border-color var(--duration-base);
 }
 
 .card:focus-within { border-color: var(--border-hover); }
@@ -765,7 +765,7 @@ html[data-sidebar="collapsed"] .sidebar-group:focus-within .sidebar-group-items 
   font-family: var(--font-body);
   font-size: 14px;
   outline: none;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition: border-color var(--duration-fast), box-shadow var(--duration-fast);
   -webkit-appearance: none;
   appearance: none;
 }
@@ -804,7 +804,7 @@ select.input option { background-color: var(--bg-card); color: var(--fg); }
   border: 1.5px solid var(--border);
   background: rgba(var(--overlay-rgb),0.02);
   cursor: pointer;
-  transition: border-color 0.15s, background 0.15s, transform 0.12s;
+  transition: border-color var(--duration-fast), background var(--duration-fast), transform var(--duration-instant);
   outline: none;
   text-align: left;
   width: 100%;
@@ -851,7 +851,7 @@ select.input option { background-color: var(--bg-card); color: var(--fg); }
   display: grid;
   place-items: center;
   flex-shrink: 0;
-  transition: border-color 0.15s;
+  transition: border-color var(--duration-fast);
 }
 
 .radio-dot::after {
@@ -860,7 +860,7 @@ select.input option { background-color: var(--bg-card); color: var(--fg); }
   height: 7px;
   border-radius: 999px;
   background: transparent;
-  transition: background 0.15s;
+  transition: background var(--duration-fast);
 }
 
 .ia-tile.active .radio-dot { border-color: var(--accent-text); }
@@ -892,7 +892,7 @@ select.input option { background-color: var(--bg-card); color: var(--fg); }
   border-radius: 999px;
   cursor: pointer;
   flex-shrink: 0;
-  transition: background 0.15s, border-color 0.15s;
+  transition: background var(--duration-fast), border-color var(--duration-fast);
   outline: none;
   padding: 0;
 }
@@ -909,7 +909,7 @@ select.input option { background-color: var(--bg-card); color: var(--fg); }
   background: var(--switch-thumb-off);
   border-radius: 999px;
   transform: translateY(-50%);
-  transition: left 0.15s, background 0.15s;
+  transition: left var(--duration-fast), background var(--duration-fast);
 }
 
 .switch.on { background: var(--accent-dim); border-color: var(--accent-border); }
@@ -925,7 +925,7 @@ select.input option { background-color: var(--bg-card); color: var(--fg); }
   border-radius: var(--radius);
   background: rgba(var(--overlay-rgb),0.02);
   cursor: pointer;
-  transition: border-color 0.2s, background 0.2s, transform 0.15s;
+  transition: border-color var(--duration-base), background var(--duration-base), transform var(--duration-fast);
   outline: none;
   flex-wrap: wrap;
 }
@@ -1028,7 +1028,7 @@ select.input option { background-color: var(--bg-card); color: var(--fg); }
   width: 14px;
   height: 14px;
   border: 2px solid rgba(0,0,0,0.2);
-  border-top-color: #05120c;
+  border-top-color: var(--accent-ink);
   border-radius: 999px;
   display: inline-block;
   animation: spin 0.8s linear infinite;
@@ -1068,7 +1068,7 @@ select.input option { background-color: var(--bg-card); color: var(--fg); }
   border: 1px solid var(--border);
   background: rgba(var(--overlay-rgb),0.02);
   cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
+  transition: border-color var(--duration-fast), background var(--duration-fast);
 }
 
 .opt-check:hover { border-color: var(--border-hover); background: var(--bg-hover); }
@@ -1092,7 +1092,7 @@ select.input option { background-color: var(--bg-card); color: var(--fg); }
   flex-shrink: 0;
   margin-top: 1px;
   opacity: 0.35;
-  transition: opacity 0.15s;
+  transition: opacity var(--duration-fast);
 }
 .opt-check input:checked + .opt-box { opacity: 1; }
 
@@ -1105,7 +1105,7 @@ select.input option { background-color: var(--bg-card); color: var(--fg); }
   display: grid;
   place-items: center;
   flex-shrink: 0;
-  transition: background 0.15s, border-color 0.15s;
+  transition: background var(--duration-fast), border-color var(--duration-fast);
 }
 .activation-step-icon--done {
   background: var(--accent-dim);
@@ -1284,7 +1284,7 @@ select.input option { background-color: var(--bg-card); color: var(--fg); }
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  transition: border-color 0.15s, transform 0.12s, background 0.15s;
+  transition: border-color var(--duration-fast), transform var(--duration-instant), background var(--duration-fast);
 }
 .exam-card:hover {
   border-color: var(--border-hover);
@@ -1392,11 +1392,12 @@ select.input option { background-color: var(--bg-card); color: var(--fg); }
   color: var(--fg-muted);
   font-size: 10.5px;
   font-weight: 600;
+  font-family: var(--font-body);
   border-radius: var(--radius-sm);
-  transition: color 0.15s, background 0.15s;
+  transition: color var(--duration-fast) var(--ease-out-soft), background var(--duration-fast) var(--ease-out-soft), transform var(--duration-fast) var(--ease-out-soft);
 }
 .tabbar-item:hover { color: var(--fg); }
-.tabbar-item.active { color: var(--accent-text); }
+.tabbar-item.active { color: var(--accent-text); transform: translateY(-1px); }
 .tabbar-more-sheet {
   position: fixed;
   bottom: 0;
@@ -1526,7 +1527,7 @@ select.input option { background-color: var(--bg-card); color: var(--fg); }
   font-size: 13.5px;
   font-family: var(--font-body);
   cursor: pointer;
-  transition: background 0.12s, color 0.12s;
+  transition: background var(--duration-instant), color var(--duration-instant);
 }
 .popover-item:hover:not(:disabled) { background: var(--bg-hover); }
 .popover-item:disabled { opacity: 0.5; cursor: default; }
@@ -1556,7 +1557,7 @@ select.input option { background-color: var(--bg-card); color: var(--fg); }
   background: transparent;
   color: var(--fg-muted);
   cursor: pointer;
-  transition: color 0.15s, background 0.15s;
+  transition: color var(--duration-fast), background var(--duration-fast);
 }
 .notification-bell-trigger:hover { color: var(--fg); background: var(--bg-hover); }
 
@@ -1598,7 +1599,7 @@ select.input option { background-color: var(--bg-card); color: var(--fg); }
   cursor: pointer;
   border-radius: 999px;
   line-height: 0;
-  transition: box-shadow 0.15s;
+  transition: box-shadow var(--duration-fast);
 }
 .user-menu-trigger:hover { box-shadow: 0 0 0 3px var(--bg-hover); }
 .user-menu-pop { min-width: 220px; }
@@ -1621,7 +1622,7 @@ select.input option { background-color: var(--bg-card); color: var(--fg); }
   overflow: hidden;
   margin-top: 4px;
 }
-.usage-bar-fill { height: 100%; background: var(--accent); border-radius: 999px; transition: width 0.3s; }
+.usage-bar-fill { height: 100%; background: var(--accent); border-radius: 999px; transition: width var(--duration-moderate); }
 .usage-bar-fill--warn { background: var(--danger); }
 
 /* ── Tutor IA (chat) ──────────────────────────────────────────── */
@@ -1784,7 +1785,7 @@ select.input option { background-color: var(--bg-card); color: var(--fg); }
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  transition: border-color 0.15s, transform 0.12s;
+  transition: border-color var(--duration-fast), transform var(--duration-instant);
 }
 .feature-card:hover { border-color: var(--border-hover); transform: translateY(-2px); }
 .feature-title {
@@ -1838,7 +1839,7 @@ select.input option { background-color: var(--bg-card); color: var(--fg); }
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  transition: border-color 0.15s, transform 0.12s;
+  transition: border-color var(--duration-fast), transform var(--duration-instant);
 }
 .pricing-card:hover { border-color: var(--border-hover); transform: translateY(-2px); }
 .pricing-card--highlight { border-color: var(--accent-border); background: linear-gradient(180deg, var(--bg-card) 0%, var(--accent-dim) 220%); }
@@ -1847,7 +1848,7 @@ select.input option { background-color: var(--bg-card); color: var(--fg); }
   top: -11px;
   left: 20px;
   background: var(--accent);
-  color: #05120c;
+  color: var(--accent-ink);
   font-size: 10.5px;
   font-weight: 800;
   letter-spacing: 0.03em;
