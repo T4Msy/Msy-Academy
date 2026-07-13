@@ -12,11 +12,11 @@ export function CategoricalBar({
   const max = Math.max(1, ...items.map((i) => i.value));
 
   return (
-    <div className="cat-bar-list">
+    <div className="flex flex-col gap-3">
       {items.map((item, i) => (
         <div key={`${i}-${item.label}`}>
-          <div className="cat-bar-row-head">
-            <span className="cat-bar-label">{item.label}</span>
+          <div className="mb-1 flex justify-between text-sm">
+            <span className="text-foreground">{item.label}</span>
             <span className="shrink-0 tabular-nums text-muted-foreground">
               {item.value}{item.suffix ?? ""}
             </span>

@@ -40,6 +40,8 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
+import { DsBarChart } from "@/components/charts/recharts";
 import { ThemeToggle } from "@/components/shell/ThemeToggle";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -289,6 +291,44 @@ export function Showcase() {
           </CardHeader>
           <CardContent className="text-md text-muted-foreground">
             Superfície padrão de conteúdo (card sobre background, card-2 para aninhados).
+          </CardContent>
+        </Card>
+      </Section>
+
+      <Section title="Editor de conteúdo (Tiptap)">
+        <RichTextEditor
+          value={{
+            type: "doc",
+            content: [
+              {
+                type: "paragraph",
+                content: [
+                  { type: "text", text: "Editor padrão da plataforma — armazena " },
+                  { type: "text", marks: [{ type: "bold" }], text: "JSON do Tiptap" },
+                  { type: "text", text: ", nunca HTML cru." },
+                ],
+              },
+            ],
+          }}
+        />
+      </Section>
+
+      <Section title="Charts (Recharts tematizado)">
+        <Card>
+          <CardContent className="pt-6">
+            <DsBarChart
+              xKey="turma"
+              series={[
+                { key: "media", label: "Média da turma" },
+                { key: "engajamento", label: "Engajamento" },
+              ]}
+              data={[
+                { turma: "6º A", media: 72, engajamento: 85 },
+                { turma: "6º B", media: 64, engajamento: 71 },
+                { turma: "7º A", media: 81, engajamento: 90 },
+                { turma: "8º C", media: 58, engajamento: 62 },
+              ]}
+            />
           </CardContent>
         </Card>
       </Section>
