@@ -1,69 +1,124 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  lessonPlanGenerationSchema,
+  type LessonPlanGenerationInput,
+} from "@/lib/lesson-plans/schemas";
+import { useAiGenerate } from "@/hooks/useAiGenerate";
 import { AiThinking } from "@/components/AiThinking";
+import { QuotaNotice } from "@/components/ai/QuotaNotice";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 export function LessonPlanForm() {
-  const router = useRouter();
-  const [disciplina, setDisciplina] = useState("");
-  const [serie, setSerie] = useState("");
-  const [tema, setTema] = useState("");
-  const [observacoes, setObservacoes] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [erro, setErro] = useState<string | null>(null);
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setErro(null);
-    setLoading(true);
-    try {
-      const res = await fetch("/api/ai/lesson-plans/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ disciplina, serie, tema, observacoes }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.error ?? `Erro ${res.status}`);
-      router.push(`/professor/planos-de-aula/${data.id}`);
-    } catch (err) {
-      setErro(err instanceof Error ? err.message : String(err));
-      setLoading(false);
-    }
-  }
+  const form = useForm<LessonPlanGenerationInput>({
+    resolver: zodResolver(lessonPlanGenerationSchema),
+    defaultValues: { disciplina: "", serie: "", tema: "", observacoes: "" },
+  });
+  const { generate, error, quotaHit } = useAiGenerate(
+    "/api/ai/lesson-plans/generate",
+    (id) => `/professor/planos-de-aula/${id}`,
+  );
+  const loading = form.formState.isSubmitting;
 
   return (
-    <form className="form-stack" onSubmit={handleSubmit} noValidate>
-      <section className="card">
-        <div className="card-body">
-          <div className="form-grid-2">
-            <div className="form-field">
-              <label className="field-label" htmlFor="disciplina">Disciplina</label>
-              <input className="input" id="disciplina" value={disciplina} onChange={(e) => setDisciplina(e.target.value)} placeholder="Ex: História" />
+    <Form {...form}>
+      <form className="flex flex-col gap-4" onSubmit={form.handleSubmit(generate)} noValidate>
+        <Card>
+          <CardContent className="flex flex-col gap-4 pt-6">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <FormField
+                control={form.control}
+                name="disciplina"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Disciplina</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Ex: História" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="serie"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Série</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Ex: 8º ano" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="tema"
+                render={({ field }) => (
+                  <FormItem className="sm:col-span-2">
+                    <FormLabel>Tema da aula</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Ex: Revolução Industrial" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="observacoes"
+                render={({ field }) => (
+                  <FormItem className="sm:col-span-2">
+                    <FormLabel>Observações (opcional)</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Ex: turma com pouco tempo disponível, priorizar atividade prática..."
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
-            <div className="form-field">
-              <label className="field-label" htmlFor="serie">Série</label>
-              <input className="input" id="serie" value={serie} onChange={(e) => setSerie(e.target.value)} placeholder="Ex: 8º ano" />
-            </div>
-            <div className="form-field form-field--full">
-              <label className="field-label" htmlFor="tema">Tema da aula</label>
-              <input className="input" id="tema" value={tema} onChange={(e) => setTema(e.target.value)} placeholder="Ex: Revolução Industrial" required />
-            </div>
-            <div className="form-field form-field--full">
-              <label className="field-label" htmlFor="observacoes">Observações (opcional)</label>
-              <textarea className="input" id="observacoes" value={observacoes} onChange={(e) => setObservacoes(e.target.value)} placeholder="Ex: turma com pouco tempo disponível, priorizar atividade prática..." />
-            </div>
-          </div>
 
-          {erro && <div className="notice notice--error">{erro}</div>}
+            {quotaHit && <QuotaNotice upgradeHref="/professor/configuracoes" />}
+            {error && (
+              <div
+                role="alert"
+                className="rounded-md border border-danger-border bg-danger-dim p-3 text-sm text-danger-text"
+              >
+                {error}
+              </div>
+            )}
 
-          <div className="submit-row">
-            <button type="submit" className="btn btn-primary btn-generate" disabled={loading || !tema.trim()}>
-              {loading ? <AiThinking label="Gerando" /> : "Gerar Plano de Aula"}
-            </button>
-          </div>
-        </div>
-      </section>
-    </form>
+            <div className="flex justify-end">
+              <Button
+                type="submit"
+                size="lg"
+                className="h-11 min-w-40 rounded-full font-display tracking-[-0.2px]"
+                disabled={loading}
+              >
+                {loading ? <AiThinking label="Gerando" /> : "Gerar Plano de Aula"}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </form>
+    </Form>
   );
 }

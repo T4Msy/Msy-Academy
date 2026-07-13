@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { deckGenerationSchema } from "@/lib/flashcards/schemas";
 import { createClient } from "@/lib/supabase/server";
 import { generateStructured } from "@/lib/ai/orchestrator";
 import { FLASHCARDS_SCHEMA_V1 } from "@/lib/ai/prompts/flashcards.v1";
@@ -26,6 +27,17 @@ export async function POST(request: Request) {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: "Requisição inválida." }, { status: 400 });
+  }
+
+  // Contrato único (decisão nº 9 do ADR 13): mesmo schema Zod do client
+  // valida aqui antes dos usos — os checks manuais abaixo ficam como
+  // salvaguarda de tipos para o código existente.
+  const schemaCheck = deckGenerationSchema.safeParse(body);
+  if (!schemaCheck.success) {
+    return NextResponse.json(
+      { error: schemaCheck.error.issues[0]?.message ?? "Dados inválidos." },
+      { status: 400 },
+    );
   }
 
   const materialId = body.materialId;

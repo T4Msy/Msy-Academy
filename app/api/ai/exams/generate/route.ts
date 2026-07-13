@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { PDFParse } from "pdf-parse";
 import { createClient } from "@/lib/supabase/server";
 import { buildExamParams } from "@/lib/exam/buildPayload";
+import { examGenerationSchema } from "@/lib/exam/schemas";
 import { generateStructured } from "@/lib/ai/orchestrator";
 import { getAIProvider } from "@/lib/ai/registry";
 import { QuotaExceededError } from "@/lib/billing/quota";
@@ -75,14 +76,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Requisição inválida." }, { status: 400 });
   }
 
-  const params = buildExamParams(rawParams as Record<string, string | boolean | number>);
-
-  if (!params.tituloprova && !params.materia && !params.assunto) {
-    return NextResponse.json(
-      { error: "Informe ao menos título, matéria ou assunto." },
-      { status: 400 },
-    );
+  // Contrato único (decisão nº 9 do ADR 13): mesmo schema do client valida
+  // aqui antes da normalização — substitui os checks manuais por campo.
+  const parsed = examGenerationSchema.safeParse(rawParams);
+  if (!parsed.success) {
+    const message = parsed.error.issues[0]?.message ?? "Dados inválidos.";
+    return NextResponse.json({ error: message }, { status: 400 });
   }
+
+  const params = buildExamParams(parsed.data as unknown as Record<string, string | boolean | number>);
 
   const { data: profile } = await supabase
     .from("profiles")
