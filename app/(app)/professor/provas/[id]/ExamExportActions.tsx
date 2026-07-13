@@ -77,16 +77,16 @@ export function ExamExportActions({
   }
 
   return (
-    <div className="result-actions-wrap">
-      <div className="result-actions">
-        <button type="button" className="btn btn-ghost btn-sm" onClick={exportPdf} disabled={busy !== null}>
-          {busy === "pdf" ? <span className="btn-loader" /> : "PDF"}
+    <div className="flex flex-col items-end gap-2">
+      <div className="flex items-center gap-2">
+        <button type="button" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 border border-border bg-[rgba(var(--overlay-rgb),0.06)] text-foreground hover:border-border-hover hover:bg-[rgba(var(--overlay-rgb),0.10)] px-3 py-[7px] text-sm" onClick={exportPdf} disabled={busy !== null}>
+          {busy === "pdf" ? <span className="inline-block size-3.5 shrink-0 animate-spin rounded-full border-2 border-black/20 border-t-brand-ink" /> : "PDF"}
         </button>
-        <button type="button" className="btn btn-ghost btn-sm" onClick={exportWord} disabled={busy !== null}>
-          {busy === "word" ? <span className="btn-loader" /> : "Word"}
+        <button type="button" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 border border-border bg-[rgba(var(--overlay-rgb),0.06)] text-foreground hover:border-border-hover hover:bg-[rgba(var(--overlay-rgb),0.10)] px-3 py-[7px] text-sm" onClick={exportWord} disabled={busy !== null}>
+          {busy === "word" ? <span className="inline-block size-3.5 shrink-0 animate-spin rounded-full border-2 border-black/20 border-t-brand-ink" /> : "Word"}
         </button>
       </div>
-      {error && <div className="notice notice--error result-actions-error">{error}</div>}
+      {error && <div className="rounded-md border border-danger-border bg-danger-dim px-4.5 py-3.5 text-[13.5px] leading-normal text-danger-text mt-0 max-w-[260px] px-3 py-2 text-right text-sm">{error}</div>}
     </div>
   );
 }

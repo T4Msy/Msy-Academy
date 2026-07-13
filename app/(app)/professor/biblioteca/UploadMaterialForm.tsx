@@ -51,21 +51,21 @@ export function UploadMaterialForm({ classes }: { classes: { id: string; name: s
 
   if (!open) {
     return (
-      <button type="button" className="btn btn-ghost" onClick={() => setOpen(true)}>
+      <button type="button" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 border border-border bg-[rgba(var(--overlay-rgb),0.06)] text-foreground hover:border-border-hover hover:bg-[rgba(var(--overlay-rgb),0.10)] px-4 py-2.5" onClick={() => setOpen(true)}>
         Enviar arquivo
       </button>
     );
   }
 
   return (
-    <form onSubmit={onSubmit} className="card max-w-420">
-      <div className="card-body card-body--form">
-        <div className="form-field">
-          <label className="field-label" htmlFor="material-title">Título (opcional)</label>
-          <input className="input" id="material-title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Padrão: nome do arquivo" />
+    <form onSubmit={onSubmit} className="overflow-hidden rounded-lg border border-border bg-card shadow-elevated transition-colors max-w-[420px]">
+      <div className="flex flex-col p-5.5 gap-2.5">
+        <div className="flex flex-col gap-1.5">
+          <label className="block text-sm font-semibold text-foreground" htmlFor="material-title">Título (opcional)</label>
+          <input className="w-full appearance-none rounded-sm border border-border bg-[rgba(var(--overlay-rgb),0.04)] px-3 py-2.5 text-md text-foreground outline-none transition-colors focus:border-brand-border focus:ring-[3px] focus:ring-brand-glow" id="material-title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Padrão: nome do arquivo" />
         </div>
-        <div className="form-field">
-          <label className="field-label">Arquivo PDF (até 10MB)</label>
+        <div className="flex flex-col gap-1.5">
+          <label className="block text-sm font-semibold text-foreground">Arquivo PDF (até 10MB)</label>
           <div className="dropzone" onClick={() => fileInputRef.current?.click()} role="button" tabIndex={0}
             onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fileInputRef.current?.click(); } }}>
             <div className="dz-text">
@@ -74,22 +74,22 @@ export function UploadMaterialForm({ classes }: { classes: { id: string; name: s
           </div>
           <input ref={fileInputRef} type="file" accept="application/pdf" className="visually-hidden" onChange={(e) => handleFile(e.target.files?.[0] ?? null)} />
         </div>
-        <div className="form-field">
-          <label className="field-label" htmlFor="material-class">Turma (opcional)</label>
-          <select className="input" id="material-class" value={classId} onChange={(e) => setClassId(e.target.value)}>
+        <div className="flex flex-col gap-1.5">
+          <label className="block text-sm font-semibold text-foreground" htmlFor="material-class">Turma (opcional)</label>
+          <select className="w-full appearance-none rounded-sm border border-border bg-[rgba(var(--overlay-rgb),0.04)] px-3 py-2.5 text-md text-foreground outline-none transition-colors focus:border-brand-border focus:ring-[3px] focus:ring-brand-glow" id="material-class" value={classId} onChange={(e) => setClassId(e.target.value)}>
             <option value="">Nenhuma — só Biblioteca</option>
             {classes.map((c) => (
               <option key={c.id} value={c.id}>{c.name}</option>
             ))}
           </select>
-          <p className="field-hint">
+          <p className="mt-1 text-xs leading-snug text-muted-foreground">
             Anexar a uma turma torna o conteúdo disponível para o Tutor IA dos alunos matriculados.
           </p>
         </div>
-        {error && <div className="notice notice--error">{error}</div>}
-        <div className="popover-row">
-          <button type="button" className="btn btn-ghost btn-sm" disabled={pending} onClick={() => setOpen(false)}>Cancelar</button>
-          <button type="submit" className="btn btn-primary btn-sm" disabled={pending || !file}>
+        {error && <div className="mt-3.5 rounded-md border border-danger-border bg-danger-dim px-4.5 py-3.5 text-[13.5px] leading-normal text-danger-text">{error}</div>}
+        <div className="flex flex-wrap justify-end gap-2">
+          <button type="button" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 border border-border bg-[rgba(var(--overlay-rgb),0.06)] text-foreground hover:border-border-hover hover:bg-[rgba(var(--overlay-rgb),0.10)] px-3 py-[7px] text-sm" disabled={pending} onClick={() => setOpen(false)}>Cancelar</button>
+          <button type="submit" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 bg-primary font-bold text-primary-foreground shadow-[0_4px_14px_rgba(217,119,87,0.16)] hover:-translate-y-px hover:opacity-90 px-3 py-[7px] text-sm" disabled={pending || !file}>
             {pending ? "Enviando…" : "Enviar"}
           </button>
         </div>

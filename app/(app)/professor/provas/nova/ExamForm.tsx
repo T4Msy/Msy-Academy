@@ -2,7 +2,34 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Upload } from "lucide-react";
+import { examGenerationSchema, type ExamGenerationInput } from "@/lib/exam/schemas";
 import { AiThinking } from "@/components/AiThinking";
+import { QuotaNotice } from "@/components/ai/QuotaNotice";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 
 const STEPS = [
   { n: 1, label: "Geral" },
@@ -12,35 +39,93 @@ const STEPS = [
   { n: 5, label: "Gerar" },
 ];
 
+const PUBLICO_OPTIONS = [
+  ["infantil", "Infantil"],
+  ["fundamental", "Fundamental"],
+  ["medio", "Ensino Médio"],
+  ["graduacao", "Graduação"],
+  ["tecnico", "Técnico"],
+  ["concurso", "Concurso"],
+] as const;
+
+const ESTILO_OPTIONS = [
+  ["escolar", "Escolar (direto e didático)"],
+  ["enem", "ENEM (contextualizado)"],
+  ["vestibular", "Vestibular (mais cobrança)"],
+  ["tecnico", "Técnico (objetivo e prático)"],
+  ["desafiador", "Desafiador (nível alto)"],
+] as const;
+
+const TIPO_OPTIONS = [
+  ["multipla", "Múltipla escolha"],
+  ["vf", "Verdadeiro / Falso"],
+  ["discursiva", "Discursiva"],
+  ["mista", "Mista"],
+] as const;
+
+const NIVEL_OPTIONS = [
+  ["facil", "Fácil"],
+  ["medio", "Médio"],
+  ["dificil", "Difícil"],
+] as const;
+
+const DIST_OPTIONS = [
+  ["40/40/20", "40% fácil, 40% médio, 20% difícil"],
+  ["30/50/20", "30% fácil, 50% médio, 20% difícil"],
+  ["25/50/25", "25% fácil, 50% médio, 25% difícil"],
+  ["20/40/40", "20% fácil, 40% médio, 40% difícil"],
+] as const;
+
+function StepBadge({ n, accent = false }: { n: number; accent?: boolean }) {
+  return (
+    <Badge
+      variant="outline"
+      className={
+        accent
+          ? "border-brand-border bg-brand-dim text-brand-text"
+          : "text-muted-foreground"
+      }
+    >
+      Etapa {n}
+    </Badge>
+  );
+}
+
+/** Formulário de geração de prova — piloto RHF+Zod+DS (decisões 1 e 9 do ADR 13). */
 export function ExamForm() {
   const router = useRouter();
 
-  // ── Form state ─────────────────────────────────────────────
-  const [curso, setCurso] = useState("");
-  const [tituloprova, setTituloprova] = useState("");
-  const [materia, setMateria] = useState("");
-  const [assunto, setAssunto] = useState("");
-  const [publico, setPublico] = useState("medio");
-  const [estilo, setEstilo] = useState("escolar");
-  const [observacoesprofessor, setObservacoes] = useState("");
-  const [tipo, setTipo] = useState("multipla");
-  const [quantidade, setQuantidade] = useState("10");
-  const [pontos, setPontos] = useState("1");
-  const [nivel, setNivel] = useState("medio");
-  const [distniveis, setDistniveis] = useState("40/40/20");
-  const [usarapostila, setUsarapostila] = useState(false);
-  const [apostila, setApostila] = useState<File | null>(null);
-  const [gabarito, setGabarito] = useState(true);
+  const form = useForm<ExamGenerationInput>({
+    resolver: zodResolver(examGenerationSchema),
+    defaultValues: {
+      curso: "",
+      tituloprova: "",
+      materia: "",
+      assunto: "",
+      publico: "medio",
+      estilo: "escolar",
+      observacoesprofessor: "",
+      tipo: "multipla",
+      quantidade: "10",
+      pontos: "1",
+      nivel: "medio",
+      distniveis: "40/40/20",
+      usarapostila: false,
+      gabarito: true,
+    },
+  });
 
-  const [loading, setLoading] = useState(false);
+  const [apostila, setApostila] = useState<File | null>(null);
   const [erro, setErro] = useState<string | null>(null);
+  const [quotaHit, setQuotaHit] = useState(false);
   const [activeStep, setActiveStep] = useState(1);
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const loading = form.formState.isSubmitting;
 
   // ── Scroll-driven progress tracker (parity with legacy) ────
   useEffect(() => {
-    const cards = document.querySelectorAll<HTMLElement>('.card[id^="step-"]');
+    const cards = document.querySelectorAll<HTMLElement>('[id^="step-"]');
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -61,322 +146,492 @@ export function ExamForm() {
       setErro("Por favor, envie apenas arquivos no formato .pdf");
       return;
     }
+    setErro(null);
     setApostila(file);
-    setUsarapostila(!!file);
+    form.setValue("usarapostila", !!file);
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function onSubmit(values: ExamGenerationInput) {
     setErro(null);
-    setLoading(true);
-
-    const params = {
-      curso, tituloprova, materia, assunto, publico, estilo, observacoesprofessor,
-      tipo, quantidade, pontos, nivel, distniveis,
-      usarapostila, gabarito,
-    };
+    setQuotaHit(false);
 
     const body = new FormData();
-    body.append("dados", JSON.stringify(params));
+    body.append("dados", JSON.stringify(values));
     if (apostila) body.append("apostila", apostila);
 
     try {
       const res = await fetch("/api/ai/exams/generate", { method: "POST", body });
       const data = await res.json();
+      if (res.status === 402) {
+        setQuotaHit(true);
+        return;
+      }
       if (!res.ok) throw new Error(data?.error ?? `Erro ${res.status}`);
       router.push(`/professor/provas/${data.id}`);
     } catch (err) {
       setErro(err instanceof Error ? err.message : String(err));
-      setLoading(false);
     }
   }
+
+  const usarapostila = form.watch("usarapostila");
 
   return (
     <>
       {/* Progress tracker */}
-      <div className="progress-track" aria-label="Progresso do formulário">
-        <div className="progress-steps">
+      <div
+        className="mb-6 overflow-x-auto [-webkit-overflow-scrolling:touch] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        aria-label="Progresso do formulário"
+      >
+        <div className="flex min-w-max items-center py-1">
           {STEPS.map((s, i) => (
             <div key={s.n} className="contents">
-              <div className={`prog-step${activeStep === s.n ? " active" : ""}`}>
-                <span>{s.n}</span>
+              <div
+                className={`flex items-center gap-2 text-sm font-medium transition-colors duration-200 ${
+                  activeStep === s.n ? "text-brand-text" : "text-subtle"
+                }`}
+              >
+                <span
+                  className={`grid size-6 place-items-center rounded-full border-[1.5px] text-xs ${
+                    activeStep === s.n ? "border-brand bg-brand-dim" : "border-subtle"
+                  }`}
+                >
+                  {s.n}
+                </span>
                 <b>{s.label}</b>
               </div>
-              {i < STEPS.length - 1 && <div className="prog-divider" />}
+              {i < STEPS.length - 1 && <div className="mx-3 h-px w-8 bg-border" aria-hidden />}
             </div>
           ))}
         </div>
       </div>
 
-      <form className="form-stack" onSubmit={handleSubmit} noValidate>
-        {/* ETAPA 1 — Configurações Gerais */}
-        <section className="card" id="step-1">
-          <div className="card-header">
-            <div className="card-title-group">
-              <div className="step-badge">Etapa 1</div>
-              <h2 className="card-title">Configurações Gerais</h2>
-            </div>
-            <p className="card-subtitle">O motor de IA é configurado pela plataforma.</p>
-          </div>
-          <div className="card-body">
-            <div className="form-grid-2">
-              <div className="form-field">
-                <label className="field-label" htmlFor="curso">Curso</label>
-                <input className="input" id="curso" value={curso}
-                  onChange={(e) => setCurso(e.target.value)}
-                  placeholder="Ex: Ensino Médio, Graduação..." />
-              </div>
-              <div className="form-field">
-                <label className="field-label" htmlFor="tituloprova">Título da Prova</label>
-                <input className="input" id="tituloprova" value={tituloprova}
-                  onChange={(e) => setTituloprova(e.target.value)}
-                  placeholder="Ex: Avaliação Bimestral" />
-              </div>
-            </div>
-          </div>
-        </section>
+      <Form {...form}>
+        <form className="flex flex-col gap-4" onSubmit={form.handleSubmit(onSubmit)} noValidate>
+          {/* ETAPA 1 — Configurações Gerais */}
+          <Card id="step-1">
+              <CardHeader>
+                <div className="flex items-center gap-2.5">
+                  <StepBadge n={1} />
+                  <CardTitle>Configurações Gerais</CardTitle>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  O motor de IA é configurado pela plataforma.
+                </p>
+              </CardHeader>
+              <CardContent className="grid gap-4 sm:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="curso"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Curso</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Ex: Ensino Médio, Graduação..." {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="tituloprova"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Título da Prova</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Ex: Avaliação Bimestral" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+          </Card>
 
-        {/* ETAPA 2 — Conteúdo */}
-        <section className="card" id="step-2">
-          <div className="card-header">
-            <div className="card-title-group">
-              <div className="step-badge">Etapa 2</div>
-              <h2 className="card-title">Conteúdo da Prova</h2>
-            </div>
-          </div>
-          <div className="card-body">
-            <div className="form-grid-2">
-              <div className="form-field">
-                <label className="field-label" htmlFor="materia">Matéria</label>
-                <input className="input" id="materia" value={materia}
-                  onChange={(e) => setMateria(e.target.value)}
-                  placeholder="Ex: Informática, Matemática..." />
-              </div>
-              <div className="form-field">
-                <label className="field-label" htmlFor="assunto">Assunto / Tema</label>
-                <input className="input" id="assunto" value={assunto}
-                  onChange={(e) => setAssunto(e.target.value)}
-                  placeholder="Ex: Redes, Funções, HTML..." />
-              </div>
-              <div className="form-field">
-                <label className="field-label" htmlFor="publico">Público-alvo</label>
-                <select className="input" id="publico" value={publico}
-                  onChange={(e) => setPublico(e.target.value)}>
-                  <option value="infantil">Infantil</option>
-                  <option value="fundamental">Fundamental</option>
-                  <option value="medio">Ensino Médio</option>
-                  <option value="graduacao">Graduação</option>
-                  <option value="tecnico">Técnico</option>
-                  <option value="concurso">Concurso</option>
-                </select>
-              </div>
-              <div className="form-field">
-                <label className="field-label" htmlFor="estilo">Estilo</label>
-                <select className="input" id="estilo" value={estilo}
-                  onChange={(e) => setEstilo(e.target.value)}>
-                  <option value="escolar">Escolar (direto e didático)</option>
-                  <option value="enem">ENEM (contextualizado)</option>
-                  <option value="vestibular">Vestibular (mais cobrança)</option>
-                  <option value="tecnico">Técnico (objetivo e prático)</option>
-                  <option value="desafiador">Desafiador (nível alto)</option>
-                </select>
-              </div>
-              <div className="form-field form-field--full">
-                <label className="field-label" htmlFor="observacoesprofessor">Observações do professor</label>
-                <textarea className="input" id="observacoesprofessor" value={observacoesprofessor}
-                  onChange={(e) => setObservacoes(e.target.value)}
-                  placeholder="Ex: inclua exemplos práticos, enfoque em conceitos-chave, pegadinhas leves, etc." />
-              </div>
-            </div>
-          </div>
-        </section>
+          {/* ETAPA 2 — Conteúdo */}
+          <Card id="step-2">
+              <CardHeader>
+                <div className="flex items-center gap-2.5">
+                  <StepBadge n={2} />
+                  <CardTitle>Conteúdo da Prova</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="grid gap-4 sm:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="materia"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Matéria</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Ex: Informática, Matemática..." {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="assunto"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Assunto / Tema</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Ex: Redes, Funções, HTML..." {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="publico"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Público-alvo</FormLabel>
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <FormControl>
+                          <SelectTrigger className="w-full">
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {PUBLICO_OPTIONS.map(([value, label]) => (
+                            <SelectItem key={value} value={value}>
+                              {label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="estilo"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Estilo</FormLabel>
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <FormControl>
+                          <SelectTrigger className="w-full">
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {ESTILO_OPTIONS.map(([value, label]) => (
+                            <SelectItem key={value} value={value}>
+                              {label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="observacoesprofessor"
+                  render={({ field }) => (
+                    <FormItem className="sm:col-span-2">
+                      <FormLabel>Observações do professor</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Ex: inclua exemplos práticos, enfoque em conceitos-chave, pegadinhas leves, etc."
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+          </Card>
 
-        {/* ETAPA 3 — Formato & Estrutura */}
-        <section className="card" id="step-3">
-          <div className="card-header">
-            <div className="card-title-group">
-              <div className="step-badge">Etapa 3</div>
-              <h2 className="card-title">Formato & Estrutura</h2>
-            </div>
-          </div>
-          <div className="card-body">
-            <div className="form-grid-2">
-              <div className="form-field">
-                <label className="field-label" htmlFor="tipo">Tipo de Questões</label>
-                <select className="input" id="tipo" value={tipo}
-                  onChange={(e) => setTipo(e.target.value)}>
-                  <option value="multipla">Múltipla escolha</option>
-                  <option value="vf">Verdadeiro / Falso</option>
-                  <option value="discursiva">Discursiva</option>
-                  <option value="mista">Mista</option>
-                </select>
-              </div>
-              <div className="form-field">
-                <label className="field-label" htmlFor="quantidade">Quantidade de Questões</label>
-                <input className="input" id="quantidade" type="number" min={1} value={quantidade}
-                  onChange={(e) => setQuantidade(e.target.value)} />
-              </div>
-              <div className="form-field">
-                <label className="field-label" htmlFor="pontos">Pontos por Questão</label>
-                <input className="input" id="pontos" type="number" min={1} value={pontos}
-                  onChange={(e) => setPontos(e.target.value)} />
-              </div>
-              <div className="form-field">
-                <label className="field-label" htmlFor="nivel">Nível</label>
-                <select className="input" id="nivel" value={nivel}
-                  onChange={(e) => setNivel(e.target.value)}>
-                  <option value="facil">Fácil</option>
-                  <option value="medio">Médio</option>
-                  <option value="dificil">Difícil</option>
-                </select>
-              </div>
-              <div className="form-field form-field--full">
-                <label className="field-label" htmlFor="distniveis">Distribuição de dificuldade</label>
-                <select className="input" id="distniveis" value={distniveis}
-                  onChange={(e) => setDistniveis(e.target.value)}>
-                  <option value="40/40/20">40% fácil, 40% médio, 20% difícil</option>
-                  <option value="30/50/20">30% fácil, 50% médio, 20% difícil</option>
-                  <option value="25/50/25">25% fácil, 50% médio, 25% difícil</option>
-                  <option value="20/40/40">20% fácil, 40% médio, 40% difícil</option>
-                </select>
-              </div>
-            </div>
-          </div>
-        </section>
+          {/* ETAPA 3 — Formato & Estrutura */}
+          <Card id="step-3">
+              <CardHeader>
+                <div className="flex items-center gap-2.5">
+                  <StepBadge n={3} />
+                  <CardTitle>Formato &amp; Estrutura</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="grid gap-4 sm:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="tipo"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tipo de Questões</FormLabel>
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <FormControl>
+                          <SelectTrigger className="w-full">
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {TIPO_OPTIONS.map(([value, label]) => (
+                            <SelectItem key={value} value={value}>
+                              {label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="quantidade"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Quantidade de Questões</FormLabel>
+                      <FormControl>
+                        <Input type="number" min={1} max={50} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="pontos"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Pontos por Questão</FormLabel>
+                      <FormControl>
+                        <Input type="number" min={0} step="0.5" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="nivel"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nível</FormLabel>
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <FormControl>
+                          <SelectTrigger className="w-full">
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {NIVEL_OPTIONS.map(([value, label]) => (
+                            <SelectItem key={value} value={value}>
+                              {label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="distniveis"
+                  render={({ field }) => (
+                    <FormItem className="sm:col-span-2">
+                      <FormLabel>Distribuição de dificuldade</FormLabel>
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <FormControl>
+                          <SelectTrigger className="w-full">
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {DIST_OPTIONS.map(([value, label]) => (
+                            <SelectItem key={value} value={value}>
+                              {label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+          </Card>
 
-        {/* ETAPA 4 — Material de Apoio */}
-        <section className="card" id="step-4">
-          <div className="card-header">
-            <div className="card-title-group">
-              <div className="step-badge">Etapa 4</div>
-              <h2 className="card-title">Material de Apoio</h2>
-            </div>
-          </div>
-          <div className="card-body">
-            <div className="toggle-row">
-              <div className="toggle-info">
-                <b className="toggle-title">Usar apostila (PDF)</b>
-                <span className="toggle-desc">
-                  Envie um PDF de referência — a IA lê o conteúdo e baseia as questões nele. PDFs
-                  escaneados (sem texto selecionável) ainda não são suportados.
-                </span>
-              </div>
-              <button
-                type="button"
-                className={`switch${usarapostila ? " on" : ""}`}
-                role="switch"
-                aria-checked={usarapostila}
-                aria-label="Usar apostila"
-                onClick={() => setUsarapostila((v) => !v)}
-              />
-            </div>
+          {/* ETAPA 4 — Material de Apoio */}
+          <Card id="step-4">
+              <CardHeader>
+                <div className="flex items-center gap-2.5">
+                  <StepBadge n={4} />
+                  <CardTitle>Material de Apoio</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-4">
+                <FormField
+                  control={form.control}
+                  name="usarapostila"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between gap-4">
+                      <div>
+                        <FormLabel>Usar apostila (PDF)</FormLabel>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          Envie um PDF de referência — a IA lê o conteúdo e baseia as questões
+                          nele. PDFs escaneados (sem texto selecionável) ainda não são suportados.
+                        </p>
+                      </div>
+                      <FormControl>
+                        <Switch checked={field.value} onCheckedChange={field.onChange} />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
 
-            <div className="form-field mt-md">
-              <label className="field-label">Arquivo PDF</label>
-              <div
-                className={`dropzone${dragOver ? " dragover" : ""}`}
-                tabIndex={0}
-                role="button"
-                aria-label="Área de envio de PDF — arraste ou clique para selecionar"
-                onClick={() => fileInputRef.current?.click()}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
+                <div
+                  className={`flex flex-wrap items-center gap-4 rounded-md border border-dashed p-5 transition-colors outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow ${
+                    dragOver ? "border-brand bg-brand-dim" : "border-border-hover bg-card-2"
+                  }`}
+                  tabIndex={0}
+                  role="button"
+                  aria-label="Área de envio de PDF — arraste ou clique para selecionar"
+                  onClick={() => fileInputRef.current?.click()}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      fileInputRef.current?.click();
+                    }
+                  }}
+                  onDragOver={(e) => {
                     e.preventDefault();
-                    fileInputRef.current?.click();
-                  }
-                }}
-                onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-                onDragLeave={() => setDragOver(false)}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  setDragOver(false);
-                  handleFile(e.dataTransfer.files?.[0] ?? null);
-                }}
-              >
-                <div className="dz-icon" aria-hidden="true">
-                  <svg fill="none" width="24" height="24" viewBox="0 0 24 24">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                    <polyline points="17 8 12 3 7 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                    <line x1="12" y1="3" x2="12" y2="15" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-                  </svg>
-                </div>
-                <div className="dz-text">
-                  <span className="dz-title">
-                    {apostila ? apostila.name : "Arraste e solte seu PDF aqui"}
-                  </span>
-                  <span className="dz-hint">
-                    {apostila
-                      ? "PDF selecionado."
-                      : "ou clique para selecionar o arquivo"}
-                  </span>
-                </div>
-                <div className="dz-actions">
-                  <button className="btn btn-ghost btn-sm" type="button"
-                    onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}>
-                    Selecionar arquivo
-                  </button>
-                  {apostila && (
-                    <button className="btn btn-danger-ghost btn-sm" type="button"
+                    setDragOver(true);
+                  }}
+                  onDragLeave={() => setDragOver(false)}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setDragOver(false);
+                    handleFile(e.dataTransfer.files?.[0] ?? null);
+                  }}
+                >
+                  <Upload
+                    size={24}
+                    strokeWidth={1.8}
+                    className="shrink-0 text-muted-foreground"
+                    aria-hidden
+                  />
+                  <div className="min-w-0 flex-1">
+                    <span className="block text-md font-semibold text-foreground">
+                      {apostila ? apostila.name : "Arraste e solte seu PDF aqui"}
+                    </span>
+                    <span className="block text-sm text-muted-foreground">
+                      {apostila ? "PDF selecionado." : "ou clique para selecionar o arquivo"}
+                    </span>
+                  </div>
+                  <div className="flex shrink-0 gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
                       onClick={(e) => {
                         e.stopPropagation();
-                        if (fileInputRef.current) fileInputRef.current.value = "";
-                        handleFile(null);
-                      }}>
-                      Remover
-                    </button>
-                  )}
+                        fileInputRef.current?.click();
+                      }}
+                    >
+                      Selecionar arquivo
+                    </Button>
+                    {apostila && (
+                      <Button
+                        type="button"
+                        variant="destructive-ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (fileInputRef.current) fileInputRef.current.value = "";
+                          handleFile(null);
+                        }}
+                      >
+                        Remover
+                      </Button>
+                    )}
+                  </div>
                 </div>
-              </div>
-              <input
-                ref={fileInputRef}
-                accept="application/pdf"
-                className="visually-hidden"
-                type="file"
-                aria-hidden="true"
-                onChange={(e) => handleFile(e.target.files?.[0] ?? null)}
-              />
-            </div>
-          </div>
-        </section>
+                <input
+                  ref={fileInputRef}
+                  accept="application/pdf"
+                  className="visually-hidden"
+                  type="file"
+                  aria-hidden="true"
+                  tabIndex={-1}
+                  onChange={(e) => handleFile(e.target.files?.[0] ?? null)}
+                />
+                {!usarapostila && apostila && (
+                  <p className="text-xs text-muted-foreground">
+                    O arquivo só é usado com &ldquo;Usar apostila&rdquo; ligado.
+                  </p>
+                )}
+              </CardContent>
+          </Card>
 
-        {/* ETAPA 5 — Finalizar */}
-        <section className="card card--highlight" id="step-5">
-          <div className="card-header">
-            <div className="card-title-group">
-              <div className="step-badge step-badge--accent">Etapa 5</div>
-              <h2 className="card-title">Finalizar</h2>
-            </div>
-            <p className="card-subtitle">Gabarito e geração da prova.</p>
-          </div>
-          <div className="card-body">
-            <label className="opt-check" htmlFor="gabarito">
-              <input type="checkbox" id="gabarito" checked={gabarito}
-                onChange={(e) => setGabarito(e.target.checked)} />
-              <span className="opt-box" aria-hidden="true">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
-                  <path d="M20 6 9 17l-5-5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </span>
-              <span className="opt-text">
-                <b>Incluir gabarito ao final</b>
-                <span>Adiciona resposta de cada questão ao final do documento.</span>
-              </span>
-            </label>
+          {/* ETAPA 5 — Finalizar */}
+          <Card id="step-5" className="border-brand-border shadow-accent-glow">
+              <CardHeader>
+                <div className="flex items-center gap-2.5">
+                  <StepBadge n={5} accent />
+                  <CardTitle>Finalizar</CardTitle>
+                </div>
+                <p className="text-sm text-muted-foreground">Gabarito e geração da prova.</p>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-4">
+                <FormField
+                  control={form.control}
+                  name="gabarito"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-start gap-3">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={(v) => field.onChange(v === true)}
+                          className="mt-0.5"
+                        />
+                      </FormControl>
+                      <div>
+                        <FormLabel>Incluir gabarito ao final</FormLabel>
+                        <p className="mt-0.5 text-xs text-muted-foreground">
+                          Adiciona resposta de cada questão ao final do documento.
+                        </p>
+                      </div>
+                    </FormItem>
+                  )}
+                />
 
-            {erro && <div className="notice notice--error">{erro}</div>}
+                {quotaHit && <QuotaNotice upgradeHref="/professor/configuracoes" />}
+                {erro && (
+                  <div
+                    role="alert"
+                    className="rounded-md border border-danger-border bg-danger-dim p-3 text-sm text-danger-text"
+                  >
+                    {erro}
+                  </div>
+                )}
 
-            <div className="submit-row">
-              <div className="submit-chips">
-                <span className="chip">Questões editáveis</span>
-                <span className="chip">Salva automaticamente</span>
-              </div>
-              <button type="submit" className="btn btn-primary btn-generate" disabled={loading}>
-                {loading ? <AiThinking label="Gerando" /> : "Gerar Prova"}
-              </button>
-            </div>
-          </div>
-        </section>
-      </form>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex flex-wrap gap-2">
+                    <Badge variant="secondary">Questões editáveis</Badge>
+                    <Badge variant="secondary">Salva automaticamente</Badge>
+                  </div>
+                  <Button
+                    type="submit"
+                    size="lg"
+                    className="h-11 min-w-40 rounded-full font-display tracking-[-0.2px]"
+                    disabled={loading}
+                  >
+                    {loading ? <AiThinking label="Gerando" /> : "Gerar Prova"}
+                  </Button>
+                </div>
+              </CardContent>
+          </Card>
+        </form>
+      </Form>
     </>
   );
 }

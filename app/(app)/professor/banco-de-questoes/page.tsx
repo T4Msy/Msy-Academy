@@ -38,10 +38,10 @@ export default async function BancoDeQuestoesPage({
 
   return (
     <>
-      <div className="page-head">
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="page-title">Banco de Questões</h1>
-          <p className="page-subtitle">
+          <h1 className="font-display text-3xl font-extrabold tracking-[-0.6px] text-foreground">Banco de Questões</h1>
+          <p className="mt-1 text-[13.5px] text-muted-foreground">
             {list.length > 0
               ? `${list.length} questão${list.length > 1 ? "ões" : ""} reutilizável${list.length > 1 ? "eis" : ""}`
               : "Crie uma questão manualmente ou gere uma prova para começar a preencher o banco."}
@@ -51,31 +51,31 @@ export default async function BancoDeQuestoesPage({
 
       <NewQuestionPanel />
 
-      <form className="card mb-md" method="get">
-        <div className="card-body card-body--filter-row">
-          <div className="form-field min-w-160">
-            <label className="field-label" htmlFor="busca">Buscar</label>
-            <input className="input" id="busca" name="busca" defaultValue={busca ?? ""} placeholder="Palavra no enunciado" />
+      <form className="mb-4 overflow-hidden rounded-lg border border-border bg-card shadow-elevated transition-colors" method="get">
+        <div className="flex flex-row flex-wrap items-end gap-3 p-5.5">
+          <div className="flex min-w-40 flex-col gap-1.5">
+            <label className="block text-sm font-semibold text-foreground" htmlFor="busca">Buscar</label>
+            <input className="w-full appearance-none rounded-sm border border-border bg-[rgba(var(--overlay-rgb),0.04)] px-3 py-2.5 text-md text-foreground outline-none transition-colors focus:border-brand-border focus:ring-[3px] focus:ring-brand-glow" id="busca" name="busca" defaultValue={busca ?? ""} placeholder="Palavra no enunciado" />
           </div>
-          <div className="form-field min-w-160">
-            <label className="field-label" htmlFor="tipo">Tipo</label>
-            <select className="input" id="tipo" name="tipo" defaultValue={tipo ?? ""}>
+          <div className="flex min-w-40 flex-col gap-1.5">
+            <label className="block text-sm font-semibold text-foreground" htmlFor="tipo">Tipo</label>
+            <select className="w-full appearance-none rounded-sm border border-border bg-[rgba(var(--overlay-rgb),0.04)] px-3 py-2.5 text-md text-foreground outline-none transition-colors focus:border-brand-border focus:ring-[3px] focus:ring-brand-glow" id="tipo" name="tipo" defaultValue={tipo ?? ""}>
               <option value="">Todos</option>
               <option value="MULTIPLA">Múltipla escolha</option>
               <option value="VF">Verdadeiro/Falso</option>
               <option value="DISCURSIVA">Discursiva</option>
             </select>
           </div>
-          <div className="form-field min-w-160">
-            <label className="field-label" htmlFor="dificuldade">Dificuldade</label>
-            <select className="input" id="dificuldade" name="dificuldade" defaultValue={dificuldade ?? ""}>
+          <div className="flex min-w-40 flex-col gap-1.5">
+            <label className="block text-sm font-semibold text-foreground" htmlFor="dificuldade">Dificuldade</label>
+            <select className="w-full appearance-none rounded-sm border border-border bg-[rgba(var(--overlay-rgb),0.04)] px-3 py-2.5 text-md text-foreground outline-none transition-colors focus:border-brand-border focus:ring-[3px] focus:ring-brand-glow" id="dificuldade" name="dificuldade" defaultValue={dificuldade ?? ""}>
               <option value="">Todas</option>
               <option value="FACIL">Fácil</option>
               <option value="MEDIO">Médio</option>
               <option value="DIFICIL">Difícil</option>
             </select>
           </div>
-          <button type="submit" className="btn btn-primary btn-sm">Filtrar</button>
+          <button type="submit" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 bg-primary font-bold text-primary-foreground shadow-[0_4px_14px_rgba(217,119,87,0.16)] hover:-translate-y-px hover:opacity-90 px-3 py-[7px] text-sm">Filtrar</button>
         </div>
       </form>
 

@@ -25,13 +25,13 @@ export default async function EscanearAssignmentPage({ params }: { params: Promi
 
   return (
     <>
-      <div className="page-head">
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <Link href="/professor/correcao/escanear" className="sidebar-link back-link">
+          <Link href="/professor/correcao/escanear" className="inline-flex items-center gap-2 pb-2 text-sm text-muted-foreground transition-colors hover:text-foreground">
             ← Escanear Gabarito
           </Link>
-          <h1 className="page-title">{exam?.title ?? "Prova"}</h1>
-          <p className="page-subtitle">Turma: {klass?.name ?? ""}</p>
+          <h1 className="font-display text-3xl font-extrabold tracking-[-0.6px] text-foreground">{exam?.title ?? "Prova"}</h1>
+          <p className="mt-1 text-[13.5px] text-muted-foreground">Turma: {klass?.name ?? ""}</p>
         </div>
       </div>
 

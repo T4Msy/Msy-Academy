@@ -43,9 +43,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         rightSlot={
           <>
             <ThemeToggle variant="icon" />
-            <Link href="/" className="btn btn-ghost btn-sm">Voltar ao app</Link>
+            <Link href="/" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 border border-border bg-[rgba(var(--overlay-rgb),0.06)] text-foreground hover:border-border-hover hover:bg-[rgba(var(--overlay-rgb),0.10)] px-3 py-[7px] text-sm">Voltar ao app</Link>
             <form action={logout}>
-              <button type="submit" className="btn btn-ghost btn-sm">Sair</button>
+              <button type="submit" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 border border-border bg-[rgba(var(--overlay-rgb),0.06)] text-foreground hover:border-border-hover hover:bg-[rgba(var(--overlay-rgb),0.10)] px-3 py-[7px] text-sm">Sair</button>
             </form>
           </>
         }

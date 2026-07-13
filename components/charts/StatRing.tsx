@@ -20,8 +20,8 @@ export function StatRing({
   const offset = circumference * (1 - pct / 100);
 
   return (
-    <div className="inline-gap-md">
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="stat-ring-svg" role="img" aria-label={`${label}: ${value === null ? "sem dados" : `${value}%`}`}>
+    <div className="flex items-center gap-4">
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="shrink-0 -rotate-90" role="img" aria-label={`${label}: ${value === null ? "sem dados" : `${value}%`}`}>
         <circle
           cx={size / 2}
           cy={size / 2}
@@ -41,13 +41,13 @@ export function StatRing({
             strokeLinecap="round"
             strokeDasharray={circumference}
             strokeDashoffset={offset}
-            className="stat-ring-fill"
+            className="transition-[stroke-dashoffset] duration-[480ms] ease-standard"
           />
         )}
       </svg>
       <div>
-        <div className="stat-ring-value">{value === null ? "—" : `${value}%`}</div>
-        <div className="field-hint">{label}</div>
+        <div className="font-display text-[26px] leading-none font-extrabold text-foreground">{value === null ? "—" : `${value}%`}</div>
+        <div className="mt-1 text-xs leading-snug text-muted-foreground">{label}</div>
       </div>
     </div>
   );

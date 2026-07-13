@@ -25,14 +25,14 @@ export default async function PlanoDeAulaPage({ params }: { params: Promise<{ id
 
   return (
     <>
-      <div className="page-head">
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <Link href="/professor/biblioteca" className="sidebar-link back-link">
+          <Link href="/professor/biblioteca" className="inline-flex items-center gap-2 pb-2 text-sm text-muted-foreground transition-colors hover:text-foreground">
             ← Biblioteca
           </Link>
-          <h1 className="page-title">{plan.theme}</h1>
+          <h1 className="font-display text-3xl font-extrabold tracking-[-0.6px] text-foreground">{plan.theme}</h1>
           {plan.ai_provider && (
-            <div className="exam-meta">
+            <div className="mt-0.5 flex flex-wrap gap-1.5">
               <AiBadge />
             </div>
           )}

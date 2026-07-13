@@ -26,13 +26,13 @@ export default async function OnboardingPage({
   }
 
   return (
-    <div className="auth-wrap">
-      <div className="auth-card max-w-560">
-        <div className="auth-brand">
+    <div className="grid min-h-screen place-items-center px-5 py-10">
+      <div className="w-full max-w-[560px] rounded-lg border border-border bg-card p-7 pt-8 shadow-elevated">
+        <div className="mb-5.5 flex items-center gap-[11px]">
           <Logo />
           <div>
-            <div className="auth-title">Como você vai usar a MSY Academy?</div>
-            <div className="auth-subtitle">Isso define seu ambiente inicial — você pode ter os dois.</div>
+            <div className="font-display text-2xl font-extrabold tracking-[-0.4px] text-foreground">Como você vai usar a MSY Academy?</div>
+            <div className="mt-1 text-[13.5px] text-muted-foreground">Isso define seu ambiente inicial — você pode ter os dois.</div>
           </div>
         </div>
         <OnboardingForm redirectTo={redirectTo} />

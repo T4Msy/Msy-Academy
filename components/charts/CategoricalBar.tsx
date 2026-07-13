@@ -12,18 +12,18 @@ export function CategoricalBar({
   const max = Math.max(1, ...items.map((i) => i.value));
 
   return (
-    <div className="cat-bar-list">
+    <div className="flex flex-col gap-3">
       {items.map((item, i) => (
         <div key={`${i}-${item.label}`}>
-          <div className="cat-bar-row-head">
-            <span className="cat-bar-label">{item.label}</span>
-            <span className="tabular-nums-muted">
+          <div className="mb-1 flex justify-between text-sm">
+            <span className="text-foreground">{item.label}</span>
+            <span className="shrink-0 tabular-nums text-muted-foreground">
               {item.value}{item.suffix ?? ""}
             </span>
           </div>
-          <div className="usage-bar">
+          <div className="mt-1 h-2 overflow-hidden rounded-full bg-[rgba(var(--overlay-rgb),0.06)]">
             <div
-              className="usage-bar-fill"
+              className="h-full rounded-full bg-brand transition-[width] duration-[320ms]"
               style={{ width: `${Math.max(4, (item.value / max) * 100)}%`, background: `var(--cat-${item.catSlot})` }}
             />
           </div>

@@ -133,26 +133,26 @@ function QuestionCard({
   }
 
   return (
-    <section className="card question-card">
-      <div className="card-header">
-        <div className="card-title-group">
-          <div className="step-badge">Questão {index + 1}</div>
-          <span className="chip">{TYPE_LABEL[question.type]}</span>
-          <span className="chip">{DIFFICULTY_LABEL[question.difficulty]}</span>
+    <section className="overflow-hidden rounded-lg border border-border bg-card shadow-elevated transition-colors">
+      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border px-5.5 pt-5 pb-4">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <div className="whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2 py-[3px] font-display text-2xs font-bold tracking-[0.5px] uppercase text-muted-foreground">Questão {index + 1}</div>
+          <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">{TYPE_LABEL[question.type]}</span>
+          <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">{DIFFICULTY_LABEL[question.difficulty]}</span>
         </div>
-        <div className="question-card-actions">
-          <button type="button" className="btn btn-ghost btn-sm" disabled={pending || index === 0} onClick={() => onMove("up")} aria-label="Mover para cima">
+        <div className="flex flex-wrap items-center gap-1.5">
+          <button type="button" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 border border-border bg-[rgba(var(--overlay-rgb),0.06)] text-foreground hover:border-border-hover hover:bg-[rgba(var(--overlay-rgb),0.10)] px-3 py-[7px] text-sm" disabled={pending || index === 0} onClick={() => onMove("up")} aria-label="Mover para cima">
             ↑
           </button>
-          <button type="button" className="btn btn-ghost btn-sm" disabled={pending || index === total - 1} onClick={() => onMove("down")} aria-label="Mover para baixo">
+          <button type="button" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 border border-border bg-[rgba(var(--overlay-rgb),0.06)] text-foreground hover:border-border-hover hover:bg-[rgba(var(--overlay-rgb),0.10)] px-3 py-[7px] text-sm" disabled={pending || index === total - 1} onClick={() => onMove("down")} aria-label="Mover para baixo">
             ↓
           </button>
           {!editing && !confirmingRemove && (
             <>
-              <button type="button" className="btn btn-ghost btn-sm" disabled={pending} onClick={onRegenerate}>
+              <button type="button" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 border border-border bg-[rgba(var(--overlay-rgb),0.06)] text-foreground hover:border-border-hover hover:bg-[rgba(var(--overlay-rgb),0.10)] px-3 py-[7px] text-sm" disabled={pending} onClick={onRegenerate}>
                 {pending ? <AiThinking label="Gerando" /> : "Regenerar"}
               </button>
-              <button type="button" className="btn btn-ghost btn-sm" disabled={pending} onClick={startEdit}>
+              <button type="button" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 border border-border bg-[rgba(var(--overlay-rgb),0.06)] text-foreground hover:border-border-hover hover:bg-[rgba(var(--overlay-rgb),0.10)] px-3 py-[7px] text-sm" disabled={pending} onClick={startEdit}>
                 Editar
               </button>
             </>
@@ -171,20 +171,20 @@ function QuestionCard({
         </div>
       </div>
 
-      <div className="card-body">
+      <div className="flex flex-col gap-4.5 p-5.5">
         {editing ? (
           <>
-            <div className="form-field">
-              <label className="field-label" htmlFor={`statement-${question.id}`}>Enunciado</label>
-              <textarea id={`statement-${question.id}`} className="input" value={statement} onChange={(e) => setStatement(e.target.value)} />
+            <div className="flex flex-col gap-1.5">
+              <label className="block text-sm font-semibold text-foreground" htmlFor={`statement-${question.id}`}>Enunciado</label>
+              <textarea id={`statement-${question.id}`} className="w-full appearance-none rounded-sm border border-border bg-[rgba(var(--overlay-rgb),0.04)] px-3 py-2.5 text-md text-foreground outline-none transition-colors focus:border-brand-border focus:ring-[3px] focus:ring-brand-glow" value={statement} onChange={(e) => setStatement(e.target.value)} />
             </div>
 
             {question.type !== "DISCURSIVA" && (
               <fieldset className="form-field fieldset-reset">
                 <legend className="field-label legend-reset">Alternativas (marque a correta)</legend>
-                <div className="question-options-edit">
+                <div className="flex flex-col gap-2">
                   {options.map((opt, i) => (
-                    <label key={opt.id} className="question-option-edit-row">
+                    <label key={opt.id} className="flex items-center gap-2.5">
                       <input
                         type="radio"
                         name={`correct-${question.id}`}
@@ -192,9 +192,9 @@ function QuestionCard({
                         onChange={() => setCorrectAnswer(opt.id)}
                         aria-label={`Marcar alternativa ${opt.id} como correta`}
                       />
-                      <span className="question-option-id">{opt.id}</span>
+                      <span className="shrink-0 font-display font-bold text-brand-text">{opt.id}</span>
                       <input
-                        className="input"
+                        className="w-full appearance-none rounded-sm border border-border bg-[rgba(var(--overlay-rgb),0.04)] px-3 py-2.5 text-md text-foreground outline-none transition-colors focus:border-brand-border focus:ring-[3px] focus:ring-brand-glow"
                         value={opt.text}
                         onChange={(e) => {
                           const next = [...options];
@@ -210,64 +210,64 @@ function QuestionCard({
             )}
 
             {question.type === "DISCURSIVA" && (
-              <div className="form-field">
-                <label className="field-label" htmlFor={`reference-answer-${question.id}`}>Resposta de referência</label>
+              <div className="flex flex-col gap-1.5">
+                <label className="block text-sm font-semibold text-foreground" htmlFor={`reference-answer-${question.id}`}>Resposta de referência</label>
                 <textarea
                   id={`reference-answer-${question.id}`}
-                  className="input"
+                  className="w-full appearance-none rounded-sm border border-border bg-[rgba(var(--overlay-rgb),0.04)] px-3 py-2.5 text-md text-foreground outline-none transition-colors focus:border-brand-border focus:ring-[3px] focus:ring-brand-glow"
                   value={Array.isArray(correctAnswer) ? correctAnswer.join("\n") : correctAnswer}
                   onChange={(e) => setCorrectAnswer(e.target.value)}
                 />
               </div>
             )}
 
-            <div className="form-field">
-              <label className="field-label" htmlFor={`explanation-${question.id}`}>Explicação (opcional)</label>
-              <textarea id={`explanation-${question.id}`} className="input" value={explanation} onChange={(e) => setExplanation(e.target.value)} />
+            <div className="flex flex-col gap-1.5">
+              <label className="block text-sm font-semibold text-foreground" htmlFor={`explanation-${question.id}`}>Explicação (opcional)</label>
+              <textarea id={`explanation-${question.id}`} className="w-full appearance-none rounded-sm border border-border bg-[rgba(var(--overlay-rgb),0.04)] px-3 py-2.5 text-md text-foreground outline-none transition-colors focus:border-brand-border focus:ring-[3px] focus:ring-brand-glow" value={explanation} onChange={(e) => setExplanation(e.target.value)} />
             </div>
 
-            {error && <div className="notice notice--error">{error}</div>}
+            {error && <div className="mt-3.5 rounded-md border border-danger-border bg-danger-dim px-4.5 py-3.5 text-[13.5px] leading-normal text-danger-text">{error}</div>}
 
-            <div className="popover-row">
-              <button type="button" className="btn btn-ghost btn-sm" disabled={pending} onClick={() => setEditing(false)}>
+            <div className="flex flex-wrap justify-end gap-2">
+              <button type="button" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 border border-border bg-[rgba(var(--overlay-rgb),0.06)] text-foreground hover:border-border-hover hover:bg-[rgba(var(--overlay-rgb),0.10)] px-3 py-[7px] text-sm" disabled={pending} onClick={() => setEditing(false)}>
                 Cancelar
               </button>
-              <button type="button" className="btn btn-primary btn-sm" disabled={pending} onClick={onSave}>
+              <button type="button" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 bg-primary font-bold text-primary-foreground shadow-[0_4px_14px_rgba(217,119,87,0.16)] hover:-translate-y-px hover:opacity-90 px-3 py-[7px] text-sm" disabled={pending} onClick={onSave}>
                 {pending ? "Salvando…" : "Salvar"}
               </button>
             </div>
           </>
         ) : (
           <>
-            <p className="question-statement">{question.statement}</p>
+            <p className="mb-3.5 text-[14.5px] leading-relaxed text-foreground">{question.statement}</p>
 
             {question.type !== "DISCURSIVA" && displayOptions.length > 0 && (
-              <ul className="question-options-list">
+              <ul className="flex list-none flex-col gap-2">
                 {displayOptions.map((opt) => (
                   <li
                     key={opt.id}
-                    className={`question-option${opt.id === question.correct_answer ? " question-option--correct" : ""}`}
+                    className={`flex items-baseline gap-2 rounded-sm border px-3 py-[9px] text-[13.5px] ${opt.id === question.correct_answer ? "border-brand-border bg-brand-dim text-foreground" : "border-border text-muted-foreground"}`}
                   >
-                    <span className="question-option-id">{opt.id}</span> {opt.text}
+                    <span className="shrink-0 font-display font-bold text-brand-text">{opt.id}</span> {opt.text}
                   </li>
                 ))}
               </ul>
             )}
 
             {question.type === "DISCURSIVA" && (
-              <p className="question-reference-answer">
+              <p className="text-[13.5px] leading-relaxed text-muted-foreground">
                 <b>Resposta de referência:</b>{" "}
                 {Array.isArray(question.correct_answer) ? question.correct_answer.join(", ") : question.correct_answer}
               </p>
             )}
 
             {question.explanation && (
-              <p className="field-hint">
+              <p className="mt-1 text-xs leading-snug text-muted-foreground">
                 <b>Explicação:</b> {question.explanation}
               </p>
             )}
 
-            {error && <div className="notice notice--error">{error}</div>}
+            {error && <div className="mt-3.5 rounded-md border border-danger-border bg-danger-dim px-4.5 py-3.5 text-[13.5px] leading-normal text-danger-text">{error}</div>}
           </>
         )}
       </div>
@@ -281,18 +281,18 @@ function AddQuestionPanel({ onAdd }: { onAdd: (input: NewQuestionInput) => Promi
 
   if (!open) {
     return (
-      <button type="button" className="btn btn-ghost" onClick={() => setOpen(true)}>
+      <button type="button" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 border border-border bg-[rgba(var(--overlay-rgb),0.06)] text-foreground hover:border-border-hover hover:bg-[rgba(var(--overlay-rgb),0.10)] px-4 py-2.5" onClick={() => setOpen(true)}>
         + Adicionar questão
       </button>
     );
   }
 
   return (
-    <section className="card">
-      <div className="card-header">
-        <h2 className="card-title">Nova questão</h2>
+    <section className="overflow-hidden rounded-lg border border-border bg-card shadow-elevated transition-colors">
+      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border px-5.5 pt-5 pb-4">
+        <h2 className="flex items-center gap-2.5 font-display text-lg font-bold tracking-[-0.2px] text-foreground">Nova questão</h2>
       </div>
-      <div className="card-body">
+      <div className="flex flex-col gap-4.5 p-5.5">
         <QuestionForm
           submitLabel="Adicionar"
           onCancel={() => setOpen(false)}
@@ -319,7 +319,7 @@ export function QuestionsEditor({
   shuffleOptions?: boolean;
 }) {
   return (
-    <div className="questions-stack">
+    <div className="flex flex-col gap-3.5">
       {questions.length === 0 ? (
         <EmptyState variant="questoes" title="Sem questões" text="Adicione a primeira questão manualmente ou gere com IA." />
       ) : (

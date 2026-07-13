@@ -10,14 +10,14 @@ export async function RolesCard() {
   const missing = (["PROFESSOR", "ALUNO"] as const).find((r) => !roleSet.has(r));
 
   return (
-    <section className="card">
-      <div className="card-header">
-        <div className="card-title-group">
-          <h2 className="card-title">Ambientes</h2>
+    <section className="overflow-hidden rounded-lg border border-border bg-card shadow-elevated transition-colors">
+      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border px-5.5 pt-5 pb-4">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <h2 className="flex items-center gap-2.5 font-display text-lg font-bold tracking-[-0.2px] text-foreground">Ambientes</h2>
         </div>
       </div>
-      <div className="card-body">
-        <p className="field-hint mt-0">
+      <div className="flex flex-col gap-4.5 p-5.5">
+        <p className="mt-0 text-xs leading-snug text-muted-foreground">
           Você tem acesso ao ambiente de{" "}
           {(["PROFESSOR", "ALUNO"] as const)
             .filter((r) => roleSet.has(r))

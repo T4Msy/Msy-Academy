@@ -48,32 +48,32 @@ export default async function AdminUsuariosPage() {
 
   return (
     <>
-      <div className="page-head">
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="page-title">Usuários</h1>
-          <p className="page-subtitle">{rows.length} usuário{rows.length !== 1 ? "s" : ""}.</p>
+          <h1 className="font-display text-3xl font-extrabold tracking-[-0.6px] text-foreground">Usuários</h1>
+          <p className="mt-1 text-[13.5px] text-muted-foreground">{rows.length} usuário{rows.length !== 1 ? "s" : ""}.</p>
         </div>
       </div>
 
       {rows.length === 0 ? (
         <EmptyState variant="turma" title="Nenhum usuário ainda" />
       ) : (
-        <div className="stack-md">
+        <div className="flex flex-col gap-4">
           {rows.map((u) => (
-            <div key={u.id} className="card">
-              <div className="card-body">
-                <div className="exam-meta mb-sm">
-                  <span className="chip">{u.tenantName}</span>
+            <div key={u.id} className="overflow-hidden rounded-lg border border-border bg-card shadow-elevated transition-colors">
+              <div className="flex flex-col gap-4.5 p-5.5">
+                <div className="mb-2 mt-0.5 flex flex-wrap gap-1.5">
+                  <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">{u.tenantName}</span>
                   {u.roles.map((r) => (
-                    <span key={r} className="chip">{r}</span>
+                    <span key={r} className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">{r}</span>
                   ))}
-                  {u.suspended && <span className="chip">Suspenso</span>}
+                  {u.suspended && <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">Suspenso</span>}
                 </div>
-                <p className="mb-xs">
+                <p className="mb-1">
                   <b>{u.name}</b>
                 </p>
                 <p className="field-hint mt-0 mb-sm">{u.email}</p>
-                <div className="popover-row popover-row--start">
+                <div className="flex flex-wrap justify-start gap-2">
                   <ActionButton
                     action={toggleSuspend.bind(null, u.id, !u.suspended)}
                     label={u.suspended ? "Reativar" : "Suspender"}

@@ -27,7 +27,7 @@ export function PlanSelect({
   }
 
   return (
-    <select className="input" value={currentCode} onChange={onChange} disabled={pending} aria-label="Plano do tenant">
+    <select className="w-full appearance-none rounded-sm border border-border bg-[rgba(var(--overlay-rgb),0.04)] px-3 py-2.5 text-md text-foreground outline-none transition-colors focus:border-brand-border focus:ring-[3px] focus:ring-brand-glow" value={currentCode} onChange={onChange} disabled={pending} aria-label="Plano do tenant">
       {plans.map((p) => (
         <option key={p.code} value={p.code}>{p.name}</option>
       ))}

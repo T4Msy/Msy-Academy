@@ -35,11 +35,11 @@ export function CreateModeTabs({
           aria-checked={mode === "ai"}
           onClick={() => setMode("ai")}
         >
-          <div className="ia-tile-header">
-            <div className="radio-dot" aria-hidden="true" />
-            <span className="ia-name">{aiLabel}</span>
+          <div className="mb-1.5 flex items-center gap-[9px]">
+            <div className="grid size-[15px] shrink-0 place-items-center rounded-full border-[1.5px] border-subtle transition-colors" aria-hidden="true" />
+            <span className="font-display text-[13.5px] font-bold text-foreground">{aiLabel}</span>
           </div>
-          {aiDesc && <p className="ia-desc">{aiDesc}</p>}
+          {aiDesc && <p className="text-xs leading-snug text-muted-foreground">{aiDesc}</p>}
         </button>
         <button
           type="button"
@@ -48,11 +48,11 @@ export function CreateModeTabs({
           aria-checked={mode === "blank"}
           onClick={() => setMode("blank")}
         >
-          <div className="ia-tile-header">
-            <div className="radio-dot" aria-hidden="true" />
-            <span className="ia-name">{blankLabel}</span>
+          <div className="mb-1.5 flex items-center gap-[9px]">
+            <div className="grid size-[15px] shrink-0 place-items-center rounded-full border-[1.5px] border-subtle transition-colors" aria-hidden="true" />
+            <span className="font-display text-[13.5px] font-bold text-foreground">{blankLabel}</span>
           </div>
-          {blankDesc && <p className="ia-desc">{blankDesc}</p>}
+          {blankDesc && <p className="text-xs leading-snug text-muted-foreground">{blankDesc}</p>}
         </button>
       </div>
       {mode === "ai" ? aiForm : blankForm}

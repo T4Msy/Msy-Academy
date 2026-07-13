@@ -52,23 +52,23 @@ export default async function AdminTenantsPage() {
 
   return (
     <>
-      <div className="page-head">
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="page-title">Tenants</h1>
-          <p className="page-subtitle">{rows.length} tenant{rows.length !== 1 ? "s" : ""}.</p>
+          <h1 className="font-display text-3xl font-extrabold tracking-[-0.6px] text-foreground">Tenants</h1>
+          <p className="mt-1 text-[13.5px] text-muted-foreground">{rows.length} tenant{rows.length !== 1 ? "s" : ""}.</p>
         </div>
       </div>
 
-      <div className="stack-md">
+      <div className="flex flex-col gap-4">
         {rows.map((t) => (
-          <div key={t.id} className="card">
-            <div className="card-body">
-              <div className="exam-meta mb-sm">
-                <span className="chip">{TYPE_LABEL[t.type] ?? t.type}</span>
-                <span className="chip">{t.classCount} turma{t.classCount !== 1 ? "s" : ""}</span>
-                <span className="chip">{t.status}</span>
+          <div key={t.id} className="overflow-hidden rounded-lg border border-border bg-card shadow-elevated transition-colors">
+            <div className="flex flex-col gap-4.5 p-5.5">
+              <div className="mb-2 mt-0.5 flex flex-wrap gap-1.5">
+                <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">{TYPE_LABEL[t.type] ?? t.type}</span>
+                <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">{t.classCount} turma{t.classCount !== 1 ? "s" : ""}</span>
+                <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">{t.status}</span>
               </div>
-              <div className="row-between-wrap">
+              <div className="flex flex-wrap items-center justify-between gap-3">
                 <b>{t.name}</b>
                 <PlanSelect tenantId={t.id} currentCode={t.planCode} plans={plans} onChangePlan={changeTenantPlan} />
               </div>

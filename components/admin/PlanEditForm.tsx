@@ -29,11 +29,11 @@ export function PlanEditForm({ plan }: { plan: Plan }) {
   }
 
   return (
-    <form className="form-stack" onSubmit={onSubmit}>
-      <div className="form-field">
-        <label className="field-label" htmlFor={`quota-${plan.id}`}>Cota de IA mensal (tokens)</label>
+    <form className="flex flex-col gap-3.5" onSubmit={onSubmit}>
+      <div className="flex flex-col gap-1.5">
+        <label className="block text-sm font-semibold text-foreground" htmlFor={`quota-${plan.id}`}>Cota de IA mensal (tokens)</label>
         <input
-          className="input"
+          className="w-full appearance-none rounded-sm border border-border bg-[rgba(var(--overlay-rgb),0.04)] px-3 py-2.5 text-md text-foreground outline-none transition-colors focus:border-brand-border focus:ring-[3px] focus:ring-brand-glow"
           id={`quota-${plan.id}`}
           type="number"
           min={0}
@@ -41,10 +41,10 @@ export function PlanEditForm({ plan }: { plan: Plan }) {
           onChange={(e) => setQuota(e.target.value)}
         />
       </div>
-      <div className="form-field">
-        <label className="field-label" htmlFor={`price-${plan.id}`}>Preço (centavos/mês)</label>
+      <div className="flex flex-col gap-1.5">
+        <label className="block text-sm font-semibold text-foreground" htmlFor={`price-${plan.id}`}>Preço (centavos/mês)</label>
         <input
-          className="input"
+          className="w-full appearance-none rounded-sm border border-border bg-[rgba(var(--overlay-rgb),0.04)] px-3 py-2.5 text-md text-foreground outline-none transition-colors focus:border-brand-border focus:ring-[3px] focus:ring-brand-glow"
           id={`price-${plan.id}`}
           type="number"
           min={0}
@@ -52,10 +52,10 @@ export function PlanEditForm({ plan }: { plan: Plan }) {
           onChange={(e) => setPriceCents(e.target.value)}
         />
       </div>
-      <div className="form-field">
-        <label className="field-label" htmlFor={`price-id-${plan.id}`}>Stripe Price ID</label>
+      <div className="flex flex-col gap-1.5">
+        <label className="block text-sm font-semibold text-foreground" htmlFor={`price-id-${plan.id}`}>Stripe Price ID</label>
         <input
-          className="input"
+          className="w-full appearance-none rounded-sm border border-border bg-[rgba(var(--overlay-rgb),0.04)] px-3 py-2.5 text-md text-foreground outline-none transition-colors focus:border-brand-border focus:ring-[3px] focus:ring-brand-glow"
           id={`price-id-${plan.id}`}
           value={priceId}
           onChange={(e) => setPriceId(e.target.value)}
@@ -66,7 +66,7 @@ export function PlanEditForm({ plan }: { plan: Plan }) {
         <div className={`notice${notice.type === "error" ? " notice--error" : ""}`}>{notice.text}</div>
       )}
       <div>
-        <button type="submit" className="btn btn-primary btn-sm" disabled={pending}>
+        <button type="submit" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 bg-primary font-bold text-primary-foreground shadow-[0_4px_14px_rgba(217,119,87,0.16)] hover:-translate-y-px hover:opacity-90 px-3 py-[7px] text-sm" disabled={pending}>
           {pending ? "Salvando…" : "Salvar"}
         </button>
       </div>

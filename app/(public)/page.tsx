@@ -136,10 +136,10 @@ export default async function Home() {
           </div>
           <div className="landing-header-actions">
             <ThemeToggle variant="icon" />
-            <Link href="/login" className="btn btn-ghost btn-sm">
+            <Link href="/login" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 border border-border bg-[rgba(var(--overlay-rgb),0.06)] text-foreground hover:border-border-hover hover:bg-[rgba(var(--overlay-rgb),0.10)] px-3 py-[7px] text-sm">
               Entrar
             </Link>
-            <Link href="/cadastro" className="btn btn-primary btn-sm">
+            <Link href="/cadastro" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 bg-primary font-bold text-primary-foreground shadow-[0_4px_14px_rgba(217,119,87,0.16)] hover:-translate-y-px hover:opacity-90 px-3 py-[7px] text-sm">
               Criar conta
             </Link>
           </div>
@@ -162,7 +162,7 @@ export default async function Home() {
                 gerador de provas e cresça com a turma inteira.
               </p>
               <div className="hero-actions">
-                <Link href="/cadastro" className="btn btn-primary btn-generate">
+                <Link href="/cadastro" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 bg-primary font-bold text-primary-foreground shadow-[0_4px_14px_rgba(217,119,87,0.16)] hover:-translate-y-px hover:opacity-90 h-11.5 min-w-40 rounded-full px-5 font-display text-base tracking-[-0.2px]">
                   Criar conta grátis
                 </Link>
                 <Link href="#como-funciona" className="btn btn-ghost btn-generate">
@@ -172,18 +172,18 @@ export default async function Home() {
             </div>
 
             <div className="hero-mock" aria-hidden="true">
-              <div className="card card--highlight">
-                <div className="card-header">
-                  <div className="card-title-group">
+              <div className="overflow-hidden rounded-lg border border-border bg-card shadow-elevated transition-colors border-brand-border [background:linear-gradient(135deg,var(--bg-card)_0%,rgba(217,119,87,0.03)_100%)]">
+                <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border px-5.5 pt-5 pb-4">
+                  <div className="flex flex-wrap items-center gap-2.5">
                     <div className="step-badge step-badge--accent">Turma 3º B</div>
-                    <h2 className="card-title">Avaliação Bimestral</h2>
+                    <h2 className="flex items-center gap-2.5 font-display text-lg font-bold tracking-[-0.2px] text-foreground">Avaliação Bimestral</h2>
                   </div>
                 </div>
-                <div className="card-body">
-                  <div className="exam-meta">
-                    <span className="chip">Biologia</span>
-                    <span className="chip">12 questões</span>
-                    <span className="chip">Atribuída</span>
+                <div className="flex flex-col gap-4.5 p-5.5">
+                  <div className="mt-0.5 flex flex-wrap gap-1.5">
+                    <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">Biologia</span>
+                    <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">12 questões</span>
+                    <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">Atribuída</span>
                   </div>
                   <div className="hero-mock-lines">
                     <div className="hero-mock-line" style={{ width: "92%" }} />
@@ -191,9 +191,9 @@ export default async function Home() {
                     <div className="hero-mock-line" style={{ width: "85%" }} />
                     <div className="hero-mock-line" style={{ width: "60%" }} />
                   </div>
-                  <div className="result-actions">
-                    <span className="btn btn-ghost btn-sm">18/22 entregaram</span>
-                    <span className="btn btn-ghost btn-sm">Corrigir</span>
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 border border-border bg-[rgba(var(--overlay-rgb),0.06)] text-foreground hover:border-border-hover hover:bg-[rgba(var(--overlay-rgb),0.10)] px-3 py-[7px] text-sm">18/22 entregaram</span>
+                    <span className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 border border-border bg-[rgba(var(--overlay-rgb),0.06)] text-foreground hover:border-border-hover hover:bg-[rgba(var(--overlay-rgb),0.10)] px-3 py-[7px] text-sm">Corrigir</span>
                   </div>
                 </div>
               </div>
@@ -296,7 +296,7 @@ export default async function Home() {
               <div className="cta-band">
                 <h2 className="cta-title">Comece pela sua primeira prova</h2>
                 <p className="cta-sub">Grátis para começar. Leva menos de um minuto.</p>
-                <Link href="/cadastro" className="btn btn-primary btn-generate">
+                <Link href="/cadastro" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 bg-primary font-bold text-primary-foreground shadow-[0_4px_14px_rgba(217,119,87,0.16)] hover:-translate-y-px hover:opacity-90 h-11.5 min-w-40 rounded-full px-5 font-display text-base tracking-[-0.2px]">
                   Criar conta grátis
                 </Link>
               </div>

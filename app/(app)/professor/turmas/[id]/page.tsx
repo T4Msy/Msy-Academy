@@ -52,46 +52,46 @@ export default async function TurmaPage({ params }: { params: Promise<{ id: stri
 
   return (
     <>
-      <div className="page-head">
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <Link href="/professor/turmas" className="sidebar-link back-link">
+          <Link href="/professor/turmas" className="inline-flex items-center gap-2 pb-2 text-sm text-muted-foreground transition-colors hover:text-foreground">
             ← Turmas
           </Link>
-          <h1 className="page-title">{klass.name}</h1>
+          <h1 className="font-display text-3xl font-extrabold tracking-[-0.6px] text-foreground">{klass.name}</h1>
         </div>
       </div>
 
-      <section className="card mb-md">
-        <div className="card-header">
-          <div className="card-title-group">
-            <h2 className="card-title">Convidar alunos</h2>
+      <section className="mb-4 overflow-hidden rounded-lg border border-border bg-card shadow-elevated transition-colors">
+        <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border px-5.5 pt-5 pb-4">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <h2 className="flex items-center gap-2.5 font-display text-lg font-bold tracking-[-0.2px] text-foreground">Convidar alunos</h2>
           </div>
         </div>
-        <div className="card-body">
-          <p className="field-hint mt-0">
+        <div className="flex flex-col gap-4.5 p-5.5">
+          <p className="mt-0 text-xs leading-snug text-muted-foreground">
             Compartilhe o código com a turma — cada aluno entra em <b>Entrar em turma</b> ou acessando o link direto.
           </p>
-          <div className="exam-meta">
-            <span className="chip chip--code">{klass.invite_code}</span>
+          <div className="mt-0.5 flex flex-wrap gap-1.5">
+            <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-1 text-xs border-border bg-[rgba(var(--overlay-rgb),0.03)] font-display text-base font-bold text-muted-foreground">{klass.invite_code}</span>
           </div>
-          {origin && <p className="field-hint">{inviteUrl}</p>}
+          {origin && <p className="mt-1 text-xs leading-snug text-muted-foreground">{inviteUrl}</p>}
         </div>
       </section>
 
-      <section className="card mb-md">
-        <div className="card-header">
-          <div className="card-title-group">
-            <h2 className="card-title">Alunos</h2>
-            <span className="chip">{students.length}</span>
+      <section className="mb-4 overflow-hidden rounded-lg border border-border bg-card shadow-elevated transition-colors">
+        <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border px-5.5 pt-5 pb-4">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <h2 className="flex items-center gap-2.5 font-display text-lg font-bold tracking-[-0.2px] text-foreground">Alunos</h2>
+            <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">{students.length}</span>
           </div>
         </div>
-        <div className="card-body">
+        <div className="flex flex-col gap-4.5 p-5.5">
           {students.length === 0 ? (
-            <p className="field-hint mt-0">Nenhum aluno entrou ainda.</p>
+            <p className="mt-0 text-xs leading-snug text-muted-foreground">Nenhum aluno entrou ainda.</p>
           ) : (
-            <ul className="question-options-list">
+            <ul className="flex list-none flex-col gap-2">
               {students.map((s) => (
-                <li key={s.student_id} className="question-option">
+                <li key={s.student_id} className="flex items-baseline gap-2 rounded-sm border px-3 py-[9px] text-[13.5px] border-border text-muted-foreground">
                   {s.full_name || "Aluno"}
                 </li>
               ))}
@@ -100,11 +100,11 @@ export default async function TurmaPage({ params }: { params: Promise<{ id: stri
         </div>
       </section>
 
-      <section className="card">
-        <div className="card-header">
-          <div className="card-title-group">
-            <h2 className="card-title">Atribuições</h2>
-            <span className="chip">{assignments?.length ?? 0}</span>
+      <section className="overflow-hidden rounded-lg border border-border bg-card shadow-elevated transition-colors">
+        <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border px-5.5 pt-5 pb-4">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <h2 className="flex items-center gap-2.5 font-display text-lg font-bold tracking-[-0.2px] text-foreground">Atribuições</h2>
+            <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">{assignments?.length ?? 0}</span>
           </div>
           <AssignContentForm
             classId={id}
@@ -112,26 +112,26 @@ export default async function TurmaPage({ params }: { params: Promise<{ id: stri
             activities={(activities ?? []).map((a) => ({ id: a.id, title: a.title }))}
           />
         </div>
-        <div className="card-body">
+        <div className="flex flex-col gap-4.5 p-5.5">
           {(assignments ?? []).length === 0 ? (
-            <p className="field-hint mt-0">Nenhuma prova ou atividade atribuída ainda.</p>
+            <p className="mt-0 text-xs leading-snug text-muted-foreground">Nenhuma prova ou atividade atribuída ainda.</p>
           ) : (
-            <ul className="question-options-list">
+            <ul className="flex list-none flex-col gap-2">
               {(assignments ?? []).map((a) => {
                 const title = a.content_type === "EXAM" ? examTitleById.get(a.content_id) : activityTitleById.get(a.content_id);
                 return (
-                  <li key={a.id} className="question-option list-row">
+                  <li key={a.id} className="flex items-center justify-between gap-2 rounded-sm border border-border px-3 py-[9px] text-[13.5px] text-muted-foreground">
                     <span>
-                      <span className="chip mr-sm">{a.content_type === "EXAM" ? "Prova" : "Atividade"}</span>
+                      <span className="mr-2 inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">{a.content_type === "EXAM" ? "Prova" : "Atividade"}</span>
                       {title ?? "(conteúdo removido)"} — {formatDueDate(a.due_at)}
                     </span>
-                    <span className="inline-gap-sm">
+                    <span className="flex items-center gap-2">
                       {a.content_type === "EXAM" && (
                         <>
-                          <a href={`/api/gabarito/${a.id}`} target="_blank" rel="noopener noreferrer" className="btn btn-ghost btn-sm">
+                          <a href={`/api/gabarito/${a.id}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 border border-border bg-[rgba(var(--overlay-rgb),0.06)] text-foreground hover:border-border-hover hover:bg-[rgba(var(--overlay-rgb),0.10)] px-3 py-[7px] text-sm">
                             Baixar gabarito
                           </a>
-                          <Link href={`/professor/correcao/escanear/${a.id}`} className="btn btn-ghost btn-sm">
+                          <Link href={`/professor/correcao/escanear/${a.id}`} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 border border-border bg-[rgba(var(--overlay-rgb),0.06)] text-foreground hover:border-border-hover hover:bg-[rgba(var(--overlay-rgb),0.10)] px-3 py-[7px] text-sm">
                             Escanear
                           </Link>
                         </>

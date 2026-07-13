@@ -13,7 +13,7 @@ export default function TermosPage() {
             <Logo />
             <span className="brand-title">MSY Academy</span>
           </Link>
-          <Link href="/" className="btn btn-ghost btn-sm">
+          <Link href="/" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 border border-border bg-[rgba(var(--overlay-rgb),0.06)] text-foreground hover:border-border-hover hover:bg-[rgba(var(--overlay-rgb),0.10)] px-3 py-[7px] text-sm">
             Voltar
           </Link>
         </div>
@@ -74,7 +74,7 @@ export default function TermosPage() {
 
           <h2>7. Limitação de responsabilidade</h2>
           <p>
-            A plataforma é fornecida "como está". Na máxima extensão permitida por lei, a MSY
+            A plataforma é fornecida &ldquo;como está&rdquo;. Na máxima extensão permitida por lei, a MSY
             Academy não se responsabiliza por danos indiretos decorrentes do uso da plataforma ou
             de decisões pedagógicas tomadas com base em conteúdo gerado por IA.
           </p>

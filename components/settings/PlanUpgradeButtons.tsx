@@ -34,14 +34,14 @@ export function PlanUpgradeButtons({
 
   return (
     <div>
-      <div className="button-row">
+      <div className="flex flex-wrap gap-2">
         {upgradeOptions.map((p) => (
-          <button key={p.code} type="button" className="btn btn-primary btn-sm" disabled={pending} onClick={() => upgrade(p.code)}>
+          <button key={p.code} type="button" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 bg-primary font-bold text-primary-foreground shadow-[0_4px_14px_rgba(217,119,87,0.16)] hover:-translate-y-px hover:opacity-90 px-3 py-[7px] text-sm" disabled={pending} onClick={() => upgrade(p.code)}>
             Fazer upgrade para {p.name}
           </button>
         ))}
         {hasStripeCustomer && (
-          <button type="button" className="btn btn-ghost btn-sm" disabled={pending} onClick={manage}>
+          <button type="button" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 border border-border bg-[rgba(var(--overlay-rgb),0.06)] text-foreground hover:border-border-hover hover:bg-[rgba(var(--overlay-rgb),0.10)] px-3 py-[7px] text-sm" disabled={pending} onClick={manage}>
             Gerenciar assinatura
           </button>
         )}

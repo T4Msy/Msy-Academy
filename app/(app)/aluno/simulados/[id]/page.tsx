@@ -68,14 +68,14 @@ export default async function SimuladoPage({ params }: { params: Promise<{ id: s
 
   return (
     <>
-      <div className="page-head">
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <Link href="/aluno/simulados" className="sidebar-link back-link">
+          <Link href="/aluno/simulados" className="inline-flex items-center gap-2 pb-2 text-sm text-muted-foreground transition-colors hover:text-foreground">
             ← Simulados
           </Link>
-          <h1 className="page-title">{simulado.title}</h1>
-          <div className="exam-meta">
-            <span className="chip">{questions.length} questões</span>
+          <h1 className="font-display text-3xl font-extrabold tracking-[-0.6px] text-foreground">{simulado.title}</h1>
+          <div className="mt-0.5 flex flex-wrap gap-1.5">
+            <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">{questions.length} questões</span>
           </div>
         </div>
       </div>
@@ -85,13 +85,13 @@ export default async function SimuladoPage({ params }: { params: Promise<{ id: s
       {isDone && (
         <>
           {breakdown.length > 0 && (
-            <section className="card mb-md">
-              <div className="card-header">
-                <div className="card-title-group">
-                  <h2 className="card-title">Desempenho por tema</h2>
+            <section className="mb-4 overflow-hidden rounded-lg border border-border bg-card shadow-elevated transition-colors">
+              <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border px-5.5 pt-5 pb-4">
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <h2 className="flex items-center gap-2.5 font-display text-lg font-bold tracking-[-0.2px] text-foreground">Desempenho por tema</h2>
                 </div>
               </div>
-              <div className="card-body">
+              <div className="flex flex-col gap-4.5 p-5.5">
                 <CategoricalBar
                   items={breakdown.map((b, i) => ({
                     label: b.tag,

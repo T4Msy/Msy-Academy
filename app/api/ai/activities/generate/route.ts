@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { activityGenerationSchema } from "@/lib/activities/schemas";
 import { createClient } from "@/lib/supabase/server";
 import { generateStructured } from "@/lib/ai/orchestrator";
 import { getAIProvider } from "@/lib/ai/registry";
@@ -21,6 +22,17 @@ export async function POST(request: Request) {
     params = await request.json();
   } catch {
     return NextResponse.json({ error: "Requisição inválida." }, { status: 400 });
+  }
+
+  // Contrato único (decisão nº 9 do ADR 13): mesmo schema Zod do client
+  // valida aqui antes dos usos — os checks manuais abaixo ficam como
+  // salvaguarda de tipos para o código existente.
+  const schemaCheck = activityGenerationSchema.safeParse(params);
+  if (!schemaCheck.success) {
+    return NextResponse.json(
+      { error: schemaCheck.error.issues[0]?.message ?? "Dados inválidos." },
+      { status: 400 },
+    );
   }
 
   const title = String(params.tituloprova ?? "").trim();

@@ -37,16 +37,16 @@ export default async function TarefasPage() {
     supabase.from("submissions").select("assignment_id, status").eq("student_id", user!.id),
   ]);
 
-  const examTitleById = new Map((exams ?? []).map((e: any) => [e.id, e.title]));
-  const activityTitleById = new Map((activities ?? []).map((a: any) => [a.id, a.title]));
+  const examTitleById = new Map((exams ?? []).map((e: { id: string; title: string }) => [e.id, e.title]));
+  const activityTitleById = new Map((activities ?? []).map((a: { id: string; title: string }) => [a.id, a.title]));
   const statusByAssignment = new Map((submissions ?? []).map((s) => [s.assignment_id, s.status]));
 
   return (
     <>
-      <div className="page-head">
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="page-title">Tarefas</h1>
-          <p className="page-subtitle">
+          <h1 className="font-display text-3xl font-extrabold tracking-[-0.6px] text-foreground">Tarefas</h1>
+          <p className="mt-1 text-[13.5px] text-muted-foreground">
             {list.length > 0 ? `${list.length} tarefa${list.length > 1 ? "s" : ""}` : "As tarefas atribuídas pela sua turma aparecem aqui."}
           </p>
         </div>
@@ -55,18 +55,18 @@ export default async function TarefasPage() {
       {list.length === 0 ? (
         <EmptyState variant="tarefa" title="Nenhuma tarefa ainda" text="Entre em uma turma para ver as tarefas atribuídas pelo seu professor." />
       ) : (
-        <div className="exam-grid">
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-3.5">
           {list.map((a) => {
             const title = a.content_type === "EXAM" ? examTitleById.get(a.content_id) : activityTitleById.get(a.content_id);
             const status = statusByAssignment.get(a.id);
             return (
-              <Link key={a.id} href={`/aluno/tarefas/${a.id}`} className="exam-card">
-                <div className="exam-card-title">{title ?? "Tarefa"}</div>
-                <div className="exam-meta">
-                  <span className="chip">{a.content_type === "EXAM" ? "Prova" : "Atividade"}</span>
-                  <span className="chip">{status === "GRADED" ? "Corrigida" : status ? "Enviada" : "Pendente"}</span>
+              <Link key={a.id} href={`/aluno/tarefas/${a.id}`} className="flex flex-col gap-2.5 rounded-md border border-border bg-card p-4.5 transition-all hover:-translate-y-0.5 hover:border-border-hover hover:bg-card-2">
+                <div className="font-display text-base font-bold tracking-[-0.2px] text-foreground">{title ?? "Tarefa"}</div>
+                <div className="mt-0.5 flex flex-wrap gap-1.5">
+                  <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">{a.content_type === "EXAM" ? "Prova" : "Atividade"}</span>
+                  <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">{status === "GRADED" ? "Corrigida" : status ? "Enviada" : "Pendente"}</span>
                 </div>
-                <div className="exam-foot">
+                <div className="mt-auto flex items-center justify-between gap-2.5 pt-2 text-xs text-subtle">
                   <span>Prazo</span>
                   <span>{formatDueDate(a.due_at)}</span>
                 </div>

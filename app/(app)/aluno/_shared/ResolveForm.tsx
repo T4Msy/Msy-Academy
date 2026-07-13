@@ -43,28 +43,28 @@ export function ResolveForm({
   }
 
   return (
-    <form onSubmit={onSubmit} className="questions-stack">
+    <form onSubmit={onSubmit} className="flex flex-col gap-3.5">
       {questions.map((q, i) => (
-        <section key={q.id} className="card question-card">
-          <div className="card-header">
-            <div className="card-title-group">
-              <div className="step-badge">Questão {i + 1}</div>
+        <section key={q.id} className="overflow-hidden rounded-lg border border-border bg-card shadow-elevated transition-colors">
+          <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border px-5.5 pt-5 pb-4">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <div className="whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2 py-[3px] font-display text-2xs font-bold tracking-[0.5px] uppercase text-muted-foreground">Questão {i + 1}</div>
             </div>
           </div>
-          <div className="card-body">
-            <p className="question-statement">{q.statement}</p>
+          <div className="flex flex-col gap-4.5 p-5.5">
+            <p className="mb-3.5 text-[14.5px] leading-relaxed text-foreground">{q.statement}</p>
 
             {q.type !== "DISCURSIVA" && q.options && (
-              <div className="question-options-edit">
+              <div className="flex flex-col gap-2">
                 {q.options.map((opt) => (
-                  <label key={opt.id} className="question-option-edit-row">
+                  <label key={opt.id} className="flex items-center gap-2.5">
                     <input
                       type="radio"
                       name={`answer-${q.id}`}
                       checked={answers[q.id] === opt.id}
                       onChange={() => setAnswer(q.id, opt.id)}
                     />
-                    <span className="question-option-id">{opt.id}</span>
+                    <span className="shrink-0 font-display font-bold text-brand-text">{opt.id}</span>
                     <span>{opt.text}</span>
                   </label>
                 ))}
@@ -73,7 +73,7 @@ export function ResolveForm({
 
             {q.type === "DISCURSIVA" && (
               <textarea
-                className="input"
+                className="w-full appearance-none rounded-sm border border-border bg-[rgba(var(--overlay-rgb),0.04)] px-3 py-2.5 text-md text-foreground outline-none transition-colors focus:border-brand-border focus:ring-[3px] focus:ring-brand-glow"
                 value={answers[q.id] ?? ""}
                 onChange={(e) => setAnswer(q.id, e.target.value)}
                 placeholder="Digite sua resposta..."
@@ -83,10 +83,10 @@ export function ResolveForm({
         </section>
       ))}
 
-      {error && <div className="notice notice--error">{error}</div>}
+      {error && <div className="mt-3.5 rounded-md border border-danger-border bg-danger-dim px-4.5 py-3.5 text-[13.5px] leading-normal text-danger-text">{error}</div>}
 
-      <div className="submit-row">
-        <button type="submit" className="btn btn-primary btn-generate" disabled={pending || !allAnswered}>
+      <div className="mt-2 flex flex-wrap items-center justify-between gap-3.5">
+        <button type="submit" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 bg-primary font-bold text-primary-foreground shadow-[0_4px_14px_rgba(217,119,87,0.16)] hover:-translate-y-px hover:opacity-90 h-11.5 min-w-40 rounded-full px-5 font-display text-base tracking-[-0.2px]" disabled={pending || !allAnswered}>
           {pending ? "Enviando…" : "Enviar respostas"}
         </button>
       </div>

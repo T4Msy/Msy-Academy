@@ -22,22 +22,22 @@ export async function AiUsageCard() {
   const nearLimit = pct >= 80;
 
   return (
-    <section className="card">
-      <div className="card-header">
-        <div className="card-title-group">
-          <h2 className="card-title">Uso de IA este mês</h2>
+    <section className="overflow-hidden rounded-lg border border-border bg-card shadow-elevated transition-colors">
+      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border px-5.5 pt-5 pb-4">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <h2 className="flex items-center gap-2.5 font-display text-lg font-bold tracking-[-0.2px] text-foreground">Uso de IA este mês</h2>
         </div>
       </div>
-      <div className="card-body">
-        <p className="field-hint mt-0">
+      <div className="flex flex-col gap-4.5 p-5.5">
+        <p className="mt-0 text-xs leading-snug text-muted-foreground">
           {requestsCount} chamada{requestsCount !== 1 ? "s" : ""} de IA · {tokensUsed.toLocaleString("pt-BR")} de{" "}
           {monthlyLimit.toLocaleString("pt-BR")} tokens ({plan?.name ?? "Gratuito"})
         </p>
-        <div className="usage-bar">
-          <div className={`usage-bar-fill${nearLimit ? " usage-bar-fill--warn" : ""}`} style={{ width: `${pct}%` }} />
+        <div className="mt-1 h-2 overflow-hidden rounded-full bg-[rgba(var(--overlay-rgb),0.06)]">
+          <div className={`h-full rounded-full transition-[width] duration-[320ms] ${nearLimit ? "bg-danger" : "bg-brand"}`} style={{ width: `${pct}%` }} />
         </div>
         {nearLimit && (
-          <p className="field-hint field-hint--danger">
+          <p className="mt-1 text-xs leading-snug text-muted-foreground text-danger-text">
             Você está perto do limite do seu plano.
           </p>
         )}

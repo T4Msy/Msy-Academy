@@ -3,6 +3,8 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Bell } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { markNotificationRead } from "./notificationActions";
 
 export interface NotificationItem {
@@ -14,6 +16,8 @@ export interface NotificationItem {
   created_at: string;
 }
 
+/** Sino de notificações do Topbar — Radix Popover (foco/Esc/dismiss corretos),
+ *  badge de não-lidas preservado do design anterior (classes do shell). */
 export function NotificationBell({ notifications }: { notifications: NotificationItem[] }) {
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
@@ -31,54 +35,44 @@ export function NotificationBell({ notifications }: { notifications: Notificatio
   }
 
   return (
-    <div className="user-menu">
-      <button
-        type="button"
-        className="notification-bell-trigger"
-        aria-label={`Notificações${unreadCount > 0 ? ` (${unreadCount} não lidas)` : ""}`}
-        aria-haspopup="menu"
-        aria-expanded={open}
-        onClick={() => setOpen((v) => !v)}
-      >
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path
-            d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-        {unreadCount > 0 && <span className="notification-badge">{unreadCount > 9 ? "9+" : unreadCount}</span>}
-      </button>
-
-      {open && (
-        <>
-          <div className="popover-backdrop" onClick={() => setOpen(false)} />
-          <div className="popover-pop user-menu-pop user-menu-pop--wide" role="menu">
-            {notifications.length === 0 ? (
-              <p className="field-hint popover-hint">Nenhuma notificação ainda.</p>
-            ) : (
-              notifications.map((n) => (
-                <Link
-                  key={n.id}
-                  href={n.link ?? "#"}
-                  className="popover-item notification-item"
-                  role="menuitem"
-                  onClick={() => onOpenNotification(n)}
-                  style={{ opacity: pending ? 0.6 : 1 }}
-                >
-                  <div className="notification-item-head">
-                    {!n.read_at && <span className="notification-dot" aria-hidden="true" />}
-                    <span className="notification-item-title">{n.title}</span>
-                  </div>
-                  {n.body && <span className="field-hint">{n.body}</span>}
-                </Link>
-              ))
-            )}
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className="notification-bell-trigger"
+          aria-label={`Notificações${unreadCount > 0 ? ` (${unreadCount} não lidas)` : ""}`}
+        >
+          <Bell size={18} strokeWidth={1.8} aria-hidden />
+          {unreadCount > 0 && (
+            <span className="notification-badge">{unreadCount > 9 ? "9+" : unreadCount}</span>
+          )}
+        </button>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-80 p-1.5">
+        {notifications.length === 0 ? (
+          <p className="px-2.5 py-3 text-sm text-muted-foreground">Nenhuma notificação ainda.</p>
+        ) : (
+          <div className="flex max-h-96 flex-col overflow-y-auto" role="menu">
+            {notifications.map((n) => (
+              <Link
+                key={n.id}
+                href={n.link ?? "#"}
+                className={`flex flex-col gap-0.5 rounded-sm px-2.5 py-2 outline-none transition-colors hover:bg-accent focus-visible:bg-accent ${pending ? "opacity-60" : ""}`}
+                role="menuitem"
+                onClick={() => onOpenNotification(n)}
+              >
+                <span className="flex items-center gap-2">
+                  {!n.read_at && (
+                    <span className="size-1.5 shrink-0 rounded-full bg-brand" aria-hidden />
+                  )}
+                  <span className="truncate text-md font-semibold text-foreground">{n.title}</span>
+                </span>
+                {n.body && <span className="text-xs text-muted-foreground">{n.body}</span>}
+              </Link>
+            ))}
           </div>
-        </>
-      )}
-    </div>
+        )}
+      </PopoverContent>
+    </Popover>
   );
 }
