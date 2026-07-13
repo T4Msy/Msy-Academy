@@ -15,14 +15,11 @@ const eslintConfig = [
   ...nextTypescript,
   {
     rules: {
-      // Dívida pré-existente (diagnóstico da revisão 2026-07: ~16 anys em
-      // páginas de correção/tarefas + clients Supabase). Vira "error" ao
-      // final da migração de páginas da Fase 2 — não escrever any novo.
-      "@typescript-eslint/no-explicit-any": "warn",
-      // Padrão deliberado do shell: ler <html data-*> após o mount para
-      // evitar hydration mismatch (ThemeToggle/Sidebar). O fix correto é
-      // useSyncExternalStore — agendado para a migração do shell na Fase 2.
-      "react-hooks/set-state-in-effect": "warn",
+      // Dívida quitada na Fase 2 (anys tipados na fronteira do PostgREST;
+      // shell em useSyncExternalStore). Regras valem como error — exceções
+      // pontuais exigem disable comentado com justificativa.
+      "@typescript-eslint/no-explicit-any": "error",
+      "react-hooks/set-state-in-effect": "error",
     },
   },
   {

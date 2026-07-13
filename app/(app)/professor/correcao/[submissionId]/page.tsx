@@ -5,6 +5,17 @@ import { CorrecaoReview, type DiscursivaItem } from "./CorrecaoReview";
 
 export const dynamic = "force-dynamic";
 
+type AnswerRow = {
+  question_id: string;
+  answer: string | null;
+  score: number | null;
+  questions: {
+    type: string;
+    statement: string;
+    correct_answer: string | string[] | null;
+  } | null;
+};
+
 export default async function CorrecaoDetailPage({ params }: { params: Promise<{ submissionId: string }> }) {
   const { submissionId } = await params;
   const supabase = await createClient();
@@ -24,17 +35,19 @@ export default async function CorrecaoDetailPage({ params }: { params: Promise<{
   const { data: studentProfile } = await supabase.from("profiles").select("full_name").eq("id", submission.student_id).single();
 
   const list = answers ?? [];
-  const objective = list.filter((a: any) => a.questions?.type !== "DISCURSIVA");
-  const discursivas: DiscursivaItem[] = list
-    .filter((a: any) => a.questions?.type === "DISCURSIVA")
-    .map((a: any) => ({
+  // Mesmo caso: embed do PostgREST inferido como array; shape real é objeto.
+  const rows = list as unknown as AnswerRow[];
+  const objective = rows.filter((a) => a.questions?.type !== "DISCURSIVA");
+  const discursivas: DiscursivaItem[] = rows
+    .filter((a) => a.questions?.type === "DISCURSIVA")
+    .map((a) => ({
       questionId: a.question_id,
-      statement: a.questions.statement,
-      referenceAnswer: Array.isArray(a.questions.correct_answer) ? a.questions.correct_answer.join(", ") : a.questions.correct_answer,
-      studentAnswer: a.answer,
+      statement: a.questions!.statement,
+      referenceAnswer: Array.isArray(a.questions!.correct_answer) ? a.questions!.correct_answer.join(", ") : (a.questions!.correct_answer ?? ""),
+      studentAnswer: a.answer ?? "",
     }));
 
-  const objectiveScoreSum = objective.reduce((sum: number, a: any) => sum + (a.score ?? 0), 0);
+  const objectiveScoreSum = objective.reduce((sum, a) => sum + (a.score ?? 0), 0);
 
   return (
     <>

@@ -19,7 +19,6 @@ export function JoinClassCard({ inviteCode }: { inviteCode: string }) {
         setState({ status: "error", error: err instanceof Error ? err.message : "Algo deu errado." });
       }
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [inviteCode]);
 
   if (state.status === "pending") {

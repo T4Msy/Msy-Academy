@@ -1,17 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { Moon, Sun } from "lucide-react";
 
 type Theme = "light" | "dark";
 
 /**
- * Reads the theme app/layout.tsx's inline script already applied to
- * <html data-theme>, rather than guessing during SSR — avoids a hydration
- * mismatch (server has no theme; client does, before React even mounts).
+ * O tema vive em <html data-theme> (aplicado pelo script no-flash do
+ * app/layout.tsx). useSyncExternalStore lê esse estado externo do jeito
+ * certo: snapshot de servidor "dark" (sem hydration mismatch) e observer
+ * de atributo como subscription — sem setState em effect.
  */
+function subscribeToTheme(onChange: () => void) {
+  const observer = new MutationObserver(onChange);
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+  return () => observer.disconnect();
+}
+
 function currentTheme(): Theme {
-  if (typeof document === "undefined") return "dark";
   return document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark";
 }
 
@@ -24,21 +30,16 @@ export function ThemeToggle({
   variant = "menu-item",
   ...props
 }: { variant?: "menu-item" | "icon" } & React.ComponentProps<"button">) {
-  const [theme, setTheme] = useState<Theme | null>(null);
-
-  useEffect(() => {
-    setTheme(currentTheme());
-  }, []);
+  const theme = useSyncExternalStore(subscribeToTheme, currentTheme, () => "dark" as Theme);
 
   function toggle() {
     const next: Theme = currentTheme() === "light" ? "dark" : "light";
     document.documentElement.setAttribute("data-theme", next);
     localStorage.setItem("theme", next);
-    setTheme(next);
   }
 
   const isLight = theme === "light";
-  const label = theme === null ? "Alternar tema" : isLight ? "Mudar para tema escuro" : "Mudar para tema claro";
+  const label = isLight ? "Mudar para tema escuro" : "Mudar para tema claro";
   const icon = isLight ? (
     <Sun size={16} strokeWidth={1.8} aria-hidden />
   ) : (

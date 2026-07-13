@@ -37,8 +37,8 @@ export default async function TarefasPage() {
     supabase.from("submissions").select("assignment_id, status").eq("student_id", user!.id),
   ]);
 
-  const examTitleById = new Map((exams ?? []).map((e: any) => [e.id, e.title]));
-  const activityTitleById = new Map((activities ?? []).map((a: any) => [a.id, a.title]));
+  const examTitleById = new Map((exams ?? []).map((e: { id: string; title: string }) => [e.id, e.title]));
+  const activityTitleById = new Map((activities ?? []).map((a: { id: string; title: string }) => [a.id, a.title]));
   const statusByAssignment = new Map((submissions ?? []).map((s) => [s.assignment_id, s.status]));
 
   return (

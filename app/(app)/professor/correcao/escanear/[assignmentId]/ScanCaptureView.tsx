@@ -32,6 +32,7 @@ export function ScanCaptureView({ assignmentId }: { assignmentId: string }) {
 
   useEffect(() => {
     if (!navigator.mediaDevices?.getUserMedia) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- transição única da máquina de estados da câmera no mount
       setCaptureState("unsupported");
       return;
     }

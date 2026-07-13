@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { AiThinking } from "@/components/AiThinking";
 
 interface SearchResults {
@@ -17,28 +18,29 @@ const MATERIAL_HREF: Record<string, (env: "PROFESSOR" | "ALUNO", refId: string) 
 
 export function GlobalSearch({ environment }: { environment: "PROFESSOR" | "ALUNO" }) {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<SearchResults | null>(null);
   const [open, setOpen] = useState(false);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [debounced, setDebounced] = useState("");
 
+  // Debounce (setState só dentro do timeout, sem render em cascata); a busca
+  // em si é useQuery — cache, dedupe e cancelamento do TanStack (decisão 5).
   useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    if (query.trim().length < 2) {
-      setResults(null);
-      return;
-    }
-    debounceRef.current = setTimeout(async () => {
-      try {
-        const res = await fetch(`/api/search?q=${encodeURIComponent(query.trim())}`);
-        if (res.ok) setResults(await res.json());
-      } catch {
-        // Search failing silently is acceptable — it's a convenience, not a critical path.
-      }
-    }, 300);
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
+    const t = setTimeout(() => setDebounced(query.trim()), 300);
+    return () => clearTimeout(t);
   }, [query]);
+
+  const { data } = useQuery<SearchResults>({
+    queryKey: ["global-search", environment, debounced],
+    queryFn: async () => {
+      const res = await fetch(`/api/search?q=${encodeURIComponent(debounced)}`);
+      // Busca falhar silenciosamente é aceitável — é conveniência, não caminho crítico.
+      if (!res.ok) throw new Error("search failed");
+      return res.json();
+    },
+    enabled: debounced.length >= 2,
+    staleTime: 30_000,
+    retry: false,
+  });
+  const results = debounced.length >= 2 ? (data ?? null) : null;
 
   const classesHref = environment === "PROFESSOR" ? "/professor/turmas" : null;
   const hasResults = results && (results.materials.length > 0 || results.classes.length > 0);

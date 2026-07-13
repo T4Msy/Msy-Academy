@@ -6,6 +6,12 @@ import { EmptyState } from "@/components/EmptyState";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Correção" };
 
+type SubmissionRow = {
+  id: string;
+  student_id: string;
+  assignments: { content_type: "EXAM" | "ACTIVITY"; content_id: string } | null;
+};
+
 export default async function CorrecaoPage() {
   const supabase = await createClient();
 
@@ -46,14 +52,17 @@ export default async function CorrecaoPage() {
     : { data: [] as { id: string; full_name: string | null }[] };
   const nameById = new Map((profiles ?? []).map((p) => [p.id, p.full_name]));
 
-  const examIds = list.filter((s: any) => s.assignments?.content_type === "EXAM").map((s: any) => s.assignments.content_id);
-  const activityIds = list.filter((s: any) => s.assignments?.content_type === "ACTIVITY").map((s: any) => s.assignments.content_id);
+  // Cast único na fronteira: o embed do PostgREST sem FK direta infere array,
+  // mas o shape real aqui é objeto (relação única) — ver memória do projeto.
+  const rows = list as unknown as SubmissionRow[];
+  const examIds = rows.filter((s) => s.assignments?.content_type === "EXAM").map((s) => s.assignments!.content_id);
+  const activityIds = rows.filter((s) => s.assignments?.content_type === "ACTIVITY").map((s) => s.assignments!.content_id);
   const [{ data: exams }, { data: activities }] = await Promise.all([
     examIds.length ? supabase.from("exams").select("id, title").in("id", examIds) : Promise.resolve({ data: [] }),
     activityIds.length ? supabase.from("activities").select("id, title").in("id", activityIds) : Promise.resolve({ data: [] }),
   ]);
-  const examTitleById = new Map((exams ?? []).map((e: any) => [e.id, e.title]));
-  const activityTitleById = new Map((activities ?? []).map((a: any) => [a.id, a.title]));
+  const examTitleById = new Map((exams ?? []).map((e: { id: string; title: string }) => [e.id, e.title]));
+  const activityTitleById = new Map((activities ?? []).map((a: { id: string; title: string }) => [a.id, a.title]));
 
   return (
     <>
@@ -90,8 +99,8 @@ export default async function CorrecaoPage() {
         <EmptyState variant="notificacao" title="Fila vazia" text="Envios com questões discursivas aparecem aqui para correção." />
       ) : (
         <div className="flex flex-col gap-3.5">
-          {list.map((s: any) => {
-            const title = s.assignments?.content_type === "EXAM" ? examTitleById.get(s.assignments.content_id) : activityTitleById.get(s.assignments?.content_id);
+          {rows.map((s) => {
+            const title = s.assignments?.content_type === "EXAM" ? examTitleById.get(s.assignments.content_id) : activityTitleById.get(s.assignments?.content_id ?? "");
             return (
               <Link key={s.id} href={`/professor/correcao/${s.id}`} className="block overflow-hidden rounded-lg border border-border bg-card shadow-elevated transition-colors">
                 <div className="flex flex-row items-center justify-between gap-3 p-5.5">

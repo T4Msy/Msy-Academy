@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { IconChevronDown } from "./navIcons";
@@ -19,37 +19,51 @@ type Collapsed = "collapsed" | "expanded";
 
 /**
  * Reads the state app/layout.tsx's inline script already applied to
- * <html data-sidebar>, rather than guessing during SSR — same
- * hydration-mismatch avoidance as ThemeToggle.tsx's currentTheme().
+ * <html data-sidebar> via useSyncExternalStore — snapshot de servidor
+ * "expanded" (sem hydration mismatch), MutationObserver como subscription.
  */
 function currentCollapsed(): Collapsed {
-  if (typeof document === "undefined") return "expanded";
   return document.documentElement.getAttribute("data-sidebar") === "collapsed" ? "collapsed" : "expanded";
+}
+
+function subscribeToSidebar(onChange: () => void) {
+  const observer = new MutationObserver(onChange);
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-sidebar"] });
+  return () => observer.disconnect();
+}
+
+function activeGroupLabels(sections: SidebarSection[], pathname: string): string[] {
+  return sections
+    .flatMap((s) => s.items)
+    .filter((entry): entry is Extract<SidebarEntry, { kind: "group" }> => entry.kind === "group")
+    .filter((group) => group.items.some((item) => isActiveHref(pathname, item)))
+    .map((group) => group.label);
 }
 
 /** Environment sidebar (Professor or Aluno) — the nav item list is owned by each environment's layout.tsx. */
 export function Sidebar({ sections }: { sections: SidebarSection[] }) {
   const pathname = usePathname();
-  const [collapsed, setCollapsed] = useState<Collapsed | null>(null);
-  const [openGroups, setOpenGroups] = useState<Set<string>>(new Set());
-
-  useEffect(() => {
-    setCollapsed(currentCollapsed());
-  }, []);
+  const collapsed = useSyncExternalStore(
+    subscribeToSidebar,
+    currentCollapsed,
+    () => "expanded" as Collapsed,
+  );
+  const [openGroups, setOpenGroups] = useState<Set<string>>(
+    () => new Set(activeGroupLabels(sections, pathname)),
+  );
 
   // Auto-open any group containing the active route, so navigating straight
-  // to a sub-item (e.g. a deep link to /professor/atividades/nova) doesn't
-  // leave its parent group collapsed with no visible active state.
-  useEffect(() => {
-    const activeGroupLabels = sections
-      .flatMap((s) => s.items)
-      .filter((entry): entry is Extract<SidebarEntry, { kind: "group" }> => entry.kind === "group")
-      .filter((group) => group.items.some((item) => isActiveHref(pathname, item)))
-      .map((group) => group.label);
-    if (activeGroupLabels.length === 0) return;
-    setOpenGroups((prev) => new Set([...prev, ...activeGroupLabels]));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname]);
+  // to a sub-item doesn't leave its parent group collapsed with no visible
+  // active state. Padrão "adjust state during render" (sem effect): quando o
+  // pathname muda, mescla os grupos ativos no estado antes do commit.
+  const [lastPathname, setLastPathname] = useState(pathname);
+  if (pathname !== lastPathname) {
+    setLastPathname(pathname);
+    const active = activeGroupLabels(sections, pathname);
+    if (active.some((label) => !openGroups.has(label))) {
+      setOpenGroups((prev) => new Set([...prev, ...active]));
+    }
+  }
 
   function toggleGroup(label: string) {
     setOpenGroups((prev) => {
@@ -64,7 +78,6 @@ export function Sidebar({ sections }: { sections: SidebarSection[] }) {
     const next: Collapsed = currentCollapsed() === "collapsed" ? "expanded" : "collapsed";
     document.documentElement.setAttribute("data-sidebar", next);
     localStorage.setItem("sidebar-collapsed", String(next === "collapsed"));
-    setCollapsed(next);
   }
 
   const isCollapsed = collapsed === "collapsed";
