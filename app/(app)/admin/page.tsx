@@ -31,30 +31,30 @@ export default async function AdminHomePage() {
 
   return (
     <>
-      <div className="page-head">
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="page-title">Visão geral</h1>
-          <p className="page-subtitle">Tenants, assinaturas e receita recorrente estimada.</p>
+          <h1 className="font-display text-3xl font-extrabold tracking-[-0.6px] text-foreground">Visão geral</h1>
+          <p className="mt-1 text-[13.5px] text-muted-foreground">Tenants, assinaturas e receita recorrente estimada.</p>
         </div>
       </div>
 
-      <div className="quick-actions-grid">
-        <div className="card">
-          <div className="card-body">
-            <p className="field-hint stat-tile-label">Tenants</p>
-            <div className="stat-tile-value">{tenantCount ?? 0}</div>
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-3.5">
+        <div className="overflow-hidden rounded-lg border border-border bg-card shadow-elevated transition-colors">
+          <div className="flex flex-col gap-4.5 p-5.5">
+            <p className="mt-0 text-xs leading-snug text-muted-foreground">Tenants</p>
+            <div className="font-display text-[28px] font-bold">{tenantCount ?? 0}</div>
           </div>
         </div>
-        <div className="card">
-          <div className="card-body">
-            <p className="field-hint stat-tile-label">Assinaturas ativas</p>
-            <div className="stat-tile-value">{activeSubs.length}</div>
+        <div className="overflow-hidden rounded-lg border border-border bg-card shadow-elevated transition-colors">
+          <div className="flex flex-col gap-4.5 p-5.5">
+            <p className="mt-0 text-xs leading-snug text-muted-foreground">Assinaturas ativas</p>
+            <div className="font-display text-[28px] font-bold">{activeSubs.length}</div>
           </div>
         </div>
-        <div className="card">
-          <div className="card-body">
-            <p className="field-hint stat-tile-label">MRR estimado</p>
-            <div className="stat-tile-value">
+        <div className="overflow-hidden rounded-lg border border-border bg-card shadow-elevated transition-colors">
+          <div className="flex flex-col gap-4.5 p-5.5">
+            <p className="mt-0 text-xs leading-snug text-muted-foreground">MRR estimado</p>
+            <div className="font-display text-[28px] font-bold">
               {(mrrCents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
             </div>
           </div>
@@ -62,13 +62,13 @@ export default async function AdminHomePage() {
       </div>
 
       {byPlan.size > 0 && (
-        <section className="card card--narrow">
-          <div className="card-header">
-            <div className="card-title-group">
-              <h2 className="card-title">Assinaturas por plano</h2>
+        <section className="overflow-hidden rounded-lg border border-border bg-card shadow-elevated transition-colors mt-4 max-w-[480px]">
+          <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border px-5.5 pt-5 pb-4">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <h2 className="flex items-center gap-2.5 font-display text-lg font-bold tracking-[-0.2px] text-foreground">Assinaturas por plano</h2>
             </div>
           </div>
-          <div className="card-body">
+          <div className="flex flex-col gap-4.5 p-5.5">
             <CategoricalBar
               items={[...byPlan.entries()].map(([label, value], i) => ({ label, value, catSlot: (i % 8) + 1 }))}
             />

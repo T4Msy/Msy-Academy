@@ -69,7 +69,7 @@ export default async function AlunoLayout({ children }: { children: React.ReactN
         <Sidebar sections={NAV} />
         <main className="app-main" role="main">
           {guardianConsent && (
-            <div className="notice mb-md">
+            <div className="mb-4 rounded-md border border-brand-border bg-brand-dim px-4.5 py-3.5 text-[13.5px] leading-normal text-brand-text">
               Aguardando confirmação de um responsável. Compartilhe este link com ele:{" "}
               <a href={`/consentimento/${guardianConsent.token}`}>{`/consentimento/${guardianConsent.token}`}</a>
             </div>

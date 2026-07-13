@@ -64,9 +64,9 @@ export function QuestionBankList({ questions, exams }: { questions: Question[]; 
       </div>
 
       {selected.size > 0 && (
-        <div className="card selection-toolbar">
-          <div className="card-body card-body--row-wrap">
-            <span className="chip step-badge--accent">
+        <div className="overflow-hidden rounded-lg border border-border bg-card shadow-elevated transition-colors sticky bottom-4 z-10 mt-4 shadow-[0_8px_26px_rgba(0,0,0,0.28)]">
+          <div className="flex flex-row flex-wrap items-center gap-3 p-5.5">
+            <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-1 text-xs border-brand-border bg-brand-dim text-brand-text">
               {selected.size} {selected.size > 1 ? "questões selecionadas" : "questão selecionada"}
             </span>
             {exams.length > 0 ? (
@@ -77,19 +77,19 @@ export function QuestionBankList({ questions, exams }: { questions: Question[]; 
                     <option key={e.id} value={e.id}>{e.title || "Prova sem título"}</option>
                   ))}
                 </select>
-                <button type="button" className="btn btn-primary btn-sm" disabled={pending} onClick={onAdd}>
+                <button type="button" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 bg-primary font-bold text-primary-foreground shadow-[0_4px_14px_rgba(217,119,87,0.16)] hover:-translate-y-px hover:opacity-90 px-3 py-[7px] text-sm" disabled={pending} onClick={onAdd}>
                   {pending ? "Adicionando…" : "Adicionar à prova"}
                 </button>
               </>
             ) : (
-              <span className="field-hint mt-0">
+              <span className="mt-0 text-xs leading-snug text-muted-foreground">
                 Crie uma prova primeiro para poder adicionar questões a ela.
               </span>
             )}
-            <button type="button" className="btn btn-ghost btn-sm" onClick={() => setSelected(new Set())}>
+            <button type="button" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 border border-border bg-[rgba(var(--overlay-rgb),0.06)] text-foreground hover:border-border-hover hover:bg-[rgba(var(--overlay-rgb),0.10)] px-3 py-[7px] text-sm" onClick={() => setSelected(new Set())}>
               Limpar seleção
             </button>
-            {error && <div className="notice notice--error notice--inline">{error}</div>}
+            {error && <div className="rounded-md border border-danger-border bg-danger-dim px-4.5 py-3.5 text-[13.5px] leading-normal text-danger-text m-0 basis-full">{error}</div>}
           </div>
         </div>
       )}

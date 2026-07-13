@@ -84,12 +84,12 @@ export function QuestionForm({
   }
 
   return (
-    <form className="form-stack" onSubmit={handleSubmit}>
-      <div className="form-grid-2">
-        <div className="form-field">
-          <label className="field-label" htmlFor="qf-type">Tipo</label>
+    <form className="flex flex-col gap-3.5" onSubmit={handleSubmit}>
+      <div className="grid grid-cols-1 gap-3.5 min-[861px]:grid-cols-2">
+        <div className="flex flex-col gap-1.5">
+          <label className="block text-sm font-semibold text-foreground" htmlFor="qf-type">Tipo</label>
           <select
-            className="input"
+            className="w-full appearance-none rounded-sm border border-border bg-[rgba(var(--overlay-rgb),0.04)] px-3 py-2.5 text-md text-foreground outline-none transition-colors focus:border-brand-border focus:ring-[3px] focus:ring-brand-glow"
             id="qf-type"
             value={type}
             onChange={(e) => handleTypeChange(e.target.value as QuestionType)}
@@ -99,10 +99,10 @@ export function QuestionForm({
             ))}
           </select>
         </div>
-        <div className="form-field">
-          <label className="field-label" htmlFor="qf-difficulty">Dificuldade</label>
+        <div className="flex flex-col gap-1.5">
+          <label className="block text-sm font-semibold text-foreground" htmlFor="qf-difficulty">Dificuldade</label>
           <select
-            className="input"
+            className="w-full appearance-none rounded-sm border border-border bg-[rgba(var(--overlay-rgb),0.04)] px-3 py-2.5 text-md text-foreground outline-none transition-colors focus:border-brand-border focus:ring-[3px] focus:ring-brand-glow"
             id="qf-difficulty"
             value={difficulty}
             onChange={(e) => setDifficulty(e.target.value as Difficulty)}
@@ -114,17 +114,17 @@ export function QuestionForm({
         </div>
       </div>
 
-      <div className="form-field">
-        <label className="field-label" htmlFor="qf-statement">Enunciado</label>
-        <textarea id="qf-statement" className="input" value={statement} onChange={(e) => setStatement(e.target.value)} />
+      <div className="flex flex-col gap-1.5">
+        <label className="block text-sm font-semibold text-foreground" htmlFor="qf-statement">Enunciado</label>
+        <textarea id="qf-statement" className="w-full appearance-none rounded-sm border border-border bg-[rgba(var(--overlay-rgb),0.04)] px-3 py-2.5 text-md text-foreground outline-none transition-colors focus:border-brand-border focus:ring-[3px] focus:ring-brand-glow" value={statement} onChange={(e) => setStatement(e.target.value)} />
       </div>
 
       {type !== "DISCURSIVA" && (
         <fieldset className="form-field fieldset-reset">
           <legend className="field-label legend-reset">Alternativas (marque a correta)</legend>
-          <div className="question-options-edit">
+          <div className="flex flex-col gap-2">
             {options.map((opt, i) => (
-              <label key={opt.id} className="question-option-edit-row">
+              <label key={opt.id} className="flex items-center gap-2.5">
                 <input
                   type="radio"
                   name="qf-correct"
@@ -132,9 +132,9 @@ export function QuestionForm({
                   onChange={() => setCorrectAnswer(opt.id)}
                   aria-label={`Marcar alternativa ${opt.id} como correta`}
                 />
-                <span className="question-option-id">{opt.id}</span>
+                <span className="shrink-0 font-display font-bold text-brand-text">{opt.id}</span>
                 <input
-                  className="input"
+                  className="w-full appearance-none rounded-sm border border-border bg-[rgba(var(--overlay-rgb),0.04)] px-3 py-2.5 text-md text-foreground outline-none transition-colors focus:border-brand-border focus:ring-[3px] focus:ring-brand-glow"
                   value={opt.text}
                   onChange={(e) => {
                     const next = [...options];
@@ -151,31 +151,31 @@ export function QuestionForm({
       )}
 
       {type === "DISCURSIVA" && (
-        <div className="form-field">
-          <label className="field-label" htmlFor="qf-reference">Resposta de referência</label>
+        <div className="flex flex-col gap-1.5">
+          <label className="block text-sm font-semibold text-foreground" htmlFor="qf-reference">Resposta de referência</label>
           <textarea
             id="qf-reference"
-            className="input"
+            className="w-full appearance-none rounded-sm border border-border bg-[rgba(var(--overlay-rgb),0.04)] px-3 py-2.5 text-md text-foreground outline-none transition-colors focus:border-brand-border focus:ring-[3px] focus:ring-brand-glow"
             value={Array.isArray(correctAnswer) ? correctAnswer.join("\n") : correctAnswer}
             onChange={(e) => setCorrectAnswer(e.target.value)}
           />
         </div>
       )}
 
-      <div className="form-field">
-        <label className="field-label" htmlFor="qf-explanation">Explicação (opcional)</label>
-        <textarea id="qf-explanation" className="input" value={explanation} onChange={(e) => setExplanation(e.target.value)} />
+      <div className="flex flex-col gap-1.5">
+        <label className="block text-sm font-semibold text-foreground" htmlFor="qf-explanation">Explicação (opcional)</label>
+        <textarea id="qf-explanation" className="w-full appearance-none rounded-sm border border-border bg-[rgba(var(--overlay-rgb),0.04)] px-3 py-2.5 text-md text-foreground outline-none transition-colors focus:border-brand-border focus:ring-[3px] focus:ring-brand-glow" value={explanation} onChange={(e) => setExplanation(e.target.value)} />
       </div>
 
-      {error && <div className="notice notice--error">{error}</div>}
+      {error && <div className="mt-3.5 rounded-md border border-danger-border bg-danger-dim px-4.5 py-3.5 text-[13.5px] leading-normal text-danger-text">{error}</div>}
 
-      <div className="popover-row">
+      <div className="flex flex-wrap justify-end gap-2">
         {onCancel && (
-          <button type="button" className="btn btn-ghost btn-sm" disabled={pending} onClick={onCancel}>
+          <button type="button" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 border border-border bg-[rgba(var(--overlay-rgb),0.06)] text-foreground hover:border-border-hover hover:bg-[rgba(var(--overlay-rgb),0.10)] px-3 py-[7px] text-sm" disabled={pending} onClick={onCancel}>
             Cancelar
           </button>
         )}
-        <button type="submit" className="btn btn-primary btn-sm" disabled={pending}>
+        <button type="submit" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 bg-primary font-bold text-primary-foreground shadow-[0_4px_14px_rgba(217,119,87,0.16)] hover:-translate-y-px hover:opacity-90 px-3 py-[7px] text-sm" disabled={pending}>
           {pending ? "Salvando…" : submitLabel}
         </button>
       </div>

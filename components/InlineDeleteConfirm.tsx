@@ -20,7 +20,7 @@ export function InlineDeleteConfirm({
 }) {
   if (!confirming) {
     return (
-      <button type="button" className="btn btn-ghost btn-sm" onClick={onRequestConfirm}>
+      <button type="button" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 border border-border bg-[rgba(var(--overlay-rgb),0.06)] text-foreground hover:border-border-hover hover:bg-[rgba(var(--overlay-rgb),0.10)] px-3 py-[7px] text-sm" onClick={onRequestConfirm}>
         Excluir
       </button>
     );
@@ -28,11 +28,11 @@ export function InlineDeleteConfirm({
 
   return (
     <>
-      {hint && <span className="field-hint mt-0">{hint}</span>}
-      <button type="button" className="btn btn-ghost btn-sm" disabled={pending} onClick={onCancel}>
+      {hint && <span className="mt-0 text-xs leading-snug text-muted-foreground">{hint}</span>}
+      <button type="button" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 border border-border bg-[rgba(var(--overlay-rgb),0.06)] text-foreground hover:border-border-hover hover:bg-[rgba(var(--overlay-rgb),0.10)] px-3 py-[7px] text-sm" disabled={pending} onClick={onCancel}>
         Cancelar
       </button>
-      <button type="button" className="btn btn-danger-ghost btn-sm" disabled={pending} onClick={onConfirm}>
+      <button type="button" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 border border-danger-border bg-danger-dim text-danger-text hover:bg-danger/15 px-3 py-[7px] text-sm" disabled={pending} onClick={onConfirm}>
         {pending ? "Excluindo…" : confirmLabel}
       </button>
     </>

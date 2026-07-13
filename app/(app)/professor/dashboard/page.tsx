@@ -23,10 +23,10 @@ export default async function ProfessorDashboardPage() {
 
   return (
     <>
-      <div className="page-head">
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="page-title">Desempenho das Turmas</h1>
-          <p className="page-subtitle">Desempenho das turmas e alunos em risco.</p>
+          <h1 className="font-display text-3xl font-extrabold tracking-[-0.6px] text-foreground">Desempenho das Turmas</h1>
+          <p className="mt-1 text-[13.5px] text-muted-foreground">Desempenho das turmas e alunos em risco.</p>
         </div>
       </div>
       <HydrationBoundary state={dehydrate(queryClient)}>

@@ -53,36 +53,36 @@ export default async function ConsentimentoPage({ params }: { params: Promise<{ 
     : null;
 
   return (
-    <div className="auth-wrap">
+    <div className="grid min-h-screen place-items-center px-5 py-10">
       <div className={`auth-card${consent && consent.status !== "PENDING" ? " text-center" : ""}`}>
         {!consent ? (
           <>
             <StatusIcon variant="alert" />
             <div className="auth-title text-center">Link inválido ou expirado</div>
-            <p className="field-hint text-center">
+            <p className="mt-1 text-center text-xs leading-snug text-muted-foreground">
               Peça ao estudante para gerar um novo link de confirmação nas configurações da conta dele.
             </p>
           </>
         ) : consent.status === "CONFIRMED" ? (
           <>
             <StatusIcon variant="check" />
-            <div className="auth-title">Consentimento confirmado</div>
-            <p className="field-hint">
+            <div className="font-display text-2xl font-extrabold tracking-[-0.4px] text-foreground">Consentimento confirmado</div>
+            <p className="mt-1 text-xs leading-snug text-muted-foreground">
               {consent.guardian_name ?? "Um responsável"} já confirmou este consentimento. Nada mais é
               necessário — o estudante pode continuar usando a plataforma normalmente.
             </p>
           </>
         ) : (
           <>
-            <div className="auth-brand">
+            <div className="mb-5.5 flex items-center gap-[11px]">
               <Logo />
               <div>
-                <div className="auth-title">Consentimento do responsável</div>
-                <div className="auth-subtitle">MSY Academy — plataforma educacional</div>
+                <div className="font-display text-2xl font-extrabold tracking-[-0.4px] text-foreground">Consentimento do responsável</div>
+                <div className="mt-1 text-[13.5px] text-muted-foreground">MSY Academy — plataforma educacional</div>
               </div>
             </div>
 
-            <p className="field-hint mt-0">
+            <p className="mt-0 text-xs leading-snug text-muted-foreground">
               <b>{studentName}</b> criou uma conta de aluno na MSY Academy e indicou ter menos de 18
               anos. Para continuar usando a plataforma, um responsável legal precisa confirmar que
               está ciente e de acordo — inclusive com o uso de inteligência artificial para tutoria,

@@ -34,8 +34,8 @@ function CardRow({ deckId, card }: { deckId: string; card: CardData }) {
 
   if (editing) {
     return (
-      <section className="card">
-        <div className="card-body">
+      <section className="overflow-hidden rounded-lg border border-border bg-card shadow-elevated transition-colors">
+        <div className="flex flex-col gap-4.5 p-5.5">
           <CardForm
             initialFront={card.front}
             initialBack={card.back}
@@ -53,13 +53,13 @@ function CardRow({ deckId, card }: { deckId: string; card: CardData }) {
   }
 
   return (
-    <section className="card">
-      <div className="card-body">
-        <p className="question-statement question-statement--tight"><b>Frente:</b> {card.front}</p>
-        <p className="question-statement question-statement--tight"><b>Verso:</b> {card.back}</p>
-        {error && <div className="notice notice--error">{error}</div>}
-        <div className="popover-row popover-row--start">
-          <button type="button" className="btn btn-ghost btn-sm" disabled={pending} onClick={() => setEditing(true)}>
+    <section className="overflow-hidden rounded-lg border border-border bg-card shadow-elevated transition-colors">
+      <div className="flex flex-col gap-4.5 p-5.5">
+        <p className="mb-2 text-[14.5px] leading-relaxed text-foreground"><b>Frente:</b> {card.front}</p>
+        <p className="mb-2 text-[14.5px] leading-relaxed text-foreground"><b>Verso:</b> {card.back}</p>
+        {error && <div className="mt-3.5 rounded-md border border-danger-border bg-danger-dim px-4.5 py-3.5 text-[13.5px] leading-normal text-danger-text">{error}</div>}
+        <div className="flex flex-wrap justify-start gap-2">
+          <button type="button" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 border border-border bg-[rgba(var(--overlay-rgb),0.06)] text-foreground hover:border-border-hover hover:bg-[rgba(var(--overlay-rgb),0.10)] px-3 py-[7px] text-sm" disabled={pending} onClick={() => setEditing(true)}>
             Editar
           </button>
           <InlineDeleteConfirm
@@ -82,18 +82,18 @@ function AddCardPanel({ deckId }: { deckId: string }) {
 
   if (!open) {
     return (
-      <button type="button" className="btn btn-ghost" onClick={() => setOpen(true)}>
+      <button type="button" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 border border-border bg-[rgba(var(--overlay-rgb),0.06)] text-foreground hover:border-border-hover hover:bg-[rgba(var(--overlay-rgb),0.10)] px-4 py-2.5" onClick={() => setOpen(true)}>
         + Adicionar cartão
       </button>
     );
   }
 
   return (
-    <section className="card">
-      <div className="card-header">
-        <h2 className="card-title">Novo cartão</h2>
+    <section className="overflow-hidden rounded-lg border border-border bg-card shadow-elevated transition-colors">
+      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border px-5.5 pt-5 pb-4">
+        <h2 className="flex items-center gap-2.5 font-display text-lg font-bold tracking-[-0.2px] text-foreground">Novo cartão</h2>
       </div>
-      <div className="card-body">
+      <div className="flex flex-col gap-4.5 p-5.5">
         <CardForm
           submitLabel="Adicionar"
           onCancel={() => setOpen(false)}
@@ -110,7 +110,7 @@ function AddCardPanel({ deckId }: { deckId: string }) {
 
 export function CardsManager({ deckId, cards }: { deckId: string; cards: CardData[] }) {
   return (
-    <div className="questions-stack">
+    <div className="flex flex-col gap-3.5">
       {cards.length === 0 ? (
         <EmptyState variant="questoes" title="Sem cartões" text="Adicione o primeiro cartão manualmente." />
       ) : (

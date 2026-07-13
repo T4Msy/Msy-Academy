@@ -17,13 +17,13 @@ export function CategoricalBar({
         <div key={`${i}-${item.label}`}>
           <div className="cat-bar-row-head">
             <span className="cat-bar-label">{item.label}</span>
-            <span className="tabular-nums-muted">
+            <span className="shrink-0 tabular-nums text-muted-foreground">
               {item.value}{item.suffix ?? ""}
             </span>
           </div>
-          <div className="usage-bar">
+          <div className="mt-1 h-2 overflow-hidden rounded-full bg-[rgba(var(--overlay-rgb),0.06)]">
             <div
-              className="usage-bar-fill"
+              className="h-full rounded-full bg-brand transition-[width] duration-[320ms]"
               style={{ width: `${Math.max(4, (item.value / max) * 100)}%`, background: `var(--cat-${item.catSlot})` }}
             />
           </div>

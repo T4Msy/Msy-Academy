@@ -20,10 +20,10 @@ export default async function FlashcardsPage() {
 
   return (
     <>
-      <div className="page-head">
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="page-title">Flashcards</h1>
-          <p className="page-subtitle">
+          <h1 className="font-display text-3xl font-extrabold tracking-[-0.6px] text-foreground">Flashcards</h1>
+          <p className="mt-1 text-[13.5px] text-muted-foreground">
             {list.length > 0 ? `${list.length} deck${list.length > 1 ? "s" : ""}` : "Gere flashcards a partir dos materiais das suas turmas."}
           </p>
         </div>
@@ -39,10 +39,10 @@ export default async function FlashcardsPage() {
       />
 
       {list.length > 0 && (
-        <div className="exam-grid mt-md">
+        <div className="mt-4 grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-3.5">
           {list.map((d) => (
-            <Link key={d.id} href={`/aluno/flashcards/${d.id}`} className="exam-card">
-              <div className="exam-card-title">{d.title}</div>
+            <Link key={d.id} href={`/aluno/flashcards/${d.id}`} className="flex flex-col gap-2.5 rounded-md border border-border bg-card p-4.5 transition-all hover:-translate-y-0.5 hover:border-border-hover hover:bg-card-2">
+              <div className="font-display text-base font-bold tracking-[-0.2px] text-foreground">{d.title}</div>
             </Link>
           ))}
         </div>

@@ -53,28 +53,28 @@ export default async function RevisarGabaritoPage({ params }: { params: Promise<
 
   return (
     <>
-      <div className="page-head">
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <Link href="/professor/correcao" className="sidebar-link back-link">
+          <Link href="/professor/correcao" className="inline-flex items-center gap-2 pb-2 text-sm text-muted-foreground transition-colors hover:text-foreground">
             ← Correção
           </Link>
-          <h1 className="page-title">Revisar cartão-resposta</h1>
-          <p className="page-subtitle">Turma: {klass?.name ?? ""}</p>
+          <h1 className="font-display text-3xl font-extrabold tracking-[-0.6px] text-foreground">Revisar cartão-resposta</h1>
+          <p className="mt-1 text-[13.5px] text-muted-foreground">Turma: {klass?.name ?? ""}</p>
         </div>
       </div>
 
       {scan.status === "FAILED" && (
-        <div className="notice notice--error">
+        <div className="mt-3.5 rounded-md border border-danger-border bg-danger-dim px-4.5 py-3.5 text-[13.5px] leading-normal text-danger-text">
           <p className="text-strong mt-0">Não foi possível processar este cartão.</p>
           <p className="mt-0">{scan.error_message}</p>
-          <Link href={`/professor/correcao/escanear/${scan.assignment_id}`} className="btn btn-primary btn-sm">
+          <Link href={`/professor/correcao/escanear/${scan.assignment_id}`} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 bg-primary font-bold text-primary-foreground shadow-[0_4px_14px_rgba(217,119,87,0.16)] hover:-translate-y-px hover:opacity-90 px-3 py-[7px] text-sm">
             Escanear novamente
           </Link>
         </div>
       )}
 
       {scan.status === "CONFIRMED" && (
-        <div className="notice">
+        <div className="mt-3.5 rounded-md border border-brand-border bg-brand-dim px-4.5 py-3.5 text-[13.5px] leading-normal text-brand-text">
           <p className="text-strong mt-0">Este cartão já foi confirmado.</p>
         </div>
       )}

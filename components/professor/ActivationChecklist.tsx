@@ -39,15 +39,15 @@ export async function ActivationChecklist() {
 
   return (
     <section className="card card--highlight activation-checklist">
-      <div className="card-header">
-        <div className="card-title-group">
-          <h2 className="card-title">Primeiros passos</h2>
-          <span className="chip">{doneCount}/{steps.length}</span>
+      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border px-5.5 pt-5 pb-4">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <h2 className="flex items-center gap-2.5 font-display text-lg font-bold tracking-[-0.2px] text-foreground">Primeiros passos</h2>
+          <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">{doneCount}/{steps.length}</span>
         </div>
       </div>
-      <div className="card-body card-body--tight">
-        <div className="usage-bar usage-bar--flush">
-          <div className="usage-bar-fill" style={{ width: `${(doneCount / steps.length) * 100}%` }} />
+      <div className="flex flex-col p-5.5 gap-1.5">
+        <div className="h-2 overflow-hidden rounded-full bg-[rgba(var(--overlay-rgb),0.06)]">
+          <div className="h-full rounded-full bg-brand transition-[width] duration-[320ms]" style={{ width: `${(doneCount / steps.length) * 100}%` }} />
         </div>
         {steps.map((s) => (
           <a

@@ -90,17 +90,17 @@ export function ScanCaptureView({ assignmentId }: { assignmentId: string }) {
   }
 
   return (
-    <section className="card">
+    <section className="overflow-hidden rounded-lg border border-border bg-card shadow-elevated transition-colors">
       <div className="card-body stack-md">
         {scannedCount > 0 && (
-          <p className="field-hint mt-0">{scannedCount} cartão{scannedCount > 1 ? "ões" : ""} enviado{scannedCount > 1 ? "s" : ""} nesta sessão.</p>
+          <p className="mt-0 text-xs leading-snug text-muted-foreground">{scannedCount} cartão{scannedCount > 1 ? "ões" : ""} enviado{scannedCount > 1 ? "s" : ""} nesta sessão.</p>
         )}
 
         {captureState === "unsupported" && (
-          <div className="notice notice--error">Este navegador não tem suporte a câmera. Tente em outro dispositivo.</div>
+          <div className="mt-3.5 rounded-md border border-danger-border bg-danger-dim px-4.5 py-3.5 text-[13.5px] leading-normal text-danger-text">Este navegador não tem suporte a câmera. Tente em outro dispositivo.</div>
         )}
         {captureState === "denied" && (
-          <div className="notice notice--error">
+          <div className="mt-3.5 rounded-md border border-danger-border bg-danger-dim px-4.5 py-3.5 text-[13.5px] leading-normal text-danger-text">
             Não foi possível acessar a câmera — verifique a permissão do navegador e recarregue a página.
           </div>
         )}
@@ -118,22 +118,22 @@ export function ScanCaptureView({ assignmentId }: { assignmentId: string }) {
               disabled={captureState !== "live" || uploadState.status === "uploading"}
               aria-label="Capturar foto do cartão-resposta"
             >
-              {uploadState.status === "uploading" ? <span className="btn-loader" /> : <span className="scan-shutter-dot" />}
+              {uploadState.status === "uploading" ? <span className="inline-block size-3.5 shrink-0 animate-spin rounded-full border-2 border-black/20 border-t-brand-ink" /> : <span className="scan-shutter-dot" />}
             </button>
-            <p className="field-hint text-center">Enquadre o cartão-resposta inteiro, com boa luz, e toque para capturar.</p>
+            <p className="mt-1 text-center text-xs leading-snug text-muted-foreground">Enquadre o cartão-resposta inteiro, com boa luz, e toque para capturar.</p>
           </>
         )}
 
-        {uploadState.status === "error" && <div className="notice notice--error">{uploadState.message}</div>}
+        {uploadState.status === "error" && <div className="mt-3.5 rounded-md border border-danger-border bg-danger-dim px-4.5 py-3.5 text-[13.5px] leading-normal text-danger-text">{uploadState.message}</div>}
 
         {uploadState.status === "done" && uploadState.needsReview && (
           <div className="notice text-center stack-sm">
             <p className="text-strong mt-0">Cartão lido! Confira as respostas detectadas antes de confirmar.</p>
             <div className="inline-gap-sm justify-center">
-              <Link href={`/professor/correcao/gabarito/${uploadState.scanId}`} className="btn btn-primary btn-sm">
+              <Link href={`/professor/correcao/gabarito/${uploadState.scanId}`} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 bg-primary font-bold text-primary-foreground shadow-[0_4px_14px_rgba(217,119,87,0.16)] hover:-translate-y-px hover:opacity-90 px-3 py-[7px] text-sm">
                 Revisar respostas
               </Link>
-              <button type="button" className="btn btn-ghost btn-sm" onClick={onScanNext}>
+              <button type="button" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 border border-border bg-[rgba(var(--overlay-rgb),0.06)] text-foreground hover:border-border-hover hover:bg-[rgba(var(--overlay-rgb),0.10)] px-3 py-[7px] text-sm" onClick={onScanNext}>
                 Escanear próximo cartão
               </button>
             </div>
@@ -143,12 +143,12 @@ export function ScanCaptureView({ assignmentId }: { assignmentId: string }) {
         {uploadState.status === "done" && !uploadState.needsReview && (
           <div className="notice notice--error text-center stack-sm">
             <p className="text-strong mt-0">Não foi possível ler este cartão automaticamente.</p>
-            <p className="field-hint mt-0">Verifique a luz e o enquadramento e tente novamente.</p>
+            <p className="mt-0 text-xs leading-snug text-muted-foreground">Verifique a luz e o enquadramento e tente novamente.</p>
             <div className="inline-gap-sm justify-center">
-              <button type="button" className="btn btn-primary btn-sm" onClick={onScanNext}>
+              <button type="button" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 bg-primary font-bold text-primary-foreground shadow-[0_4px_14px_rgba(217,119,87,0.16)] hover:-translate-y-px hover:opacity-90 px-3 py-[7px] text-sm" onClick={onScanNext}>
                 Tentar novamente
               </button>
-              <Link href="/professor/correcao" className="btn btn-ghost btn-sm">
+              <Link href="/professor/correcao" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 border border-border bg-[rgba(var(--overlay-rgb),0.06)] text-foreground hover:border-border-hover hover:bg-[rgba(var(--overlay-rgb),0.10)] px-3 py-[7px] text-sm">
                 Concluir
               </Link>
             </div>

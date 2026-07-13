@@ -28,14 +28,14 @@ export default async function StudyPlanDetailPage({ params }: { params: Promise<
 
   return (
     <>
-      <div className="page-head">
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <Link href="/aluno/plano-de-estudos" className="sidebar-link back-link">
+          <Link href="/aluno/plano-de-estudos" className="inline-flex items-center gap-2 pb-2 text-sm text-muted-foreground transition-colors hover:text-foreground">
             ← Plano de Estudos
           </Link>
-          <h1 className="page-title">{plan.goal}</h1>
-          <div className="exam-meta">
-            <span className="chip">{doneCount}/{list.length} concluídos</span>
+          <h1 className="font-display text-3xl font-extrabold tracking-[-0.6px] text-foreground">{plan.goal}</h1>
+          <div className="mt-0.5 flex flex-wrap gap-1.5">
+            <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">{doneCount}/{list.length} concluídos</span>
           </div>
         </div>
         <RenameDeleteMenu currentTitle={plan.goal} onRename={renameAction} onDelete={deleteAction} redirectAfterDelete="/aluno/plano-de-estudos" />

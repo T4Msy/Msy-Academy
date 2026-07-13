@@ -14,7 +14,7 @@ export function DashboardContent() {
   const { data: classStats, isError } = useClassStats();
 
   if (isError) {
-    return <p className="field-hint">Não foi possível carregar o desempenho das turmas.</p>;
+    return <p className="mt-1 text-xs leading-snug text-muted-foreground">Não foi possível carregar o desempenho das turmas.</p>;
   }
   if (!classStats) return null;
 
@@ -29,26 +29,26 @@ export function DashboardContent() {
   }
 
   return (
-    <div className="questions-stack">
+    <div className="flex flex-col gap-3.5">
       {classStats.map(({ klass, students }) => (
-        <section key={klass.id} className="card">
-          <div className="card-header">
-            <div className="card-title-group">
-              <h2 className="card-title">{klass.name}</h2>
-              <span className="chip">{students.length} alunos</span>
+        <section key={klass.id} className="overflow-hidden rounded-lg border border-border bg-card shadow-elevated transition-colors">
+          <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border px-5.5 pt-5 pb-4">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <h2 className="flex items-center gap-2.5 font-display text-lg font-bold tracking-[-0.2px] text-foreground">{klass.name}</h2>
+              <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">{students.length} alunos</span>
               {students.some((s) => s.atRisk) && (
-                <span className="chip chip--danger">{students.filter((s) => s.atRisk).length} em risco</span>
+                <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-danger-border bg-danger-dim px-2.5 py-1 text-xs text-danger-text">{students.filter((s) => s.atRisk).length} em risco</span>
               )}
             </div>
           </div>
-          <div className="card-body">
+          <div className="flex flex-col gap-4.5 p-5.5">
             {students.length === 0 ? (
-              <p className="field-hint mt-0">Nenhum aluno matriculado.</p>
+              <p className="mt-0 text-xs leading-snug text-muted-foreground">Nenhum aluno matriculado.</p>
             ) : (
-              <ul className="question-options-list">
+              <ul className="flex list-none flex-col gap-2">
                 {students.map((s) => (
-                  <li key={s.studentId} className={`question-option${s.atRisk ? "" : " question-option--correct"}`}>
-                    <div className="row-between">
+                  <li key={s.studentId} className={`flex items-baseline gap-2 rounded-sm border px-3 py-[9px] text-[13.5px] ${s.atRisk ? "border-border text-muted-foreground" : "border-brand-border bg-brand-dim text-foreground"}`}>
+                    <div className="flex justify-between gap-2">
                       <span>
                         <b>{s.name}</b>
                         {s.overdueCount > 0 &&
@@ -61,14 +61,14 @@ export function DashboardContent() {
                           </>
                         )}
                       </span>
-                      <span className="tabular-nums-muted">
+                      <span className="shrink-0 tabular-nums text-muted-foreground">
                         {s.accuracyPct !== null ? `${s.accuracyPct}%` : "sem dados"}
                       </span>
                     </div>
                     {s.accuracyPct !== null && (
-                      <div className="usage-bar usage-bar--tight">
+                      <div className="h-2 overflow-hidden rounded-full bg-[rgba(var(--overlay-rgb),0.06)]">
                         <div
-                          className={`usage-bar-fill${s.atRisk ? " usage-bar-fill--warn" : ""}`}
+                          className={`h-full rounded-full transition-[width] duration-[320ms] ${s.atRisk ? "bg-danger" : "bg-brand"}`}
                           style={{ width: `${Math.max(4, s.accuracyPct)}%` }}
                         />
                       </div>

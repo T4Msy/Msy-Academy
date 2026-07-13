@@ -57,11 +57,11 @@ export default async function CorrecaoPage() {
 
   return (
     <>
-      <div className="page-head">
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="page-title">Correção</h1>
+          <h1 className="font-display text-3xl font-extrabold tracking-[-0.6px] text-foreground">Correção</h1>
           {list.length > 0 && (
-            <p className="page-subtitle">{`${list.length} envio${list.length > 1 ? "s" : ""} aguardando correção`}</p>
+            <p className="mt-1 text-[13.5px] text-muted-foreground">{`${list.length} envio${list.length > 1 ? "s" : ""} aguardando correção`}</p>
           )}
         </div>
       </div>
@@ -72,13 +72,13 @@ export default async function CorrecaoPage() {
             const examId = examIdByAssignmentId.get(s.assignment_id);
             const title = examId ? examTitleByExamId.get(examId) : undefined;
             return (
-              <Link key={s.id} href={`/professor/correcao/gabarito/${s.id}`} className="card question-card question-card--link">
-                <div className="card-body card-body--row-between">
+              <Link key={s.id} href={`/professor/correcao/gabarito/${s.id}`} className="block overflow-hidden rounded-lg border border-border bg-card shadow-elevated transition-colors">
+                <div className="flex flex-row items-center justify-between gap-3 p-5.5">
                   <div>
-                    <div className="exam-card-title">Cartão-resposta escaneado</div>
-                    <div className="field-hint">{title ?? "Prova"}</div>
+                    <div className="font-display text-base font-bold tracking-[-0.2px] text-foreground">Cartão-resposta escaneado</div>
+                    <div className="mt-1 text-xs leading-snug text-muted-foreground">{title ?? "Prova"}</div>
                   </div>
-                  <span className="chip">{s.status === "FAILED" ? "Falhou" : "Revisar"}</span>
+                  <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">{s.status === "FAILED" ? "Falhou" : "Revisar"}</span>
                 </div>
               </Link>
             );
@@ -89,17 +89,17 @@ export default async function CorrecaoPage() {
       {list.length === 0 && scanList.length === 0 ? (
         <EmptyState variant="notificacao" title="Fila vazia" text="Envios com questões discursivas aparecem aqui para correção." />
       ) : (
-        <div className="questions-stack">
+        <div className="flex flex-col gap-3.5">
           {list.map((s: any) => {
             const title = s.assignments?.content_type === "EXAM" ? examTitleById.get(s.assignments.content_id) : activityTitleById.get(s.assignments?.content_id);
             return (
-              <Link key={s.id} href={`/professor/correcao/${s.id}`} className="card question-card question-card--link">
-                <div className="card-body card-body--row-between">
+              <Link key={s.id} href={`/professor/correcao/${s.id}`} className="block overflow-hidden rounded-lg border border-border bg-card shadow-elevated transition-colors">
+                <div className="flex flex-row items-center justify-between gap-3 p-5.5">
                   <div>
-                    <div className="exam-card-title">{nameById.get(s.student_id) || "Aluno"}</div>
-                    <div className="field-hint">{title ?? "Tarefa"}</div>
+                    <div className="font-display text-base font-bold tracking-[-0.2px] text-foreground">{nameById.get(s.student_id) || "Aluno"}</div>
+                    <div className="mt-1 text-xs leading-snug text-muted-foreground">{title ?? "Tarefa"}</div>
                   </div>
-                  <span className="chip">Pendente</span>
+                  <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">Pendente</span>
                 </div>
               </Link>
             );

@@ -37,25 +37,25 @@ export function QuestionBankItem({
   }
 
   return (
-    <div className={`card question-bank-item${selected ? " question-bank-item--selected" : ""}`}>
-      <div className="card-body card-body--row">
+    <div className={`overflow-hidden rounded-lg border border-border bg-card shadow-elevated transition-colors ${selected ? "border-brand-border bg-brand-dim" : ""}`}>
+      <div className="flex flex-row items-start gap-3 p-5.5">
         <input
           type="checkbox"
           checked={selected}
           onChange={() => onToggleSelect(id)}
           aria-label="Selecionar esta questão para reaproveitar"
-          className="checkbox-lg"
+          className="mt-[3px] size-4.5 shrink-0 accent-brand"
         />
-        <div className="flex-fill">
-          <div className="exam-meta mb-sm">
-            <span className="chip">{TYPE_LABEL[type] ?? type}</span>
-            <span className="chip">{DIFFICULTY_LABEL[difficulty] ?? difficulty}</span>
+        <div className="min-w-0 flex-1">
+          <div className="mb-2 mt-0.5 flex flex-wrap gap-1.5">
+            <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">{TYPE_LABEL[type] ?? type}</span>
+            <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">{DIFFICULTY_LABEL[difficulty] ?? difficulty}</span>
             {tags.map((t) => (
-              <span key={t} className="chip">{t}</span>
+              <span key={t} className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">{t}</span>
             ))}
           </div>
-          <p className="question-statement question-statement--tight">{statement}</p>
-          <div className="popover-row popover-row--start">
+          <p className="mb-2 text-[14.5px] leading-relaxed text-foreground">{statement}</p>
+          <div className="flex flex-wrap justify-start gap-2">
             <InlineDeleteConfirm
               confirming={confirming}
               pending={pending}

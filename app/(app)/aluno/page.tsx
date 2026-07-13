@@ -17,18 +17,18 @@ export default async function AlunoHomePage() {
 
   return (
     <>
-      <div className="page-head">
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="page-title">Olá, {firstName}</h1>
-          <p className="page-subtitle">O que você quer fazer hoje?</p>
+          <h1 className="font-display text-3xl font-extrabold tracking-[-0.6px] text-foreground">Olá, {firstName}</h1>
+          <p className="mt-1 text-[13.5px] text-muted-foreground">O que você quer fazer hoje?</p>
         </div>
       </div>
 
-      <div className="quick-actions-grid">
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-3.5">
         {QUICK_ACTIONS.map((a) => (
-          <Link key={a.href} href={a.href} className="quick-action-card">
-            <div className="quick-action-title">{a.title}</div>
-            <p className="quick-action-desc">{a.desc}</p>
+          <Link key={a.href} href={a.href} className="rounded-md border border-border bg-card p-5 transition-all hover:-translate-y-0.5 hover:border-border-hover hover:bg-card-2">
+            <div className="mb-1.5 font-display text-base font-bold text-foreground">{a.title}</div>
+            <p className="text-sm leading-normal text-muted-foreground">{a.desc}</p>
           </Link>
         ))}
       </div>

@@ -26,16 +26,16 @@ export default async function ProvasPage() {
 
   return (
     <>
-      <div className="page-head">
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="page-title">Minhas Provas</h1>
-          <p className="page-subtitle">
+          <h1 className="font-display text-3xl font-extrabold tracking-[-0.6px] text-foreground">Minhas Provas</h1>
+          <p className="mt-1 text-[13.5px] text-muted-foreground">
             {list.length > 0
               ? `${list.length} prova${list.length > 1 ? "s" : ""} salva${list.length > 1 ? "s" : ""}`
               : "Suas provas geradas ficam salvas aqui."}
           </p>
         </div>
-        <Link href="/professor/provas/nova" className="btn btn-primary">
+        <Link href="/professor/provas/nova" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 bg-primary font-bold text-primary-foreground shadow-[0_4px_14px_rgba(217,119,87,0.16)] hover:-translate-y-px hover:opacity-90 px-4 py-2.5">
           <svg fill="none" width="16" height="16" viewBox="0 0 24 24">
             <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
           </svg>
@@ -49,23 +49,23 @@ export default async function ProvasPage() {
           title="Nenhuma prova ainda"
           text="Gere sua primeira prova com IA. As questões ficam salvas e editáveis, prontas para exportar e reutilizar."
           action={
-            <Link href="/professor/provas/nova" className="btn btn-primary">
+            <Link href="/professor/provas/nova" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 bg-primary font-bold text-primary-foreground shadow-[0_4px_14px_rgba(217,119,87,0.16)] hover:-translate-y-px hover:opacity-90 px-4 py-2.5">
               Gerar primeira prova
             </Link>
           }
         />
       ) : (
-        <div className="exam-grid">
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-3.5">
           {list.map((exam) => (
-            <Link key={exam.id} href={`/professor/provas/${exam.id}`} className="exam-card">
-              <div className="exam-card-title">{exam.title || "Prova sem título"}</div>
-              <div className="exam-meta">
-                {exam.course && <span className="chip">{exam.course}</span>}
-                {exam.style && <span className="chip">{exam.style}</span>}
-                {exam.version > 1 && <span className="chip">Versão {exam.version}</span>}
-                {exam.include_answer_key && <span className="chip">Com gabarito</span>}
+            <Link key={exam.id} href={`/professor/provas/${exam.id}`} className="flex flex-col gap-2.5 rounded-md border border-border bg-card p-4.5 transition-all hover:-translate-y-0.5 hover:border-border-hover hover:bg-card-2">
+              <div className="font-display text-base font-bold tracking-[-0.2px] text-foreground">{exam.title || "Prova sem título"}</div>
+              <div className="mt-0.5 flex flex-wrap gap-1.5">
+                {exam.course && <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">{exam.course}</span>}
+                {exam.style && <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">{exam.style}</span>}
+                {exam.version > 1 && <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">Versão {exam.version}</span>}
+                {exam.include_answer_key && <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">Com gabarito</span>}
               </div>
-              <div className="exam-foot">
+              <div className="mt-auto flex items-center justify-between gap-2.5 pt-2 text-xs text-subtle">
                 <span>{exam.ai_provider ?? "IA"}</span>
                 <span>{formatDate(exam.created_at)}</span>
               </div>

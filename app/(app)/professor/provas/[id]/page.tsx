@@ -54,22 +54,22 @@ export default async function ExamPage({ params }: { params: Promise<{ id: strin
 
   return (
     <>
-      <div className="page-head">
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <Link href="/professor/provas" className="sidebar-link back-link">
+          <Link href="/professor/provas" className="inline-flex items-center gap-2 pb-2 text-sm text-muted-foreground transition-colors hover:text-foreground">
             ← Minhas Provas
           </Link>
-          <h1 className="page-title">{exam.title || "Prova sem título"}</h1>
-          <div className="exam-meta">
-            {exam.course && <span className="chip">{exam.course}</span>}
-            {exam.style && <span className="chip">{exam.style}</span>}
-            {exam.version > 1 && <span className="chip">Versão {exam.version}</span>}
-            {exam.include_answer_key && <span className="chip">Com gabarito</span>}
-            <span className="chip">{questions.length} questões</span>
+          <h1 className="font-display text-3xl font-extrabold tracking-[-0.6px] text-foreground">{exam.title || "Prova sem título"}</h1>
+          <div className="mt-0.5 flex flex-wrap gap-1.5">
+            {exam.course && <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">{exam.course}</span>}
+            {exam.style && <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">{exam.style}</span>}
+            {exam.version > 1 && <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">Versão {exam.version}</span>}
+            {exam.include_answer_key && <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">Com gabarito</span>}
+            <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">{questions.length} questões</span>
             {exam.ai_provider && <AiBadge />}
           </div>
         </div>
-        <div className="page-head-actions">
+        <div className="flex items-center gap-2">
           <ExamExportActions examTitle={exam.title} questions={questions} includeAnswerKey={exam.include_answer_key} />
           <ExamHeaderMenu examId={exam.id} examTitle={exam.title || "Prova sem título"} />
         </div>

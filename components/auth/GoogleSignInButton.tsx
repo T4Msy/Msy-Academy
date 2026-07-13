@@ -32,12 +32,12 @@ export function GoogleSignInButton({ redirectTo = "/", disabled = false }: { red
   if (!GOOGLE_OAUTH_ENABLED) {
     return (
       <div>
-        <button type="button" className="btn btn-ghost btn-block" disabled title="Em breve">
+        <button type="button" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 border border-border bg-[rgba(var(--overlay-rgb),0.06)] text-foreground hover:border-border-hover hover:bg-[rgba(var(--overlay-rgb),0.10)] px-4 py-2.5 w-full" disabled title="Em breve">
           <GoogleIcon />
           Continuar com Google
           <span className="chip ml-sm">Em breve</span>
         </button>
-        <p className="field-hint">Login com Google ainda não está disponível — use e-mail e senha por enquanto.</p>
+        <p className="mt-1 text-xs leading-snug text-muted-foreground">Login com Google ainda não está disponível — use e-mail e senha por enquanto.</p>
       </div>
     );
   }
@@ -63,14 +63,14 @@ export function GoogleSignInButton({ redirectTo = "/", disabled = false }: { red
     <div>
       <button
         type="button"
-        className="btn btn-ghost btn-block"
+        className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 border border-border bg-[rgba(var(--overlay-rgb),0.06)] text-foreground hover:border-border-hover hover:bg-[rgba(var(--overlay-rgb),0.10)] px-4 py-2.5 w-full"
         onClick={signInWithGoogle}
         disabled={pending || disabled}
       >
         <GoogleIcon />
         {pending ? "Redirecionando…" : "Continuar com Google"}
       </button>
-      {error && <p className="field-hint field-hint--danger">{error}</p>}
+      {error && <p className="mt-1 text-xs leading-snug text-muted-foreground text-danger-text">{error}</p>}
     </div>
   );
 }

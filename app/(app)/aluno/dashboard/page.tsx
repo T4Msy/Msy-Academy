@@ -38,37 +38,37 @@ export default async function AlunoDashboardPage() {
 
   return (
     <>
-      <div className="page-head">
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="page-title">Meu Progresso</h1>
-          <p className="page-subtitle">Sua evolução, desempenho e metas.</p>
+          <h1 className="font-display text-3xl font-extrabold tracking-[-0.6px] text-foreground">Meu Progresso</h1>
+          <p className="mt-1 text-[13.5px] text-muted-foreground">Sua evolução, desempenho e metas.</p>
         </div>
       </div>
 
-      <div className="quick-actions-grid">
-        <div className="card">
-          <div className="card-body">
-            <div className="card-title">Tarefas concluídas</div>
-            <p className="stat-tile-value stat-tile-value--bold">{completedCount}</p>
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-3.5">
+        <div className="overflow-hidden rounded-lg border border-border bg-card shadow-elevated transition-colors">
+          <div className="flex flex-col gap-4.5 p-5.5">
+            <div className="flex items-center gap-2.5 font-display text-lg font-bold tracking-[-0.2px] text-foreground">Tarefas concluídas</div>
+            <p className="mt-2 font-display text-[28px] font-extrabold">{completedCount}</p>
           </div>
         </div>
-        <div className="card">
-          <div className="card-body">
+        <div className="overflow-hidden rounded-lg border border-border bg-card shadow-elevated transition-colors">
+          <div className="flex flex-col gap-4.5 p-5.5">
             <StatRing value={accuracyPct} label="Acerto em objetivas" size={72} strokeWidth={7} />
           </div>
         </div>
-        <div className="card">
-          <div className="card-body">
-            <div className="card-title">Itens de estudo concluídos</div>
-            <p className="stat-tile-value stat-tile-value--bold">
+        <div className="overflow-hidden rounded-lg border border-border bg-card shadow-elevated transition-colors">
+          <div className="flex flex-col gap-4.5 p-5.5">
+            <div className="flex items-center gap-2.5 font-display text-lg font-bold tracking-[-0.2px] text-foreground">Itens de estudo concluídos</div>
+            <p className="mt-2 font-display text-[28px] font-extrabold">
               {doneItems}/{studyItems?.length ?? 0}
             </p>
           </div>
         </div>
-        <div className="card">
-          <div className="card-body">
-            <div className="card-title">Decks de flashcards</div>
-            <p className="stat-tile-value stat-tile-value--bold">{decks?.length ?? 0}</p>
+        <div className="overflow-hidden rounded-lg border border-border bg-card shadow-elevated transition-colors">
+          <div className="flex flex-col gap-4.5 p-5.5">
+            <div className="flex items-center gap-2.5 font-display text-lg font-bold tracking-[-0.2px] text-foreground">Decks de flashcards</div>
+            <p className="mt-2 font-display text-[28px] font-extrabold">{decks?.length ?? 0}</p>
           </div>
         </div>
       </div>

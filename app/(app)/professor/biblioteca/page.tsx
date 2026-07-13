@@ -35,10 +35,10 @@ export default async function BibliotecaPage({
 
   return (
     <>
-      <div className="page-head">
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="page-title">Biblioteca</h1>
-          <p className="page-subtitle">
+          <h1 className="font-display text-3xl font-extrabold tracking-[-0.6px] text-foreground">Biblioteca</h1>
+          <p className="mt-1 text-[13.5px] text-muted-foreground">
             {list.length > 0
               ? `${list.length} item${list.length > 1 ? "ns" : ""}`
               : "Provas, atividades, planos de aula e arquivos ficam aqui, pesquisáveis."}
@@ -47,15 +47,15 @@ export default async function BibliotecaPage({
         <UploadMaterialForm classes={classes ?? []} />
       </div>
 
-      <form className="card mb-md" method="get">
-        <div className="card-body card-body--filter-row">
-          <div className="form-field min-w-200">
-            <label className="field-label" htmlFor="busca">Buscar</label>
-            <input className="input" id="busca" name="busca" defaultValue={busca ?? ""} placeholder="Palavra no título ou tag" />
+      <form className="mb-4 overflow-hidden rounded-lg border border-border bg-card shadow-elevated transition-colors" method="get">
+        <div className="flex flex-row flex-wrap items-end gap-3 p-5.5">
+          <div className="flex min-w-[200px] flex-col gap-1.5">
+            <label className="block text-sm font-semibold text-foreground" htmlFor="busca">Buscar</label>
+            <input className="w-full appearance-none rounded-sm border border-border bg-[rgba(var(--overlay-rgb),0.04)] px-3 py-2.5 text-md text-foreground outline-none transition-colors focus:border-brand-border focus:ring-[3px] focus:ring-brand-glow" id="busca" name="busca" defaultValue={busca ?? ""} placeholder="Palavra no título ou tag" />
           </div>
-          <div className="form-field min-w-180">
-            <label className="field-label" htmlFor="tipo">Tipo</label>
-            <select className="input" id="tipo" name="tipo" defaultValue={tipo ?? ""}>
+          <div className="flex min-w-[180px] flex-col gap-1.5">
+            <label className="block text-sm font-semibold text-foreground" htmlFor="tipo">Tipo</label>
+            <select className="w-full appearance-none rounded-sm border border-border bg-[rgba(var(--overlay-rgb),0.04)] px-3 py-2.5 text-md text-foreground outline-none transition-colors focus:border-brand-border focus:ring-[3px] focus:ring-brand-glow" id="tipo" name="tipo" defaultValue={tipo ?? ""}>
               <option value="">Todos</option>
               <option value="EXAM">Provas</option>
               <option value="ACTIVITY">Atividades</option>
@@ -63,14 +63,14 @@ export default async function BibliotecaPage({
               <option value="FILE">Arquivos</option>
             </select>
           </div>
-          <button type="submit" className="btn btn-primary btn-sm">Filtrar</button>
+          <button type="submit" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 bg-primary font-bold text-primary-foreground shadow-[0_4px_14px_rgba(217,119,87,0.16)] hover:-translate-y-px hover:opacity-90 px-3 py-[7px] text-sm">Filtrar</button>
         </div>
       </form>
 
       {list.length === 0 ? (
         <EmptyState variant="biblioteca" title="Nada por aqui ainda" text="Crie uma prova, atividade ou plano de aula — ou envie um arquivo — para começar." />
       ) : (
-        <div className="questions-stack">
+        <div className="flex flex-col gap-3.5">
           {list.map((m) => (
             <MaterialItem key={m.id} id={m.id} kind={m.kind} refId={m.ref_id} storagePath={m.storage_path} title={m.title} />
           ))}

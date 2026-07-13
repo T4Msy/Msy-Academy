@@ -33,14 +33,14 @@ export async function PlanCard({ returnPath }: { returnPath: string }) {
     .map((p) => ({ code: p.code, name: p.name }));
 
   return (
-    <section className="card">
-      <div className="card-header">
-        <div className="card-title-group">
-          <h2 className="card-title">Plano</h2>
+    <section className="overflow-hidden rounded-lg border border-border bg-card shadow-elevated transition-colors">
+      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border px-5.5 pt-5 pb-4">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <h2 className="flex items-center gap-2.5 font-display text-lg font-bold tracking-[-0.2px] text-foreground">Plano</h2>
         </div>
       </div>
-      <div className="card-body">
-        <p className="field-hint mt-0">
+      <div className="flex flex-col gap-4.5 p-5.5">
+        <p className="mt-0 text-xs leading-snug text-muted-foreground">
           {subscription?.plan.name ?? "Gratuito"} · {formatPrice(subscription?.plan.price_cents ?? 0)}
           {subscription && subscription.status !== "ACTIVE" && ` · ${STATUS_LABEL[subscription.status] ?? subscription.status}`}
         </p>

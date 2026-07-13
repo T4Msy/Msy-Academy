@@ -20,7 +20,7 @@ export function StatRing({
   const offset = circumference * (1 - pct / 100);
 
   return (
-    <div className="inline-gap-md">
+    <div className="flex items-center gap-4">
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="stat-ring-svg" role="img" aria-label={`${label}: ${value === null ? "sem dados" : `${value}%`}`}>
         <circle
           cx={size / 2}
@@ -47,7 +47,7 @@ export function StatRing({
       </svg>
       <div>
         <div className="stat-ring-value">{value === null ? "—" : `${value}%`}</div>
-        <div className="field-hint">{label}</div>
+        <div className="mt-1 text-xs leading-snug text-muted-foreground">{label}</div>
       </div>
     </div>
   );

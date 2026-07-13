@@ -29,10 +29,10 @@ export default async function EscanearPickerPage() {
 
   return (
     <>
-      <div className="page-head">
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="page-title">Escanear Gabarito</h1>
-          <p className="page-subtitle">Escolha a prova para fotografar os cartões-resposta preenchidos.</p>
+          <h1 className="font-display text-3xl font-extrabold tracking-[-0.6px] text-foreground">Escanear Gabarito</h1>
+          <p className="mt-1 text-[13.5px] text-muted-foreground">Escolha a prova para fotografar os cartões-resposta preenchidos.</p>
         </div>
       </div>
 
@@ -43,14 +43,14 @@ export default async function EscanearPickerPage() {
           text="Atribua uma prova a uma turma e gere o gabarito antes de escanear."
         />
       ) : (
-        <ul className="question-options-list">
+        <ul className="flex list-none flex-col gap-2">
           {list.map((a) => (
-            <li key={a.id} className="question-option list-row">
+            <li key={a.id} className="flex items-center justify-between gap-2 rounded-sm border border-border px-3 py-[9px] text-[13.5px] text-muted-foreground">
               <span>
-                <span className="chip mr-sm">{classNameById.get(a.class_id) ?? "Turma"}</span>
+                <span className="mr-2 inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">{classNameById.get(a.class_id) ?? "Turma"}</span>
                 {examTitleById.get(a.content_id) ?? "(prova removida)"}
               </span>
-              <Link href={`/professor/correcao/escanear/${a.id}`} className="btn btn-primary btn-sm">
+              <Link href={`/professor/correcao/escanear/${a.id}`} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 bg-primary font-bold text-primary-foreground shadow-[0_4px_14px_rgba(217,119,87,0.16)] hover:-translate-y-px hover:opacity-90 px-3 py-[7px] text-sm">
                 Escanear
               </Link>
             </li>
