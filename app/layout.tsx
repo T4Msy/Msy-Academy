@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Inter_Tight } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
+import { QueryProvider } from "@/components/providers/QueryProvider";
 import "./tailwind.css";
 
 // As variáveis expõem a *fonte-fonte* (--font-inter*); os tokens de uso
@@ -86,7 +87,7 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
       <body>
-        {children}
+        <QueryProvider>{children}</QueryProvider>
         <Toaster position="bottom-right" />
       </body>
     </html>
