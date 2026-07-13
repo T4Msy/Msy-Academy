@@ -1,16 +1,21 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Inter_Tight } from "next/font/google";
-import "./globals.css";
+import { Toaster } from "@/components/ui/sonner";
+import "./tailwind.css";
 
+// As variáveis expõem a *fonte-fonte* (--font-inter*); os tokens de uso
+// (--font-body/--font-display no globals.css e --font-sans/--font-display
+// no @theme do tailwind.css) referenciam estas — evita colisão de nomes
+// com os namespaces --font-* do Tailwind v4.
 const interBody = Inter({
   subsets: ["latin"],
-  variable: "--font-body",
+  variable: "--font-inter",
   display: "swap",
 });
 
 const interDisplay = Inter_Tight({
   subsets: ["latin"],
-  variable: "--font-display",
+  variable: "--font-inter-tight",
   weight: ["500", "600", "700", "800"],
   display: "swap",
 });
@@ -80,7 +85,10 @@ export default function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <Toaster position="bottom-right" />
+      </body>
     </html>
   );
 }

@@ -77,12 +77,11 @@
   --stagger-step:      60ms;
 
   --maxw:        1120px;
-  /* --font-display / --font-body come from next/font/google (app/layout.tsx,
-     applied as CSS custom properties on <html>) — not redefined here. A
-     fallback stack is provided in case a page ever renders outside that
-     wrapper (shouldn't happen — every route goes through the root layout). */
-  --font-display: system-ui, sans-serif;
-  --font-body:    system-ui, sans-serif;
+  /* As fontes reais vêm de next/font/google (app/layout.tsx) como
+     --font-inter / --font-inter-tight no <html>; estes tokens de uso só
+     apontam para elas, com fallback caso algo renderize fora do wrapper. */
+  --font-display: var(--font-inter-tight, system-ui), system-ui, sans-serif;
+  --font-body:    var(--font-inter, system-ui), system-ui, sans-serif;
 
   color-scheme: dark;
 }
