@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { processScan } from "@/lib/omr/process";
 
 const MAX_SIZE_BYTES = 8 * 1024 * 1024; // mirrors the answer-sheet-scans bucket's file_size_limit (migration 0022).
 const JPEG_MAGIC = new Uint8Array([0xff, 0xd8, 0xff]);
@@ -18,7 +19,10 @@ async function isRealJpeg(file: File): Promise<boolean> {
  * what identifies the student, decoded by the processing pipeline
  * (lib/omr/process.ts) right after this upload completes.
  */
-export async function uploadScan(assignmentId: string, formData: FormData): Promise<{ scanId: string }> {
+export async function uploadScan(
+  assignmentId: string,
+  formData: FormData,
+): Promise<{ scanId: string; status: "NEEDS_REVIEW" | "FAILED"; errorMessage: string | null }> {
   const supabase = await createClient();
   const {
     data: { user },
@@ -53,5 +57,21 @@ export async function uploadScan(assignmentId: string, formData: FormData): Prom
     .single();
   if (insertError || !scan) throw new Error(`Falha ao registrar a digitalização: ${insertError?.message}`);
 
-  return { scanId: scan.id };
+  // Runs synchronously within this request for the MVP (see Fase 3 plan) —
+  // revisit with a background job if this becomes a Vercel timeout issue.
+  // Uses the admin client internally, so it never throws here even if the
+  // photo is unreadable — the scan just ends up FAILED for the teacher to retry.
+  await processScan(scan.id);
+
+  const { data: processed } = await supabase
+    .from("answer_sheet_scans")
+    .select("status, error_message")
+    .eq("id", scan.id)
+    .single();
+
+  return {
+    scanId: scan.id,
+    status: processed?.status === "FAILED" ? "FAILED" : "NEEDS_REVIEW",
+    errorMessage: processed?.error_message ?? null,
+  };
 }

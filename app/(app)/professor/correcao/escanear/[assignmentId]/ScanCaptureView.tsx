@@ -5,7 +5,11 @@ import Link from "next/link";
 import { uploadScan } from "./actions";
 
 type CaptureState = "idle" | "starting" | "live" | "denied" | "unsupported";
-type UploadState = { status: "idle" } | { status: "uploading" } | { status: "error"; message: string } | { status: "done"; scanId: string };
+type UploadState =
+  | { status: "idle" }
+  | { status: "uploading" }
+  | { status: "error"; message: string }
+  | { status: "done"; scanId: string; needsReview: boolean };
 
 /**
  * Live camera viewfinder for photographing filled answer sheets — plain
@@ -73,8 +77,8 @@ export function ScanCaptureView({ assignmentId }: { assignmentId: string }) {
     try {
       const formData = new FormData();
       formData.set("photo", new File([blob], "scan.jpg", { type: "image/jpeg" }));
-      const { scanId } = await uploadScan(assignmentId, formData);
-      setUploadState({ status: "done", scanId });
+      const { scanId, status } = await uploadScan(assignmentId, formData);
+      setUploadState({ status: "done", scanId, needsReview: status === "NEEDS_REVIEW" });
       setScannedCount((n) => n + 1);
     } catch (err) {
       setUploadState({ status: "error", message: err instanceof Error ? err.message : "Falha ao enviar a foto." });
@@ -122,12 +126,27 @@ export function ScanCaptureView({ assignmentId }: { assignmentId: string }) {
 
         {uploadState.status === "error" && <div className="notice notice--error">{uploadState.message}</div>}
 
-        {uploadState.status === "done" && (
+        {uploadState.status === "done" && uploadState.needsReview && (
           <div className="notice text-center stack-sm">
-            <p className="text-strong mt-0">Cartão enviado! A leitura está sendo processada.</p>
+            <p className="text-strong mt-0">Cartão lido! Confira as respostas detectadas antes de confirmar.</p>
+            <div className="inline-gap-sm justify-center">
+              <Link href={`/professor/correcao/gabarito/${uploadState.scanId}`} className="btn btn-primary btn-sm">
+                Revisar respostas
+              </Link>
+              <button type="button" className="btn btn-ghost btn-sm" onClick={onScanNext}>
+                Escanear próximo cartão
+              </button>
+            </div>
+          </div>
+        )}
+
+        {uploadState.status === "done" && !uploadState.needsReview && (
+          <div className="notice notice--error text-center stack-sm">
+            <p className="text-strong mt-0">Não foi possível ler este cartão automaticamente.</p>
+            <p className="field-hint mt-0">Verifique a luz e o enquadramento e tente novamente.</p>
             <div className="inline-gap-sm justify-center">
               <button type="button" className="btn btn-primary btn-sm" onClick={onScanNext}>
-                Escanear próximo cartão
+                Tentar novamente
               </button>
               <Link href="/professor/correcao" className="btn btn-ghost btn-sm">
                 Concluir

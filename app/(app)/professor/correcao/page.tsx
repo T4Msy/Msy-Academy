@@ -20,6 +20,26 @@ export default async function CorrecaoPage() {
 
   const list = submissions ?? [];
 
+  // Gabarito scans awaiting teacher review (already processed, detected
+  // answers ready to confirm) or that failed to read — surfaced here so
+  // correção has one single queue, not two separate places to check.
+  const { data: scans } = await supabase
+    .from("answer_sheet_scans")
+    .select("id, assignment_id, status, created_at")
+    .in("status", ["NEEDS_REVIEW", "FAILED"])
+    .order("created_at", { ascending: true });
+  const scanList = scans ?? [];
+  const scanAssignmentIds = [...new Set(scanList.map((s) => s.assignment_id))];
+  const { data: scanAssignments } = scanAssignmentIds.length
+    ? await supabase.from("assignments").select("id, content_id").in("id", scanAssignmentIds)
+    : { data: [] as { id: string; content_id: string }[] };
+  const scanExamIds = [...new Set((scanAssignments ?? []).map((a) => a.content_id))];
+  const { data: scanExams } = scanExamIds.length
+    ? await supabase.from("exams").select("id, title").in("id", scanExamIds)
+    : { data: [] as { id: string; title: string }[] };
+  const examIdByAssignmentId = new Map((scanAssignments ?? []).map((a) => [a.id, a.content_id]));
+  const examTitleByExamId = new Map((scanExams ?? []).map((e) => [e.id, e.title]));
+
   const studentIds = [...new Set(list.map((s) => s.student_id))];
   const { data: profiles } = studentIds.length
     ? await supabase.from("profiles").select("id, full_name").in("id", studentIds)
@@ -46,7 +66,27 @@ export default async function CorrecaoPage() {
         </div>
       </div>
 
-      {list.length === 0 ? (
+      {scanList.length > 0 && (
+        <div className="questions-stack mb-md">
+          {scanList.map((s) => {
+            const examId = examIdByAssignmentId.get(s.assignment_id);
+            const title = examId ? examTitleByExamId.get(examId) : undefined;
+            return (
+              <Link key={s.id} href={`/professor/correcao/gabarito/${s.id}`} className="card question-card question-card--link">
+                <div className="card-body card-body--row-between">
+                  <div>
+                    <div className="exam-card-title">Cartão-resposta escaneado</div>
+                    <div className="field-hint">{title ?? "Prova"}</div>
+                  </div>
+                  <span className="chip">{s.status === "FAILED" ? "Falhou" : "Revisar"}</span>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      )}
+
+      {list.length === 0 && scanList.length === 0 ? (
         <EmptyState variant="notificacao" title="Fila vazia" text="Envios com questões discursivas aparecem aqui para correção." />
       ) : (
         <div className="questions-stack">

@@ -274,6 +274,25 @@ a { color: inherit; text-decoration: none; }
 .scan-shutter:disabled { opacity: 0.5; cursor: not-allowed; }
 .scan-shutter-dot { width: 46px; height: 46px; border-radius: 50%; background: var(--accent); }
 
+.scan-review-photo {
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-sm);
+  display: block;
+}
+.question-card--flagged { border-color: var(--accent-border); }
+
+.grid-two-col {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+@media (min-width: 900px) {
+  .grid-two-col { grid-template-columns: minmax(280px, 380px) minmax(0, 1fr); }
+  .grid-two-col > :first-child { position: sticky; top: 84px; }
+}
+
 .status-icon {
   width: 56px;
   height: 56px;
