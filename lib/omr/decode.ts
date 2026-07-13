@@ -78,11 +78,22 @@ export function locateAnswerSheet(pixels: Uint8ClampedArray, width: number, heig
   }
 
   const templateCenters = markerCenters(); // [qr, topRight, bottomLeft, bottomRight] in template pt space
-  const searchRadius = Math.max(24, scale * MARKERS.topRight.size * 1.8);
+  const baseRadius = Math.max(24, scale * MARKERS.topRight.size * 1.8);
 
-  const topRight = findDarkBlobCentroid(pixels, width, height, estimatePhotoPoint(templateCenters[1]), searchRadius);
-  const bottomLeft = findDarkBlobCentroid(pixels, width, height, estimatePhotoPoint(templateCenters[2]), searchRadius);
-  const bottomRight = findDarkBlobCentroid(pixels, width, height, estimatePhotoPoint(templateCenters[3]), searchRadius);
+  // The similarity transform above is derived only from the QR's own
+  // orientation — it's a good local estimate near the QR, but a real photo
+  // (unlike a pure in-plane rotation) has genuine perspective skew that
+  // this similarity model can't capture, so the estimate's error grows
+  // with distance from the QR anchor. Scale the search radius accordingly
+  // instead of using one fixed size for every corner.
+  function searchRadiusFor(templatePoint: Point): number {
+    const templateDistance = distance(templateCenters[0], templatePoint);
+    return Math.max(baseRadius, templateDistance * scale * 0.25);
+  }
+
+  const topRight = findDarkBlobCentroid(pixels, width, height, estimatePhotoPoint(templateCenters[1]), searchRadiusFor(templateCenters[1]));
+  const bottomLeft = findDarkBlobCentroid(pixels, width, height, estimatePhotoPoint(templateCenters[2]), searchRadiusFor(templateCenters[2]));
+  const bottomRight = findDarkBlobCentroid(pixels, width, height, estimatePhotoPoint(templateCenters[3]), searchRadiusFor(templateCenters[3]));
   if (!topRight || !bottomLeft || !bottomRight) {
     return { ok: false, error: "Não foi possível localizar os marcadores dos cantos — tente uma foto mais nítida, com o cartão inteiro visível." };
   }
@@ -153,12 +164,15 @@ function luminanceAt(pixels: Uint8ClampedArray, width: number, height: number, x
 }
 
 /**
- * Finds the darkness-weighted centroid of "ink" pixels in a square window
- * around `center`. Deliberately simple (no connected-components/contour
- * detection) — relies on the marker being the dominant dark feature inside
- * the window, which is only true if the coarse estimate placed the window
- * close enough. Returns null if nothing dark enough is found (photo too
- * bright/blurry, or the estimate missed).
+ * Finds the centroid of the LARGEST connected dark region inside a square
+ * window around `center` (4-connected flood fill over thresholded pixels).
+ * A wide search window (needed to tolerate a perspective estimate's error
+ * growing with distance from the QR anchor) can easily contain more than
+ * one dark thing — a corner marker plus a stray bubble, say — so picking
+ * the biggest contiguous blob, rather than a global darkness-weighted
+ * centroid, keeps a bubble's small ink mass from pulling the result away
+ * from the actual (much larger, solid) marker. Returns null if nothing
+ * dark enough is found (photo too bright/blurry, or the estimate missed).
  */
 function findDarkBlobCentroid(
   pixels: Uint8ClampedArray,
@@ -168,28 +182,61 @@ function findDarkBlobCentroid(
   radius: number,
 ): Point | null {
   const threshold = 110; // luminance 0-255; a black-ink marker on white paper sits well below this
-  let sumX = 0;
-  let sumY = 0;
-  let weight = 0;
 
   const minX = Math.max(0, Math.floor(center.x - radius));
   const maxX = Math.min(width - 1, Math.ceil(center.x + radius));
   const minY = Math.max(0, Math.floor(center.y - radius));
   const maxY = Math.min(height - 1, Math.ceil(center.y + radius));
+  const winWidth = maxX - minX + 1;
+  const winHeight = maxY - minY + 1;
+  if (winWidth <= 0 || winHeight <= 0) return null;
 
-  for (let y = minY; y <= maxY; y += 1) {
-    for (let x = minX; x <= maxX; x += 1) {
-      const lum = luminanceAt(pixels, width, height, x, y);
-      if (lum === null || lum >= threshold) continue;
-      const w = threshold - lum;
-      sumX += x * w;
-      sumY += y * w;
-      weight += w;
+  const isDark = new Uint8Array(winWidth * winHeight);
+  for (let y = 0; y < winHeight; y += 1) {
+    for (let x = 0; x < winWidth; x += 1) {
+      const lum = luminanceAt(pixels, width, height, minX + x, minY + y);
+      isDark[y * winWidth + x] = lum !== null && lum < threshold ? 1 : 0;
     }
   }
 
-  if (weight === 0) return null;
-  return { x: sumX / weight, y: sumY / weight };
+  const visited = new Uint8Array(winWidth * winHeight);
+  let best: { count: number; sumX: number; sumY: number } | null = null;
+  const stack: number[] = [];
+
+  for (let start = 0; start < isDark.length; start += 1) {
+    if (!isDark[start] || visited[start]) continue;
+
+    let count = 0;
+    let sumX = 0;
+    let sumY = 0;
+    stack.length = 0;
+    stack.push(start);
+    visited[start] = 1;
+
+    while (stack.length > 0) {
+      const idx = stack.pop() as number;
+      const x = idx % winWidth;
+      const y = Math.floor(idx / winWidth);
+      count += 1;
+      sumX += x;
+      sumY += y;
+
+      const neighbors = [idx - 1, idx + 1, idx - winWidth, idx + winWidth];
+      for (const n of neighbors) {
+        if (n < 0 || n >= isDark.length) continue;
+        if (n % winWidth === 0 && idx % winWidth === winWidth - 1) continue; // wrapped row edge (left)
+        if (idx % winWidth === 0 && n % winWidth === winWidth - 1) continue; // wrapped row edge (right)
+        if (!isDark[n] || visited[n]) continue;
+        visited[n] = 1;
+        stack.push(n);
+      }
+    }
+
+    if (!best || count > best.count) best = { count, sumX, sumY };
+  }
+
+  if (!best) return null;
+  return { x: minX + best.sumX / best.count, y: minY + best.sumY / best.count };
 }
 
 /** Average darkness (255 - luminance, higher = darker) in a small window — used to score bubble fill. */
@@ -220,7 +267,8 @@ function sampleDarkness(pixels: Uint8ClampedArray, width: number, height: number
  */
 export type Homography = number[]; // [h11,h12,h13,h21,h22,h23,h31,h32], h33=1
 
-function computeHomography(from: Point[], to: Point[]): Homography {
+/** Exported for tests that need to build a synthetic perspective-warped image (see decode.test.ts). */
+export function computeHomography(from: Point[], to: Point[]): Homography {
   const A: number[][] = [];
   const b: number[] = [];
   for (let i = 0; i < 4; i += 1) {
