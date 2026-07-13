@@ -21,7 +21,7 @@ const NAV: SidebarSection[] = [
     items: [
       { href: "/aluno/tutor-ia", label: "Tutor IA", icon: <IconTutorIA />, mobilePrimary: true },
       { href: "/aluno/tarefas", label: "Tarefas", icon: <IconAtividade />, mobilePrimary: true },
-      { href: "/aluno/simulados", label: "Simulados", icon: <IconSimulados />, mobilePrimary: true },
+      { href: "/aluno/simulados", label: "Simulados", icon: <IconSimulados /> },
     ],
   },
   {
@@ -33,7 +33,7 @@ const NAV: SidebarSection[] = [
   },
   {
     title: "Análise",
-    items: [{ href: "/aluno/dashboard", label: "Meu Progresso", icon: <IconDashboard /> }],
+    items: [{ href: "/aluno/dashboard", label: "Meu Progresso", icon: <IconDashboard />, mobilePrimary: true }],
   },
   {
     title: "Conta",

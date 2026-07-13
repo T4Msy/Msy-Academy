@@ -13,6 +13,7 @@ import {
   IconQuestoes,
   IconTurma,
   IconCorrecao,
+  IconScan,
   IconDashboard,
   IconConfiguracoes,
 } from "@/components/shell/navIcons";
@@ -22,7 +23,7 @@ const NAV: SidebarSection[] = [
   {
     title: "Gerar conteúdo",
     items: [
-      { href: "/professor/provas", label: "Minhas Provas", icon: <IconProvas />, mobilePrimary: true },
+      { href: "/professor/provas", label: "Minhas Provas", icon: <IconProvas /> },
       {
         kind: "group",
         label: "Criar",
@@ -47,6 +48,7 @@ const NAV: SidebarSection[] = [
     items: [
       { href: "/professor/turmas", label: "Turmas", icon: <IconTurma />, mobilePrimary: true },
       { href: "/professor/correcao", label: "Correção", icon: <IconCorrecao />, mobilePrimary: true },
+      { href: "/professor/correcao/escanear", label: "Escanear Gabarito", icon: <IconScan />, mobilePrimary: true },
     ],
   },
   {

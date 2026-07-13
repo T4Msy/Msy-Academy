@@ -156,6 +156,14 @@ export function IconConfiguracoes() {
   );
 }
 
+export function IconScan() {
+  return (
+    <Icon>
+      <path d="M7 3H4a1 1 0 0 0-1 1v3M17 3h3a1 1 0 0 1 1 1v3M7 21H4a1 1 0 0 1-1-1v-3M17 21h3a1 1 0 0 0 1-1v-3M3 12h18" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    </Icon>
+  );
+}
+
 export function IconChevronDown() {
   return (
     <Icon>
