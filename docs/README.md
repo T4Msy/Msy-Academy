@@ -32,6 +32,9 @@ A IA é o **núcleo** do produto, não um recurso adicional.
 | 09 | [09-backlog.md](./09-backlog.md) | Épicos, features e user stories |
 | 10 | [10-debitos-tecnicos.md](./10-debitos-tecnicos.md) | Débitos técnicos, melhorias e refatorações |
 | 11 | [11-analise-concorrentes.md](./11-analise-concorrentes.md) | Khan Academy, Quizlet, Google Classroom, Moodle, Duolingo |
+| 12 | [12-adr-stack.md](./12-adr-stack.md) | ADR: stack do MVP (Next + Supabase) |
+| 13 | [13-adr-revisao-arquitetural-2026-07.md](./13-adr-revisao-arquitetural-2026-07.md) | **ADR vigente: revisão arquitetural completa (UI, DS, dados, IA, qualidade)** |
+| 14 | [14-design-system-guidelines.md](./14-design-system-guidelines.md) | Design System: princípios, tokens e regras de uso (`/design-system`) |
 
 ---
 

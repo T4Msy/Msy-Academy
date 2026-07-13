@@ -1,5 +1,11 @@
 # 03 — Arquitetura
 
+> **Atualização (2026-07):** as decisões vigentes de stack de UI (Tailwind v4 + shadcn/ui),
+> estado no client (TanStack Query com hidratação + Zustand), forms (RHF+Zod), motor de IA
+> (Vercel AI SDK sob o orchestrator) e qualidade estão no
+> [ADR 13 — Revisão Arquitetural](./13-adr-revisao-arquitetural-2026-07.md), que prevalece
+> sobre este documento onde conflitar.
+
 ## 3.1 Arquitetura atual
 
 ```

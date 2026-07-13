@@ -1,6 +1,11 @@
 # 07 — UX / UI
 
-> Estrutura de telas, navegação, jornadas e design system. Reaproveita o design system já existente no `styles.css` do ProvaGen como ponto de partida.
+> Estrutura de telas, navegação, jornadas e design system.
+> **Atualização (2026-07):** o Design System agora é formal — Tailwind v4 + shadcn/ui
+> tematizado (terracota `#D97757`, Inter/Inter Tight), primitivas em `components/ui/`,
+> doc viva em `/design-system`. Princípios e regras:
+> [14-design-system-guidelines.md](./14-design-system-guidelines.md) ·
+> decisões: [ADR 13](./13-adr-revisao-arquitetural-2026-07.md).
 
 ## 7.1 Princípios de UX
 
