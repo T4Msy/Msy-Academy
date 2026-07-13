@@ -15,7 +15,16 @@
 --    teacher only (via `is_class_owner`, 0008) — students never interact
 --    with these tables directly; they fill in paper, not a form.
 --
--- 2. `confirm_answer_sheet_scan()` is SECURITY DEFINER because it writes
+-- 2. A scan is uploaded knowing only WHICH ASSIGNMENT it's for (the teacher
+--    picks that before opening the camera) — it does NOT know which
+--    student yet, since that's exactly what the printed QR code (decoded
+--    server-side, lib/omr/process.ts) identifies. `answer_sheet_scans`
+--    therefore stores `assignment_id` directly (known at upload time) and
+--    a nullable `answer_sheet_id`, filled in once the QR has been read —
+--    a scan whose QR couldn't be read (status FAILED) never gets one, and
+--    confirm_answer_sheet_scan() below requires it to be set.
+--
+-- 3. `confirm_answer_sheet_scan()` is SECURITY DEFINER because it writes
 --    `submissions`/`submission_answers` on behalf of a student who never
 --    authenticates for this flow — the existing `submissions_insert_own`/
 --    `submission_answers_insert_own` policies (0009) require
@@ -23,7 +32,7 @@
 --    function is the one deliberate, audited bypass: it re-validates the
 --    caller owns the assignment's class before writing anything.
 --
--- 3. Scoring logic is intentionally duplicated from `submit_submission()`
+-- 4. Scoring logic is intentionally duplicated from `submit_submission()`
 --    rather than calling it, since that function hard-requires
 --    `student_id = auth.uid()` too. Keep both in sync if grading semantics
 --    change (both only ever score MULTIPLA/VF against `correct_answer`).
@@ -64,9 +73,13 @@ create policy answer_sheets_insert_owner on public.answer_sheets
   );
 
 -- ── answer_sheet_scans: one row per uploaded photo/attempt ─────────────────
+-- answer_sheet_id starts null (see note 2 above) — the processing pipeline
+-- fills it in once the QR is decoded, using an admin/service-role client
+-- (bypasses RLS), which is also how detected_answers/confidence get written.
 create table if not exists public.answer_sheet_scans (
   id               uuid primary key default gen_random_uuid(),
-  answer_sheet_id  uuid not null references public.answer_sheets (id) on delete cascade,
+  assignment_id    uuid not null references public.assignments (id) on delete cascade,
+  answer_sheet_id  uuid references public.answer_sheets (id) on delete cascade,
   storage_path     text not null,
   -- detected_answers: { "<question_id>": "A" } — keyed by question_id,
   -- values match the same option-id format as questions.correct_answer so
@@ -79,28 +92,21 @@ create table if not exists public.answer_sheet_scans (
   confirmed_at     timestamptz,
   confirmed_by     uuid references auth.users (id) on delete set null
 );
-create index if not exists answer_sheet_scans_sheet_idx on public.answer_sheet_scans (answer_sheet_id, created_at desc);
+create index if not exists answer_sheet_scans_assignment_idx on public.answer_sheet_scans (assignment_id, created_at desc);
+create index if not exists answer_sheet_scans_sheet_idx on public.answer_sheet_scans (answer_sheet_id) where answer_sheet_id is not null;
 
 alter table public.answer_sheet_scans enable row level security;
 
 drop policy if exists answer_sheet_scans_select_owner on public.answer_sheet_scans;
 create policy answer_sheet_scans_select_owner on public.answer_sheet_scans
   for select using (
-    exists (
-      select 1 from public.answer_sheets ans
-      join public.assignments a on a.id = ans.assignment_id
-      where ans.id = answer_sheet_id and public.is_class_owner(a.class_id)
-    )
+    exists (select 1 from public.assignments a where a.id = assignment_id and public.is_class_owner(a.class_id))
   );
 
 drop policy if exists answer_sheet_scans_insert_owner on public.answer_sheet_scans;
 create policy answer_sheet_scans_insert_owner on public.answer_sheet_scans
   for insert with check (
-    exists (
-      select 1 from public.answer_sheets ans
-      join public.assignments a on a.id = ans.assignment_id
-      where ans.id = answer_sheet_id and public.is_class_owner(a.class_id)
-    )
+    exists (select 1 from public.assignments a where a.id = assignment_id and public.is_class_owner(a.class_id))
   );
 
 -- update: only the server-side pipeline (via the service-role client) and
@@ -136,7 +142,9 @@ create policy answer_sheet_scans_storage_delete_owner on storage.objects
 -- scores objective answers the same way submit_submission() does, and
 -- marks the scan CONFIRMED. p_overrides lets the teacher correct individual
 -- questions in the review screen before confirming (merged over
--- detected_answers, same { "<question_id>": "A" } shape).
+-- detected_answers, same { "<question_id>": "A" } shape). Requires
+-- answer_sheet_id to already be set — a scan whose QR never resolved to a
+-- student has nothing to confirm.
 create or replace function public.confirm_answer_sheet_scan(
   p_scan_id   uuid,
   p_overrides jsonb default '{}'::jsonb
@@ -147,7 +155,6 @@ security definer
 set search_path = public
 as $$
 declare
-  v_answer_sheet_id uuid;
   v_assignment_id   uuid;
   v_student_id      uuid;
   v_class_id        uuid;
@@ -158,18 +165,21 @@ declare
   v_all_objective   boolean;
   v_total           numeric;
 begin
-  select ans.id, ans.assignment_id, ans.student_id, a.class_id, coalesce(s.detected_answers, '{}'::jsonb) || p_overrides
-    into v_answer_sheet_id, v_assignment_id, v_student_id, v_class_id, v_answers
+  select s.assignment_id, ans.student_id, a.class_id, coalesce(s.detected_answers, '{}'::jsonb) || p_overrides
+    into v_assignment_id, v_student_id, v_class_id, v_answers
   from public.answer_sheet_scans s
-  join public.answer_sheets ans on ans.id = s.answer_sheet_id
-  join public.assignments a on a.id = ans.assignment_id
+  join public.assignments a on a.id = s.assignment_id
+  left join public.answer_sheets ans on ans.id = s.answer_sheet_id
   where s.id = p_scan_id;
 
-  if v_answer_sheet_id is null then
+  if v_assignment_id is null then
     raise exception 'Digitalização não encontrada' using errcode = '42501';
   end if;
   if not public.is_class_owner(v_class_id) then
     raise exception 'Sem permissão para confirmar esta digitalização' using errcode = '42501';
+  end if;
+  if v_student_id is null then
+    raise exception 'Esta digitalização ainda não identificou o aluno (QR code não lido) — não é possível confirmar.' using errcode = 'P0001';
   end if;
 
   insert into public.submissions (assignment_id, student_id, status)
