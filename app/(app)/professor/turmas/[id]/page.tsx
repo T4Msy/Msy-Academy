@@ -125,7 +125,19 @@ export default async function TurmaPage({ params }: { params: Promise<{ id: stri
                       <span className="chip mr-sm">{a.content_type === "EXAM" ? "Prova" : "Atividade"}</span>
                       {title ?? "(conteúdo removido)"} — {formatDueDate(a.due_at)}
                     </span>
-                    <UnassignButton classId={id} assignmentId={a.id} />
+                    <span className="inline-gap-sm">
+                      {a.content_type === "EXAM" && (
+                        <>
+                          <a href={`/api/gabarito/${a.id}`} target="_blank" rel="noopener noreferrer" className="btn btn-ghost btn-sm">
+                            Baixar gabarito
+                          </a>
+                          <Link href={`/professor/correcao/escanear/${a.id}`} className="btn btn-ghost btn-sm">
+                            Escanear
+                          </Link>
+                        </>
+                      )}
+                      <UnassignButton classId={id} assignmentId={a.id} />
+                    </span>
                   </li>
                 );
               })}
