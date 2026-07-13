@@ -94,6 +94,26 @@ async function applyPerspectiveWarp(straightJpeg: Buffer, width: number, height:
   return sharp(outPixels, { raw: { width, height, channels: 4 } }).jpeg({ quality: 95 }).toBuffer();
 }
 
+/**
+ * Dims, flattens contrast, blurs, and re-compresses a photo to approximate
+ * a phone photo taken under poor classroom lighting — used to confirm the
+ * bubble-darkness threshold (readBubbleAnswers) degrades safely: it should
+ * still detect marks under moderately bad light, and, more importantly,
+ * decline to guess (rather than misread) once conditions get worse than that.
+ */
+async function degradeLighting(jpeg: Buffer, severity: "moderate" | "severe"): Promise<Buffer> {
+  const params =
+    severity === "moderate"
+      ? { brightness: 0.75, slope: 0.6, intercept: 40, blurSigma: 1.2, quality: 60 }
+      : { brightness: 0.65, slope: 0.45, intercept: 55, blurSigma: 1.8, quality: 45 };
+  return sharp(jpeg)
+    .modulate({ brightness: params.brightness })
+    .linear(params.slope, params.intercept) // compresses contrast, as a washed-out/glare photo would
+    .blur(params.blurSigma)
+    .jpeg({ quality: params.quality })
+    .toBuffer();
+}
+
 describe("OMR decode pipeline (synthetic photo)", () => {
   it("reads QR id and all filled bubbles correctly, including a rotated photo", async () => {
     const expectedAnswers = Array.from({ length: QUESTION_COUNT }, (_, i) => OPTION_LETTERS[i % OPTION_LETTERS.length]);
@@ -138,5 +158,37 @@ describe("OMR decode pipeline (synthetic photo)", () => {
 
     const readings = readBubbleAnswers(pixels, width, height, located.homography, located.sampleRadius, QUESTION_COUNT);
     expect(readings.map((r) => r.letter)).toEqual(expectedAnswers);
+  });
+
+  it("still reads correctly under moderately poor lighting (dim, low-contrast, blurred, heavily compressed)", async () => {
+    const expectedAnswers = Array.from({ length: QUESTION_COUNT }, (_, i) => OPTION_LETTERS[i % OPTION_LETTERS.length]);
+    const { sheetId, jpeg: cleanJpeg } = await buildSyntheticPhoto(expectedAnswers, 0);
+    const jpeg = await degradeLighting(cleanJpeg, "moderate");
+
+    const { pixels, width, height } = await decodeImageToPixels(jpeg);
+    const located = locateAnswerSheet(pixels, width, height);
+    expect(located.ok).toBe(true);
+    if (!located.ok) return;
+    expect(located.qrData).toBe(sheetId);
+
+    const readings = readBubbleAnswers(pixels, width, height, located.homography, located.sampleRadius, QUESTION_COUNT);
+    expect(readings.map((r) => r.letter)).toEqual(expectedAnswers);
+  });
+
+  it("declines to guess (rather than misread) once lighting is too poor to trust", async () => {
+    const expectedAnswers = Array.from({ length: QUESTION_COUNT }, (_, i) => OPTION_LETTERS[i % OPTION_LETTERS.length]);
+    const { jpeg: cleanJpeg } = await buildSyntheticPhoto(expectedAnswers, 0);
+    const jpeg = await degradeLighting(cleanJpeg, "severe");
+
+    const { pixels, width, height } = await decodeImageToPixels(jpeg);
+    const located = locateAnswerSheet(pixels, width, height);
+    expect(located.ok).toBe(true);
+    if (!located.ok) return;
+
+    const readings = readBubbleAnswers(pixels, width, height, located.homography, located.sampleRadius, QUESTION_COUNT);
+    // The important property isn't "detects everything" — it's "never reports
+    // a wrong letter": every reading is either correct or left null for the
+    // teacher to fill in by hand.
+    readings.forEach((r, i) => expect(r.letter === null || r.letter === expectedAnswers[i]).toBe(true));
   });
 });
