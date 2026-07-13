@@ -74,7 +74,7 @@ export default function TermosPage() {
 
           <h2>7. Limitação de responsabilidade</h2>
           <p>
-            A plataforma é fornecida "como está". Na máxima extensão permitida por lei, a MSY
+            A plataforma é fornecida &ldquo;como está&rdquo;. Na máxima extensão permitida por lei, a MSY
             Academy não se responsabiliza por danos indiretos decorrentes do uso da plataforma ou
             de decisões pedagógicas tomadas com base em conteúdo gerado por IA.
           </p>
