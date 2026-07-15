@@ -16,7 +16,10 @@ async function requireUser() {
 function generateInviteCode(): string {
   // 6 chars from an unambiguous alphabet (no 0/O/1/I) — easy to read aloud/type.
   const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  return Array.from({ length: 6 }, () => alphabet[Math.floor(Math.random() * alphabet.length)]).join("");
+  return Array.from(
+    { length: 6 },
+    () => alphabet[Math.floor(Math.random() * alphabet.length)],
+  ).join("");
 }
 
 /** Creates a class with a unique invite code, retrying on the rare collision. */
@@ -25,13 +28,22 @@ export async function createClass(name: string): Promise<string> {
   if (!clean) throw new Error("Dê um nome para a turma.");
 
   const { supabase, user } = await requireUser();
-  const { data: profile } = await supabase.from("profiles").select("tenant_id").eq("id", user.id).single();
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("tenant_id")
+    .eq("id", user.id)
+    .single();
   if (!profile) throw new Error("Perfil não encontrado.");
 
   for (let attempt = 0; attempt < 5; attempt++) {
     const { data, error } = await supabase
       .from("classes")
-      .insert({ tenant_id: profile.tenant_id, owner_id: user.id, name: clean, invite_code: generateInviteCode() })
+      .insert({
+        tenant_id: profile.tenant_id,
+        owner_id: user.id,
+        name: clean,
+        invite_code: generateInviteCode(),
+      })
       .select("id")
       .single();
 
@@ -40,9 +52,33 @@ export async function createClass(name: string): Promise<string> {
       return data.id;
     }
     // 23505 = unique_violation on invite_code — regenerate and retry.
-    if (error?.code !== "23505") throw new Error(`Não foi possível criar a turma: ${error?.message}`);
+    if (error?.code !== "23505")
+      throw new Error(`Não foi possível criar a turma: ${error?.message}`);
   }
   throw new Error("Não foi possível gerar um código de convite único. Tente novamente.");
+}
+
+/** Permanently deletes a class owned by the current professor. Related rows
+ * cascade in the database (enrollments, assignments, submissions, grades and
+ * answer sheets/scans). */
+export async function deleteClass(classId: string): Promise<void> {
+  const { supabase } = await requireUser();
+  const { error } = await supabase.rpc("delete_class", { p_class_id: classId });
+  if (error) throw new Error(`Não foi possível excluir a turma: ${error.message}`);
+
+  revalidatePath("/professor/turmas");
+}
+
+/** Removes only the enrollment row. The student user/account is never touched. */
+export async function removeStudentFromClass(classId: string, studentId: string): Promise<void> {
+  const { supabase } = await requireUser();
+  const { error } = await supabase.rpc("remove_student_from_class", {
+    p_class_id: classId,
+    p_student_id: studentId,
+  });
+  if (error) throw new Error(`Não foi possível remover o aluno: ${error.message}`);
+
+  revalidatePath(`/professor/turmas/${classId}`);
 }
 
 /** Assigns an exam or activity to a class with an optional due date (RF-P21). */
@@ -53,7 +89,11 @@ export async function assignContent(
   dueAt: string | null,
 ): Promise<void> {
   const { supabase, user } = await requireUser();
-  const { data: profile } = await supabase.from("profiles").select("tenant_id").eq("id", user.id).single();
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("tenant_id")
+    .eq("id", user.id)
+    .single();
   if (!profile) throw new Error("Perfil não encontrado.");
 
   const { error } = await supabase.from("assignments").insert({
