@@ -7,6 +7,7 @@ import {
   IconHome,
   IconTutorIA,
   IconAtividade,
+  IconTurma,
   IconSimulados,
   IconPlanoDeEstudos,
   IconFlashcards,
@@ -15,12 +16,17 @@ import {
 } from "@/components/shell/navIcons";
 
 const NAV: SidebarSection[] = [
-  { items: [{ href: "/aluno", label: "Início", icon: <IconHome />, exact: true, mobilePrimary: true }] },
+  {
+    items: [
+      { href: "/aluno", label: "Início", icon: <IconHome />, exact: true, mobilePrimary: true },
+    ],
+  },
   {
     title: "Estudar",
     items: [
       { href: "/aluno/tutor-ia", label: "Tutor IA", icon: <IconTutorIA />, mobilePrimary: true },
       { href: "/aluno/tarefas", label: "Tarefas", icon: <IconAtividade />, mobilePrimary: true },
+      { href: "/aluno/turmas", label: "Minhas Turmas", icon: <IconTurma /> },
       { href: "/aluno/simulados", label: "Simulados", icon: <IconSimulados /> },
     ],
   },
@@ -33,7 +39,14 @@ const NAV: SidebarSection[] = [
   },
   {
     title: "Análise",
-    items: [{ href: "/aluno/dashboard", label: "Meu Progresso", icon: <IconDashboard />, mobilePrimary: true }],
+    items: [
+      {
+        href: "/aluno/dashboard",
+        label: "Meu Progresso",
+        icon: <IconDashboard />,
+        mobilePrimary: true,
+      },
+    ],
   },
   {
     title: "Conta",
@@ -50,7 +63,12 @@ export default async function AlunoLayout({ children }: { children: React.ReactN
 
   const [notifications, { data: guardianConsent }] = await Promise.all([
     getRecentNotifications(),
-    supabase.from("guardian_consents").select("status, token").eq("student_id", user.id).eq("status", "PENDING").maybeSingle(),
+    supabase
+      .from("guardian_consents")
+      .select("status, token")
+      .eq("student_id", user.id)
+      .eq("status", "PENDING")
+      .maybeSingle(),
   ]);
 
   const name = fullName || user.email?.split("@")[0] || "Aluno";
@@ -71,7 +89,9 @@ export default async function AlunoLayout({ children }: { children: React.ReactN
           {guardianConsent && (
             <div className="mb-4 rounded-md border border-brand-border bg-brand-dim px-4.5 py-3.5 text-[13.5px] leading-normal text-brand-text">
               Aguardando confirmação de um responsável. Compartilhe este link com ele:{" "}
-              <a href={`/consentimento/${guardianConsent.token}`}>{`/consentimento/${guardianConsent.token}`}</a>
+              <a
+                href={`/consentimento/${guardianConsent.token}`}
+              >{`/consentimento/${guardianConsent.token}`}</a>
             </div>
           )}
           {children}
