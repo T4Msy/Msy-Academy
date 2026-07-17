@@ -3,6 +3,20 @@ import { createClient } from "@/lib/supabase/server";
 import { QuestionBankList } from "./QuestionBankList";
 import { NewQuestionPanel } from "./NewQuestionPanel";
 import { EmptyState } from "@/components/EmptyState";
+import { parseBnccCodesParam } from "@/lib/questions/bncc";
+import { listQuestionBank } from "@/lib/questions/queries";
+import type { Difficulty, QuestionType } from "@/lib/questions/types";
+
+const QUESTION_TYPES = new Set<QuestionType>(["MULTIPLA", "VF", "DISCURSIVA"]);
+const DIFFICULTIES = new Set<Difficulty>(["FACIL", "MEDIO", "DIFICIL"]);
+
+function parseQuestionType(value?: string): QuestionType | undefined {
+  return value && QUESTION_TYPES.has(value as QuestionType) ? (value as QuestionType) : undefined;
+}
+
+function parseDifficulty(value?: string): Difficulty | undefined {
+  return value && DIFFICULTIES.has(value as Difficulty) ? (value as Difficulty) : undefined;
+}
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Banco de Questões" };
@@ -10,22 +24,18 @@ export const metadata: Metadata = { title: "Banco de Questões" };
 export default async function BancoDeQuestoesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tipo?: string; dificuldade?: string; busca?: string }>;
+  searchParams: Promise<{ tipo?: string; dificuldade?: string; busca?: string; bncc?: string }>;
 }) {
-  const { tipo, dificuldade, busca } = await searchParams;
+  const { tipo, dificuldade, busca, bncc } = await searchParams;
   const supabase = await createClient();
 
-  let query = supabase
-    .from("questions")
-    .select("id, type, statement, difficulty, tags, created_at")
-    .order("created_at", { ascending: false });
-
-  if (tipo) query = query.eq("type", tipo);
-  if (dificuldade) query = query.eq("difficulty", dificuldade);
-  if (busca) query = query.ilike("statement", `%${busca}%`);
-
-  const [{ data: questions }, { data: exams }] = await Promise.all([
-    query,
+  const [questions, { data: exams }] = await Promise.all([
+    listQuestionBank(supabase, {
+      type: parseQuestionType(tipo),
+      difficulty: parseDifficulty(dificuldade),
+      search: busca,
+      bnccCodes: parseBnccCodesParam(bncc),
+    }),
     supabase
       .from("exams")
       .select("id, title")
@@ -34,7 +44,7 @@ export default async function BancoDeQuestoesPage({
       .order("created_at", { ascending: false })
       .limit(50),
   ]);
-  const list = questions ?? [];
+  const list = questions;
 
   return (
     <>
@@ -87,7 +97,14 @@ export default async function BancoDeQuestoesPage({
         />
       ) : (
         <QuestionBankList
-          questions={list.map((q) => ({ id: q.id, statement: q.statement, type: q.type, difficulty: q.difficulty, tags: q.tags ?? [] }))}
+          questions={list.map((q) => ({
+            id: q.id,
+            statement: q.statement,
+            type: q.type,
+            difficulty: q.difficulty,
+            tags: q.tags ?? [],
+            bnccCodes: q.bncc_codes,
+          }))}
           exams={exams ?? []}
         />
       )}

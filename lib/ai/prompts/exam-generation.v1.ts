@@ -40,6 +40,7 @@ export const EXAM_GENERATION_SCHEMA_V1 = {
           explanation: { type: "string" },
           difficulty: { enum: ["FACIL", "MEDIO", "DIFICIL"] },
           tags: { type: "array", items: { type: "string" } },
+          bnccCodes: { type: "array", items: { type: "string" } },
         },
       },
     },

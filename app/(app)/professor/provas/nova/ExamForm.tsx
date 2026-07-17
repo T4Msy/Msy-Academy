@@ -226,7 +226,7 @@ export function ExamForm() {
                     <FormItem>
                       <FormLabel>Curso</FormLabel>
                       <FormControl>
-                        <Input placeholder="Ex: Ensino Médio, Graduação..." {...field} />
+                        <Input data-testid="exam-course" placeholder="Ex: Ensino Médio, Graduação..." {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -239,7 +239,7 @@ export function ExamForm() {
                     <FormItem>
                       <FormLabel>Título da Prova</FormLabel>
                       <FormControl>
-                        <Input placeholder="Ex: Avaliação Bimestral" {...field} />
+                        <Input data-testid="exam-title" placeholder="Ex: Avaliação Bimestral" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -264,7 +264,7 @@ export function ExamForm() {
                     <FormItem>
                       <FormLabel>Matéria</FormLabel>
                       <FormControl>
-                        <Input placeholder="Ex: Informática, Matemática..." {...field} />
+                        <Input data-testid="exam-subject" placeholder="Ex: Informática, Matemática..." {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -277,7 +277,7 @@ export function ExamForm() {
                     <FormItem>
                       <FormLabel>Assunto / Tema</FormLabel>
                       <FormControl>
-                        <Input placeholder="Ex: Redes, Funções, HTML..." {...field} />
+                        <Input data-testid="exam-topic" placeholder="Ex: Redes, Funções, HTML..." {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -620,6 +620,7 @@ export function ExamForm() {
                     <Badge variant="secondary">Salva automaticamente</Badge>
                   </div>
                   <Button
+                    data-testid="exam-submit"
                     type="submit"
                     size="lg"
                     className="h-11 min-w-40 rounded-full font-display tracking-[-0.2px]"

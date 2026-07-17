@@ -42,7 +42,7 @@ export default async function ExamPage({ params }: { params: Promise<{ id: strin
         difficulty: QuestionData["difficulty"];
         tags: string[];
       };
-      return { ...q, position: eq.position };
+      return { ...q, bncc_codes: [], position: eq.position };
     });
 
   const questionsActions: QuestionsEditorActions = {

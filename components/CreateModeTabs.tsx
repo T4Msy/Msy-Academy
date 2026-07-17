@@ -30,6 +30,7 @@ export function CreateModeTabs({
       <div className="ia-grid mb-md" role="radiogroup" aria-label="Modo de criação">
         <button
           type="button"
+          data-testid="create-mode-ai"
           className={`ia-tile${mode === "ai" ? " active" : ""}`}
           role="radio"
           aria-checked={mode === "ai"}
@@ -43,6 +44,7 @@ export function CreateModeTabs({
         </button>
         <button
           type="button"
+          data-testid="create-mode-blank"
           className={`ia-tile${mode === "blank" ? " active" : ""}`}
           role="radio"
           aria-checked={mode === "blank"}

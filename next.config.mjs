@@ -1,6 +1,12 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  outputFileTracingRoot: __dirname,
   // O lint interno do `next build` (next lint) está deprecado e não digere
   // flat config; a cobrança acontece na etapa dedicada `npm run lint` do CI
   // (eslint.config.mjs) — que FALHA o pipeline em qualquer erro.

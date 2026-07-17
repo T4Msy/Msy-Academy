@@ -15,6 +15,7 @@ export interface QuestionData {
   explanation: string | null;
   difficulty: Difficulty;
   tags: string[];
+  bncc_codes: string[];
   position: number;
 }
 
@@ -26,4 +27,5 @@ export interface NewQuestionInput {
   explanation?: string | null;
   difficulty?: Difficulty;
   tags?: string[];
+  bnccCodes?: string[];
 }

@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { generateStructured } from "@/lib/ai/orchestrator";
 import { EXAM_GENERATION_SCHEMA_V1 } from "@/lib/ai/prompts/exam-generation.v1";
+import { normalizeBnccCodes } from "./bncc";
 import type { GeneratedExam } from "@/lib/ai/types";
 import type { NewQuestionInput } from "./types";
 
@@ -30,6 +31,8 @@ export async function addLinkedQuestion(
   tenantId: string,
   authorId: string,
 ): Promise<string> {
+  const bnccCodes = normalizeBnccCodes(input.bnccCodes);
+
   const { data: question, error: qErr } = await supabase
     .from("questions")
     .insert({
@@ -46,6 +49,14 @@ export async function addLinkedQuestion(
     .select("id")
     .single();
   if (qErr || !question) throw new Error(`Não foi possível criar a questão: ${qErr?.message ?? "erro"}`);
+
+  if (bnccCodes !== undefined) {
+    const { error: bnccErr } = await supabase.rpc("set_question_bncc_skills", {
+      p_question_id: question.id,
+      p_bncc_codes: bnccCodes,
+    });
+    if (bnccErr) throw new Error(`Nao foi possivel salvar os codigos BNCC: ${bnccErr.message}`);
+  }
 
   const { data: lastRow } = await supabase
     .from(config.linkTable)

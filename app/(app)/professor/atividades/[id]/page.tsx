@@ -33,7 +33,7 @@ export default async function AtividadePage({ params }: { params: Promise<{ id: 
     .filter((item) => item.questions)
     .map((item) => {
       const q = item.questions as unknown as Omit<QuestionData, "position">;
-      return { ...q, position: item.position };
+      return { ...q, bncc_codes: [], position: item.position };
     });
 
   const renameAction = renameActivity.bind(null, id);

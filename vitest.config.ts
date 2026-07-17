@@ -9,5 +9,7 @@ export default defineConfig({
   },
   test: {
     environment: "node",
+    include: ["app/**/*.test.ts", "components/**/*.test.ts", "lib/**/*.test.ts"],
+    exclude: ["tests/e2e/**"],
   },
 });

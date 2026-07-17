@@ -20,6 +20,7 @@ export interface Question {
   explanation?: string;
   difficulty: Difficulty;
   tags?: string[];
+  bnccCodes?: string[];
 }
 
 export interface GeneratedExam {

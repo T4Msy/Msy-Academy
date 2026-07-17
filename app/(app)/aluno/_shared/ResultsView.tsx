@@ -30,7 +30,7 @@ export function ResultsView({
   return (
     <>
       {status === "GRADED" && grade && (
-        <section className="card card--highlight mb-md">
+        <section className="card card--highlight mb-md" data-testid="submission-graded">
           <div className="flex flex-col gap-4.5 p-5.5">
             <div className="flex items-center gap-2.5 font-display text-lg font-bold tracking-[-0.2px] text-foreground">Nota: {grade.total_score}</div>
             {grade.feedback && <p className="field-hint mt-sm">{grade.feedback}</p>}
@@ -38,7 +38,7 @@ export function ResultsView({
         </section>
       )}
       {status === "SUBMITTED" && (
-        <div className="mb-4 rounded-md border border-brand-border bg-brand-dim px-4.5 py-3.5 text-[13.5px] leading-normal text-brand-text">
+        <div data-testid="submission-submitted" className="mb-4 rounded-md border border-brand-border bg-brand-dim px-4.5 py-3.5 text-[13.5px] leading-normal text-brand-text">
           Enviado! Questões discursivas aguardam correção do professor.
         </div>
       )}

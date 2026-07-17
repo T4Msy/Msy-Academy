@@ -11,6 +11,7 @@ interface Question {
   type: string;
   difficulty: string;
   tags: string[];
+  bnccCodes: string[];
 }
 
 /** US-2.8 — select bank questions and attach them to an existing exam via exam_questions. */

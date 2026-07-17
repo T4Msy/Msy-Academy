@@ -2,12 +2,12 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { normalizeBnccCodes } from "./bncc";
 import type { NewQuestionInput } from "./types";
 
 /**
- * Ações de questão compartilhadas entre Provas, Atividades e Banco de
- * Questões — `questions` (migration 0005) é um banco único por tenant, não
- * pertence a nenhum módulo específico.
+ * Acoes de questao compartilhadas entre Provas, Atividades e Banco de
+ * Questoes. `questions` (migration 0005) e um banco unico por tenant.
  */
 
 async function requireUser() {
@@ -19,12 +19,25 @@ async function requireUser() {
   return { supabase, user };
 }
 
-/** Cria uma questão avulsa no banco do tenant (RLS: questions_insert_own, migration 0005). */
+async function setQuestionBnccCodes(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  questionId: string,
+  bnccCodes: string[],
+): Promise<void> {
+  const { error } = await supabase.rpc("set_question_bncc_skills", {
+    p_question_id: questionId,
+    p_bncc_codes: bnccCodes,
+  });
+  if (error) throw new Error(`Nao foi possivel salvar os codigos BNCC: ${error.message}`);
+}
+
+/** Cria uma questao avulsa no banco do tenant (RLS: questions_insert_own, migration 0005). */
 export async function createQuestion(input: NewQuestionInput): Promise<string> {
   const { supabase, user } = await requireUser();
+  const bnccCodes = normalizeBnccCodes(input.bnccCodes);
 
   const { data: profile } = await supabase.from("profiles").select("tenant_id").eq("id", user.id).single();
-  if (!profile) throw new Error("Perfil não encontrado.");
+  if (!profile) throw new Error("Perfil nao encontrado.");
 
   const { data, error } = await supabase
     .from("questions")
@@ -41,12 +54,16 @@ export async function createQuestion(input: NewQuestionInput): Promise<string> {
     })
     .select("id")
     .single();
-  if (error || !data) throw new Error(`Não foi possível criar a questão: ${error?.message ?? "erro"}`);
+  if (error || !data) throw new Error(`Nao foi possivel criar a questao: ${error?.message ?? "erro"}`);
+
+  if (bnccCodes !== undefined) {
+    await setQuestionBnccCodes(supabase, data.id, bnccCodes);
+  }
 
   return data.id;
 }
 
-/** Edita uma questão in-line — usado por Provas, Atividades e Banco de Questões. */
+/** Edita uma questao in-line, usado por Provas, Atividades e Banco de Questoes. */
 export async function updateQuestion(
   questionId: string,
   patch: {
@@ -54,9 +71,11 @@ export async function updateQuestion(
     options?: { id: string; text: string }[] | null;
     correctAnswer?: string | string[];
     explanation?: string | null;
+    bnccCodes?: string[];
   },
 ): Promise<void> {
   const { supabase } = await requireUser();
+  const bnccCodes = normalizeBnccCodes(patch.bnccCodes);
 
   const update: Record<string, unknown> = {};
   if (patch.statement !== undefined) update.statement = patch.statement;
@@ -64,6 +83,12 @@ export async function updateQuestion(
   if (patch.correctAnswer !== undefined) update.correct_answer = patch.correctAnswer;
   if (patch.explanation !== undefined) update.explanation = patch.explanation;
 
-  const { error } = await supabase.from("questions").update(update).eq("id", questionId);
-  if (error) throw new Error(`Não foi possível salvar a questão: ${error.message}`);
+  if (Object.keys(update).length > 0) {
+    const { error } = await supabase.from("questions").update(update).eq("id", questionId);
+    if (error) throw new Error(`Nao foi possivel salvar a questao: ${error.message}`);
+  }
+
+  if (bnccCodes !== undefined) {
+    await setQuestionBnccCodes(supabase, questionId, bnccCodes);
+  }
 }
