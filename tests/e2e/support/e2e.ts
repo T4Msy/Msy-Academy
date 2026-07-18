@@ -46,6 +46,16 @@ export function createServiceClient() {
   });
 }
 
+/** Authenticated Data API client used only to assert real RLS behavior in E2E tests. */
+export async function createAuthenticatedClient(email: string, password: string) {
+  const client = createClient(requireEnv("NEXT_PUBLIC_SUPABASE_URL"), requireEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY"), {
+    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+  });
+  const { error } = await client.auth.signInWithPassword({ email, password });
+  if (error) throw new Error(`Failed to authenticate RLS test client: ${error.message}`);
+  return client;
+}
+
 async function setRoles(userId: string, roles: UserRole[]): Promise<void> {
   const admin = createServiceClient();
   await admin.from("user_roles").delete().eq("user_id", userId);
@@ -87,6 +97,14 @@ async function createUser(role: UserRole, fullName: string): Promise<SeedUser> {
     data.user.id,
     role === "PROFESSOR" ? ["PROFESSOR"] : role === "ALUNO" ? ["ALUNO"] : ["ADMIN"],
   );
+  // E2E users are already provisioned by the test harness; they should not
+  // be diverted into the interactive terms-consent screen before exercising
+  // the protected application flow under test.
+  const { error: consentError } = await admin
+    .from("profiles")
+    .update({ terms_accepted_at: new Date().toISOString() })
+    .eq("id", data.user.id);
+  if (consentError) throw new Error(`Failed to accept test-user terms: ${consentError.message}`);
 
   return {
     id: data.user.id,

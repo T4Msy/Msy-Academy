@@ -87,6 +87,20 @@ describe("deriveClassStats", () => {
     expect(result[0].students[0].overdueCount).toBe(1);
   });
 
+  it("excludes answers saved in a pending submission from the average", () => {
+    const result = deriveClassStats(
+      [{ id: "c1", name: "Turma A" }],
+      [{ class_id: "c1", student_id: "s1" }],
+      [{ id: "a1", class_id: "c1", due_at: FUTURE }],
+      [{ id: "sub1", assignment_id: "a1", student_id: "s1", status: "PENDING" }],
+      [{ submission_id: "sub1", is_correct: false }],
+      [{ id: "s1", full_name: "Ana" }],
+      NOW,
+    );
+    expect(result[0].students[0].accuracyPct).toBeNull();
+    expect(result[0].students[0].atRisk).toBe(false);
+  });
+
   it("falls back to 'Aluno' when the profile has no full_name or is missing", () => {
     const result = deriveClassStats(
       [{ id: "c1", name: "Turma A" }],

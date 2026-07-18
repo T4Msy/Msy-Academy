@@ -48,12 +48,12 @@ export default async function BibliotecaPage({
       </div>
 
       <form className="mb-4 overflow-hidden rounded-lg border border-border bg-card shadow-elevated transition-colors" method="get">
-        <div className="flex flex-row flex-wrap items-end gap-3 p-5.5">
-          <div className="flex min-w-[200px] flex-col gap-1.5">
+        <div className="flex flex-col gap-3 p-5.5 sm:flex-row sm:flex-wrap sm:items-end">
+          <div className="flex min-w-0 flex-1 flex-col gap-1.5 sm:min-w-[200px]">
             <label className="block text-sm font-semibold text-foreground" htmlFor="busca">Buscar</label>
             <input className="w-full appearance-none rounded-sm border border-border bg-[rgba(var(--overlay-rgb),0.04)] px-3 py-2.5 text-md text-foreground outline-none transition-colors focus:border-brand-border focus:ring-[3px] focus:ring-brand-glow" id="busca" name="busca" defaultValue={busca ?? ""} placeholder="Palavra no título ou tag" />
           </div>
-          <div className="flex min-w-[180px] flex-col gap-1.5">
+          <div className="flex min-w-0 flex-1 flex-col gap-1.5 sm:min-w-[180px]">
             <label className="block text-sm font-semibold text-foreground" htmlFor="tipo">Tipo</label>
             <select className="w-full appearance-none rounded-sm border border-border bg-[rgba(var(--overlay-rgb),0.04)] px-3 py-2.5 text-md text-foreground outline-none transition-colors focus:border-brand-border focus:ring-[3px] focus:ring-brand-glow" id="tipo" name="tipo" defaultValue={tipo ?? ""}>
               <option value="">Todos</option>
@@ -63,7 +63,7 @@ export default async function BibliotecaPage({
               <option value="FILE">Arquivos</option>
             </select>
           </div>
-          <button type="submit" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 bg-primary font-bold text-primary-foreground shadow-[0_4px_14px_rgba(217,119,87,0.16)] hover:-translate-y-px hover:opacity-90 px-3 py-[7px] text-sm">Filtrar</button>
+          <button type="submit" className="inline-flex w-full items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 bg-primary font-bold text-primary-foreground shadow-[0_4px_14px_rgba(217,119,87,0.16)] hover:-translate-y-px hover:opacity-90 px-3 py-[7px] text-sm sm:w-auto">Filtrar</button>
         </div>
       </form>
 

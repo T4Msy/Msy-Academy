@@ -58,7 +58,7 @@ export function UploadMaterialForm({ classes }: { classes: { id: string; name: s
   }
 
   return (
-    <form onSubmit={onSubmit} className="overflow-hidden rounded-lg border border-border bg-card shadow-elevated transition-colors max-w-[420px]">
+    <form onSubmit={onSubmit} className="w-full max-w-[420px] overflow-hidden rounded-lg border border-border bg-card shadow-elevated transition-colors">
       <div className="flex flex-col p-5.5 gap-2.5">
         <div className="flex flex-col gap-1.5">
           <label className="block text-sm font-semibold text-foreground" htmlFor="material-title">Título (opcional)</label>

@@ -77,7 +77,7 @@ export default async function AlunoTurmasPage() {
           action={<JoinClassDialog />}
         />
       ) : (
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-3.5">
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,280px),1fr))] gap-3.5">
           {classes.map((klass) => (
             <div
               key={klass.id}

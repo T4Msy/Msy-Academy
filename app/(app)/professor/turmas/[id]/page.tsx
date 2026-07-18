@@ -125,7 +125,7 @@ export default async function TurmaPage({ params }: { params: Promise<{ id: stri
               {klass.invite_code}
             </span>
           </div>
-          {origin && <p className="mt-1 text-xs leading-snug text-muted-foreground">{inviteUrl}</p>}
+          {origin && <p className="mt-1 break-all text-xs leading-snug text-muted-foreground">{inviteUrl}</p>}
         </div>
       </section>
 
@@ -150,7 +150,7 @@ export default async function TurmaPage({ params }: { params: Promise<{ id: stri
               {students.map((s) => (
                 <li
                   key={s.student_id}
-                  className="flex items-center justify-between gap-2 rounded-sm border border-border px-3 py-[9px] text-[13.5px] text-muted-foreground"
+                  className="flex flex-col gap-2 rounded-sm border border-border px-3 py-[9px] text-[13.5px] text-muted-foreground sm:flex-row sm:items-center sm:justify-between"
                 >
                   <span>{s.full_name || "Aluno"}</span>
                   {isOwner && (
@@ -202,15 +202,15 @@ export default async function TurmaPage({ params }: { params: Promise<{ id: stri
                 return (
                   <li
                     key={a.id}
-                    className="flex items-center justify-between gap-2 rounded-sm border border-border px-3 py-[9px] text-[13.5px] text-muted-foreground"
+                  className="flex flex-col gap-2 rounded-sm border border-border px-3 py-[9px] text-[13.5px] text-muted-foreground sm:flex-row sm:items-center sm:justify-between"
                   >
-                    <span>
+                    <span className="min-w-0 break-words">
                       <span className="mr-2 inline-flex items-center gap-1.5 rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs whitespace-nowrap text-muted-foreground">
                         {a.content_type === "EXAM" ? "Prova" : "Atividade"}
                       </span>
                       {title ?? "(conteúdo removido)"} — {formatDueDate(a.due_at)}
                     </span>
-                    <span className="flex items-center gap-2">
+                    <span className="flex flex-wrap items-center gap-2 sm:justify-end">
                       {a.content_type === "EXAM" && (
                         <>
                           <a

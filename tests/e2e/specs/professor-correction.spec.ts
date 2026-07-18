@@ -58,6 +58,15 @@ test("professor reviews a discursive answer and finalizes the grade", async ({ p
   await page.reload();
   await expect(page.getByTestId("submission-submitted")).toBeVisible();
 
+  const { data: objectiveAnswer, error: objectiveAnswerError } = await admin
+    .from("submission_answers")
+    .select("is_correct, score")
+    .eq("submission_id", submission.id)
+    .eq("question_id", fixture.multipleQuestionId)
+    .single();
+  expect(objectiveAnswerError).toBeNull();
+  expect(objectiveAnswer).toMatchObject({ is_correct: true, score: 1 });
+
   await page.context().clearCookies();
   await loginThroughUi(page, professor.email, professor.password, `/professor/correcao/${submission.id}`);
 

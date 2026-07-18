@@ -96,7 +96,9 @@ export function deriveClassStats(
       );
       const overdueCount = [...overdueAssignmentIds].filter((aid) => !submitted.has(aid)).length;
 
-      const studentSubmissionIds = new Set(classSubmissions.filter((s) => s.student_id === studentId).map((s) => s.id));
+      const studentSubmissionIds = new Set(
+        classSubmissions.filter((s) => s.student_id === studentId && s.status !== "PENDING").map((s) => s.id),
+      );
       const studentAnswers = [...studentSubmissionIds]
         .flatMap((sid) => answersBySubmission.get(sid) ?? [])
         .filter((a) => submissionById.get(a.submission_id)?.student_id === studentId && a.is_correct !== null);

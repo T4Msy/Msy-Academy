@@ -44,7 +44,7 @@ export default async function TurmasPage() {
           text="Crie sua primeira turma para começar a atribuir conteúdo aos alunos."
         />
       ) : (
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-3.5">
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,280px),1fr))] gap-3.5">
           {list.map((c) => (
             <div
               key={c.id}

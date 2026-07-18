@@ -28,8 +28,23 @@ export function DashboardContent() {
     );
   }
 
+  const studentsAtRisk = classStats.flatMap((classStat) => classStat.students.filter((student) => student.atRisk));
+  const overdueAssignments = studentsAtRisk.reduce((total, student) => total + student.overdueCount, 0);
+
   return (
     <div className="flex flex-col gap-3.5">
+      <section className="overflow-hidden rounded-lg border border-danger-border bg-card shadow-elevated transition-colors">
+        <div className="flex flex-wrap items-center justify-between gap-3 p-5.5">
+          <div>
+            <h2 className="font-display text-lg font-bold tracking-[-0.2px] text-foreground">Alunos em risco</h2>
+            <p className="mt-1 text-xs leading-snug text-muted-foreground">Identificados por acerto m\u00e9dio abaixo de 50% em objetivas ou tarefas vencidas sem envio.</p>
+          </div>
+          <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 text-sm text-muted-foreground">
+            <span><b className="font-display text-2xl text-danger-text">{studentsAtRisk.length}</b> alunos</span>
+            <span><b className="font-display text-2xl text-foreground">{overdueAssignments}</b> atrasos</span>
+          </div>
+        </div>
+      </section>
       {classStats.map(({ klass, students }) => (
         <section key={klass.id} className="overflow-hidden rounded-lg border border-border bg-card shadow-elevated transition-colors">
           <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border px-5.5 pt-5 pb-4">
@@ -47,8 +62,8 @@ export function DashboardContent() {
             ) : (
               <ul className="flex list-none flex-col gap-2">
                 {students.map((s) => (
-                  <li key={s.studentId} className={`flex items-baseline gap-2 rounded-sm border px-3 py-[9px] text-[13.5px] ${s.atRisk ? "border-border text-muted-foreground" : "border-brand-border bg-brand-dim text-foreground"}`}>
-                    <div className="flex justify-between gap-2">
+                  <li key={s.studentId} className={`grid gap-2 rounded-sm border px-3 py-[9px] text-[13.5px] sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center ${s.atRisk ? "border-danger-border bg-danger-dim text-muted-foreground" : "border-brand-border bg-brand-dim text-foreground"}`}>
+                    <div className="flex min-w-0 justify-between gap-2">
                       <span>
                         <b>{s.name}</b>
                         {s.overdueCount > 0 &&
@@ -66,7 +81,7 @@ export function DashboardContent() {
                       </span>
                     </div>
                     {s.accuracyPct !== null && (
-                      <div className="h-2 overflow-hidden rounded-full bg-[rgba(var(--overlay-rgb),0.06)]">
+                      <div className="h-2 overflow-hidden rounded-full bg-[rgba(var(--overlay-rgb),0.06)] sm:col-span-2">
                         <div
                           className={`h-full rounded-full transition-[width] duration-[320ms] ${s.atRisk ? "bg-danger" : "bg-brand"}`}
                           style={{ width: `${Math.max(4, s.accuracyPct)}%` }}
