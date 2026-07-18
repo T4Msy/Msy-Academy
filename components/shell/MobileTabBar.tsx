@@ -56,6 +56,7 @@ export function MobileTabBar({ sections }: { sections: SidebarSection[] }) {
           <button
             type="button"
             className={`tabbar-item${moreOpen ? " active" : ""}`}
+            aria-label="Abrir mais opções de navegação"
             aria-haspopup="menu"
             aria-expanded={moreOpen}
             onClick={() => setMoreOpen((v) => !v)}

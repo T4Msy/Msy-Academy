@@ -57,7 +57,11 @@ export function UserMenu({
             Configurações
           </Link>
         </DropdownMenuItem>
-        <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
+        <DropdownMenuItem
+          asChild
+          className="my-0.5 bg-card text-foreground focus:bg-card-2 focus:text-foreground data-[highlighted]:bg-card-2"
+          onSelect={(e) => e.preventDefault()}
+        >
           <ThemeToggle variant="menu-item" />
         </DropdownMenuItem>
         <DropdownMenuSeparator />
@@ -65,6 +69,7 @@ export function UserMenu({
           <DropdownMenuItem
             asChild
             variant="destructive"
+            className="my-0.5 bg-card text-danger-text focus:bg-danger-dim focus:text-danger-text data-[highlighted]:bg-danger-dim"
             onSelect={(event) => {
               event.preventDefault();
               logoutFormRef.current?.requestSubmit();

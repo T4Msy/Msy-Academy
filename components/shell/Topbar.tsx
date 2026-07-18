@@ -27,14 +27,17 @@ export function Topbar(props: TopbarProps) {
   return (
     <header className="topbar" role="banner">
       <div className="topbar-inner">
-        <div className="brand">
-          <Logo />
-          <div>
-            <div className="brand-title">MSY Academy</div>
-            <div className="brand-sub">
-              {props.variant === "minimal" ? props.subtitle : props.currentEnv === "PROFESSOR" ? "Ambiente do Professor" : "Ambiente do Aluno"}
+        <div className="topbar-context">
+          <div className="brand">
+            <Logo />
+            <div>
+              <div className="brand-title">MSY Academy</div>
+              <div className="brand-sub">
+                {props.variant === "minimal" ? props.subtitle : props.currentEnv === "PROFESSOR" ? "Ambiente do Professor" : "Ambiente do Aluno"}
+              </div>
             </div>
           </div>
+          {props.variant !== "minimal" && props.hasOtherEnv && <ContextSwitcher current={props.currentEnv} />}
         </div>
 
         {props.variant === "minimal" ? (
@@ -43,8 +46,7 @@ export function Topbar(props: TopbarProps) {
           <>
             <GlobalSearch environment={props.currentEnv} />
             <div className="topbar-right">
-              {props.hasOtherEnv && <ContextSwitcher current={props.currentEnv} />}
-              <NotificationBell notifications={props.notifications} />
+              <NotificationBell notifications={props.notifications} environment={props.currentEnv} />
               <UserMenu name={props.name} email={props.email} settingsHref={props.settingsHref} />
             </div>
           </>
