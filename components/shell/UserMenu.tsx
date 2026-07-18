@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRef } from "react";
 import { LogOut, Settings } from "lucide-react";
 import { logout } from "@/lib/auth/actions";
 import {
@@ -25,6 +26,7 @@ export function UserMenu({
   email: string;
   settingsHref: string;
 }) {
+  const logoutFormRef = useRef<HTMLFormElement>(null);
   const initials = name
     .split(" ")
     .filter(Boolean)
@@ -59,9 +61,16 @@ export function UserMenu({
           <ThemeToggle variant="menu-item" />
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <form action={logout} className="contents">
-          <DropdownMenuItem asChild variant="destructive">
-            <button type="submit" className="w-full">
+        <form ref={logoutFormRef} action={logout} className="contents">
+          <DropdownMenuItem
+            asChild
+            variant="destructive"
+            onSelect={(event) => {
+              event.preventDefault();
+              logoutFormRef.current?.requestSubmit();
+            }}
+          >
+            <button type="button" className="w-full">
               <LogOut aria-hidden />
               Sair
             </button>

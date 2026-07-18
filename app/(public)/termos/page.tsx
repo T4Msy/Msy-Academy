@@ -32,12 +32,18 @@ export default function TermosPage() {
             conta, você concorda com estes Termos e com a nossa{" "}
             <Link href="/privacidade">Política de Privacidade</Link>.
           </p>
+          <p>
+            <b>Responsável pela plataforma:</b> TODO — inserir nome empresarial ou nome completo do responsável.<br />
+            <b>CNPJ ou CPF:</b> TODO.<br />
+            <b>Endereço:</b> TODO.<br />
+            <b>Contato oficial:</b> TODO — inserir e-mail de atendimento.
+          </p>
 
           <h2>2. Conta e responsabilidade</h2>
           <ul>
             <li>Você é responsável por manter suas credenciais em sigilo e por toda atividade realizada na sua conta.</li>
             <li>As informações de cadastro devem ser verdadeiras e mantidas atualizadas.</li>
-            <li>Contas de alunos menores de idade devem ser usadas sob supervisão de um responsável legal ou de uma instituição de ensino.</li>
+            <li>Alunos menores de idade devem usar a plataforma com a participação e, quando necessário, a autorização de um responsável legal.</li>
           </ul>
 
           <h2>3. Conteúdo gerado por inteligência artificial</h2>
@@ -58,13 +64,30 @@ export default function TermosPage() {
 
           <h2>5. Planos, cota de IA e cobrança</h2>
           <p>
-            Alguns recursos exigem um plano pago, cobrado por assinatura recorrente e processado
-            por um provedor de pagamentos terceiro. Cada plano inclui uma cota mensal de uso de
-            IA; ao atingi-la, pode ser necessário aguardar a renovação ou fazer upgrade de plano.
-            Você pode cancelar sua assinatura a qualquer momento nas Configurações da conta.
+            Alguns recursos dependem de assinatura paga. Antes da contratação, a plataforma
+            informa o preço, a periodicidade da cobrança e os recursos incluídos. A cobrança é
+            recorrente e processada por um provedor de pagamentos. Cada plano pode incluir limites
+            mensais de uso de inteligência artificial; quando o limite for atingido, determinados
+            recursos podem ficar indisponíveis até a renovação do período ou a mudança de plano.
+          </p>
+          <p>
+            Você pode cancelar a renovação da assinatura nas Configurações. O cancelamento impede
+            novas cobranças e, salvo indicação diferente no momento da contratação, o acesso ao
+            plano pago permanece até o fim do período já pago. Valores vencidos, estornos e
+            reembolsos seguem a legislação aplicável e as condições apresentadas na contratação.
           </p>
 
-          <h2>6. Propriedade do conteúdo</h2>
+          <h2>6. Suspensão e encerramento da conta</h2>
+          <p>
+            Você pode encerrar sua conta pelas Configurações. Também podemos restringir ou
+            suspender o acesso em caso de risco à segurança, falta de pagamento, uso abusivo ou
+            violação destes Termos. Sempre que possível, informaremos o motivo e permitiremos a
+            regularização. Violações graves, fraude ou obrigação legal podem exigir suspensão
+            imediata. O encerramento não elimina obrigações pendentes nem dados que precisem ser
+            mantidos pelo prazo exigido em lei.
+          </p>
+
+          <h2>7. Propriedade do conteúdo</h2>
           <p>
             O conteúdo que você cria ou envia (provas, materiais, respostas) continua seu. Você
             concede à MSY Academy uma licença limitada para armazenar, processar e exibir esse
@@ -72,26 +95,36 @@ export default function TermosPage() {
             você (ex.: enviar um material para o tutor de IA responder com base nele).
           </p>
 
-          <h2>7. Limitação de responsabilidade</h2>
+          <h2>8. Disponibilidade e mudanças no serviço</h2>
+          <p>
+            Trabalhamos para manter a plataforma disponível, mas podem ocorrer interrupções por
+            manutenção, atualizações, falhas técnicas, serviços de terceiros ou situações fora do
+            nosso controle. Quando possível, manutenções planejadas serão comunicadas com
+            antecedência. Recursos podem ser corrigidos, substituídos ou descontinuados para
+            melhorar o serviço, atender requisitos legais ou preservar sua segurança.
+          </p>
+
+          <h2>9. Limitação de responsabilidade</h2>
           <p>
             A plataforma é fornecida &ldquo;como está&rdquo;. Na máxima extensão permitida por lei, a MSY
             Academy não se responsabiliza por danos indiretos decorrentes do uso da plataforma ou
             de decisões pedagógicas tomadas com base em conteúdo gerado por IA.
           </p>
 
-          <h2>8. Alterações</h2>
+          <h2>10. Alterações destes Termos</h2>
           <p>
             Podemos atualizar estes Termos periodicamente. Mudanças relevantes serão comunicadas
             na plataforma antes de entrarem em vigor.
           </p>
 
-          <h2>9. Lei aplicável</h2>
+          <h2>11. Lei aplicável</h2>
           <p>Estes Termos são regidos pelas leis da República Federativa do Brasil.</p>
-        </div>
 
-        <div className="legal-note">
-          Este documento é uma versão inicial, escrita para acompanhar o lançamento da
-          plataforma. Recomendamos revisão jurídica antes de uma operação comercial em escala.
+          <h2>12. Contato</h2>
+          <p>
+            Dúvidas sobre estes Termos, cobranças, cancelamento ou sua conta podem ser enviadas
+            para: <b>TODO — inserir e-mail oficial de atendimento.</b>
+          </p>
         </div>
       </main>
     </>

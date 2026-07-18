@@ -4,10 +4,17 @@ import { ThemeToggle } from "@/components/shell/ThemeToggle";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { listPlans } from "@/lib/billing/plans";
 
+const LANDING_PLAN_DEFAULTS = [
+  { id: "free", code: "FREE", name: "Gratuito", ai_quota_monthly: 50000, price_cents: 0, stripe_price_id: null },
+  { id: "aluno", code: "ALUNO", name: "Aluno", ai_quota_monthly: 150000, price_cents: 1490, stripe_price_id: null },
+  { id: "professor", code: "PROFESSOR", name: "Professor", ai_quota_monthly: 300000, price_cents: 2990, stripe_price_id: null },
+  { id: "escola", code: "ESCOLA", name: "Escola", ai_quota_monthly: 1500000, price_cents: 9990, stripe_price_id: null },
+] as const;
+
 const FEATURES = [
   {
-    title: "Multi-IA sob seu controle",
-    desc: "Escolha o motor certo para cada matéria — a MSY Academy roteia entre provedores por trás de uma única interface.",
+    title: "A melhor inteligência artificial para cada tarefa",
+    desc: "Crie provas, atividades e planos de aula com a tecnologia mais adequada para cada necessidade, tudo em um só lugar.",
     cat: 1,
     icon: (
       <path
@@ -20,8 +27,8 @@ const FEATURES = [
     ),
   },
   {
-    title: "Provas editáveis, não HTML cru",
-    desc: "A IA gera questão por questão como dados estruturados — edite, reordene e reaproveite no Banco de Questões.",
+    title: "Provas que você pode revisar e editar",
+    desc: "Revise cada questão, altere a ordem e reutilize o conteúdo no seu Banco de Questões.",
     cat: 2,
     icon: (
       <path
@@ -48,8 +55,8 @@ const FEATURES = [
     ),
   },
   {
-    title: "Tutor IA para o aluno",
-    desc: "Chat com IA que responde com base no material da própria turma — não respostas genéricas.",
+    title: "Tutor de IA para o aluno",
+    desc: "Um tutor que responde com base nos materiais da própria turma, oferecendo explicações mais relevantes para cada aluno.",
     cat: 3,
     icon: (
       <path
@@ -63,7 +70,7 @@ const FEATURES = [
   },
   {
     title: "Correção inteligente",
-    desc: "Objetivas corrigem na hora; discursivas recebem nota e feedback sugeridos pela IA, revisados por você.",
+    desc: "Questões objetivas são corrigidas na hora. Nas discursivas, a IA sugere nota e feedback para você revisar.",
     cat: 4,
     icon: (
       <path
@@ -77,7 +84,7 @@ const FEATURES = [
   },
   {
     title: "Dados isolados e seguros",
-    desc: "Cada conta tem seus próprios dados protegidos por Row-Level Security no banco.",
+    desc: "Cada conta mantém seus próprios dados separados e protegidos por controles de acesso no banco.",
     cat: 7,
     icon: (
       <path
@@ -92,9 +99,9 @@ const FEATURES = [
 ];
 
 const TRUST_POINTS = [
-  { title: "Isolamento por conta", desc: "Cada tenant só acessa os próprios dados — reforçado por Row-Level Security no banco, não só na aplicação." },
-  { title: "Cota de IA visível", desc: "Você acompanha o uso de IA do seu plano em Configurações antes de qualquer surpresa na fatura." },
-  { title: "Multi-provedor por padrão", desc: "A orquestração de IA não depende de um único fornecedor — trocar de motor não exige trocar de produto." },
+  { title: "Dados separados por conta", desc: "Cada conta acessa apenas as informações permitidas para professores, alunos e responsáveis vinculados." },
+  { title: "Uso de IA fácil de acompanhar", desc: "Você consulta o uso incluído no seu plano diretamente nas Configurações." },
+  { title: "Tecnologia que se adapta à tarefa", desc: "A plataforma pode usar diferentes serviços de inteligência artificial para entregar a melhor experiência em cada recurso." },
 ];
 
 const STEPS = [
@@ -121,7 +128,10 @@ function formatPrice(cents: number): string {
 }
 
 export default async function Home() {
-  const plans = await listPlans();
+  const loadedPlans = await listPlans();
+  const plans = LANDING_PLAN_DEFAULTS.map(
+    (fallback) => loadedPlans.find((plan) => plan.code === fallback.code) ?? fallback,
+  );
 
   return (
     <>
@@ -157,9 +167,9 @@ export default async function Home() {
                 com IA em cada etapa.
               </h1>
               <p className="hero-sub">
-                Provas, atividades, turmas, correção e um tutor de IA para o
-                aluno — tudo integrado, não módulos soltos. Comece pelo
-                gerador de provas e cresça com a turma inteira.
+                Economize tempo ao criar provas, atividades e planos de aula.
+                Organize suas turmas, acompanhe o progresso e ofereça aos alunos
+                novas formas de estudar em uma única plataforma.
               </p>
               <div className="hero-actions">
                 <Link href="/cadastro" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 bg-primary font-bold text-primary-foreground shadow-[0_4px_14px_rgba(217,119,87,0.16)] hover:-translate-y-px hover:opacity-90 h-11.5 min-w-40 rounded-full px-5 font-display text-base tracking-[-0.2px]">
@@ -232,7 +242,7 @@ export default async function Home() {
             <ScrollReveal>
               <div className="section-head">
                 <span className="section-eyebrow">Como funciona</span>
-                <h2 className="section-title">Do cadastro à turma em produção</h2>
+                <h2 className="section-title">Do cadastro à sua primeira turma</h2>
               </div>
             </ScrollReveal>
             <ScrollReveal>

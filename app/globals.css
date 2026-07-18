@@ -1572,8 +1572,12 @@ select.input option { background-color: var(--bg-card); color: var(--fg); }
   color: var(--fg);
 }
 
-.features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.features-grid { display: grid; grid-template-columns: repeat(3, 1fr); align-items: stretch; gap: 16px; }
+.features-grid > .reveal { height: 100%; }
 .feature-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   padding: 22px;
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -1588,7 +1592,11 @@ select.input option { background-color: var(--bg-card); color: var(--fg); }
   color: var(--fg);
   margin: 14px 0 6px;
 }
-.feature-desc { font-size: 13.5px; color: var(--fg-muted); line-height: 1.55; }
+.feature-desc { flex: 1; font-size: 13.5px; color: var(--fg-muted); line-height: 1.55; }
+
+@media (min-width: 861px) {
+  .feature-title { min-height: 42px; }
+}
 
 .steps-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
 .step-item { text-align: center; }

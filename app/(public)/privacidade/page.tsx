@@ -35,27 +35,32 @@ export default function PrivacidadePage() {
             <li><b>Uso da plataforma:</b> métricas de uso de IA por conta, para aplicar a cota do seu plano.</li>
           </ul>
 
-          <h2>2. Para que usamos seus dados</h2>
+          <h2>2. Para que usamos seus dados e quais são as bases legais</h2>
           <ul>
             <li>Fornecer as funcionalidades da plataforma (gerar provas, corrigir, responder no tutor de IA, etc.).</li>
             <li>Manter sua conta segura e isolada dos dados de outras contas.</li>
             <li>Processar pagamentos e aplicar cotas do seu plano.</li>
             <li>Melhorar a plataforma e diagnosticar problemas técnicos.</li>
           </ul>
+          <p>Dependendo da finalidade, o tratamento pode se apoiar nas seguintes bases legais:</p>
+          <ul>
+            <li><b>Execução de contrato:</b> para criar e manter sua conta e entregar os recursos solicitados.</li>
+            <li><b>Cumprimento de obrigação legal ou regulatória:</b> quando a legislação exigir a conservação ou o fornecimento de informações.</li>
+            <li><b>Legítimo interesse:</b> para segurança, prevenção de fraude, suporte e melhoria do serviço, com avaliação dos direitos do titular.</li>
+            <li><b>Exercício regular de direitos:</b> para atender ou defender direitos em processos administrativos, judiciais ou arbitrais.</li>
+            <li><b>Consentimento:</b> quando essa for a base adequada, especialmente em situações que envolvam dados de crianças e adolescentes.</li>
+          </ul>
+
+          <h2>3. Acesso entre contas e turmas</h2>
           <p>
-            A base legal para esse tratamento é a execução do contrato de uso da plataforma (Art.
-            7º, V, LGPD) e, quando aplicável, o consentimento dado no cadastro.
+            Usamos autenticação e controles de acesso para limitar as informações disponíveis a
+            cada conta. Professores, alunos, responsáveis e instituições podem compartilhar dados
+            quando participam da mesma turma ou usam um recurso que exige essa interação. Embora
+            adotemos medidas para evitar acessos indevidos, nenhum sistema é totalmente imune a
+            falhas ou incidentes de segurança.
           </p>
 
-          <h2>3. Isolamento entre contas</h2>
-          <p>
-            Cada conta (professor, escola ou aluno) tem seus dados isolados por controle de
-            acesso reforçado no próprio banco de dados (Row-Level Security) — uma conta nunca
-            acessa dados de outra conta, exceto quando você explicitamente convida um aluno para
-            sua turma ou vice-versa.
-          </p>
-
-          <h2>4. Compartilhamento com terceiros</h2>
+          <h2>4. Compartilhamento e processamento por terceiros</h2>
           <ul>
             <li>
               <b>Provedores de inteligência artificial:</b> o conteúdo enviado para geração
@@ -63,31 +68,50 @@ export default function PrivacidadePage() {
               terceiros para produzir a resposta solicitada.
             </li>
             <li><b>Processador de pagamentos:</b> dados de cobrança são processados por um provedor terceiro especializado em pagamentos — não armazenamos números de cartão.</li>
+            <li><b>Infraestrutura e armazenamento:</b> fornecedores de hospedagem, banco de dados, armazenamento e segurança podem processar dados para manter a plataforma funcionando.</li>
             <li>Não vendemos dados pessoais a terceiros.</li>
           </ul>
+          <p>
+            Alguns provedores de inteligência artificial e infraestrutura podem operar ou
+            armazenar dados fora do Brasil. Nesses casos, buscamos fornecedores com medidas de
+            segurança e mecanismos de transferência internacional compatíveis com a LGPD e com as
+            regras aplicáveis.
+          </p>
 
-          <h2>5. Dados de menores de idade</h2>
+          <h2>5. Dados de crianças e adolescentes</h2>
           <p>
             Contas de alunos podem pertencer a menores de idade. O uso deve ocorrer sob
             supervisão de um responsável legal ou de uma instituição de ensino que tenha
             legitimidade para tratar esses dados no contexto educacional (Art. 14, LGPD).
-            Professores e escolas são responsáveis por obter, quando exigido, a autorização
-            adequada para o uso da plataforma por seus alunos.
+            O tratamento deve observar o melhor interesse da criança ou do adolescente.
+            Responsáveis, professores e instituições devem fornecer apenas os dados necessários e
+            obter as autorizações exigidas para o contexto educacional.
           </p>
 
           <h2>6. Seus direitos</h2>
-          <p>Como titular dos dados, você pode a qualquer momento, diretamente pela plataforma:</p>
+          <p>Nos termos da LGPD, você pode solicitar:</p>
           <ul>
-            <li><b>Exportar</b> uma cópia de todos os seus dados, em Configurações → Meus dados.</li>
-            <li><b>Excluir</b> permanentemente sua conta e conteúdo associado, em Configurações → Zona de perigo.</li>
-            <li><b>Corrigir</b> seus dados de perfil (nome), também em Configurações.</li>
+            <li>confirmação da existência de tratamento e acesso aos dados;</li>
+            <li>correção de dados incompletos, inexatos ou desatualizados;</li>
+            <li>informações sobre compartilhamento e portabilidade, quando aplicável;</li>
+            <li>anonimização, bloqueio ou exclusão de dados tratados em desconformidade;</li>
+            <li>revogação do consentimento e revisão das decisões tomadas com base nele, quando aplicável.</li>
           </ul>
-
-          <h2>7. Retenção</h2>
           <p>
-            Mantemos seus dados enquanto sua conta estiver ativa. Ao excluir a conta, os dados
-            são removidos permanentemente do banco de produção; cópias de backup são sobrescritas
-            no ciclo normal de rotação de backups.
+            Algumas ações estão disponíveis em Configurações, como corrigir o nome, exportar dados
+            e solicitar a exclusão da conta. Outros pedidos podem ser enviados para o contato de
+            privacidade indicado na seção 12. Podemos solicitar informações para confirmar sua
+            identidade e proteger seus dados antes de atender ao pedido.
+          </p>
+
+          <h2>7. Retenção, exclusão e backups</h2>
+          <p>
+            Mantemos os dados enquanto forem necessários para oferecer a plataforma e cumprir as
+            finalidades descritas nesta Política. Após o encerramento ou pedido de exclusão,
+            eliminamos ou anonimizamos os dados quando possível, respeitando obrigações legais,
+            prevenção de fraude, exercício de direitos e outros prazos aplicáveis. Cópias residuais
+            podem permanecer temporariamente em backups protegidos até serem substituídas pelo
+            ciclo normal de retenção e não são usadas para finalidades comuns do serviço.
           </p>
 
           <h2>8. Segurança</h2>
@@ -102,10 +126,27 @@ export default function PrivacidadePage() {
             Não usamos cookies de rastreamento publicitário.
           </p>
 
-          <h2>10. Contato</h2>
+          <h2>10. Alterações desta Política</h2>
           <p>
-            Dúvidas sobre esta política ou sobre o tratamento dos seus dados podem ser
-            enviadas para o e-mail de suporte informado no rodapé da plataforma.
+            Esta Política pode ser atualizada para refletir mudanças na plataforma, na legislação
+            ou em nossos fornecedores. Alterações relevantes serão comunicadas pelos canais
+            disponíveis antes de entrarem em vigor, quando necessário.
+          </p>
+
+          <h2>11. Contato</h2>
+          <p>
+            Dúvidas, solicitações ou reclamações sobre o tratamento de dados podem ser enviadas
+            para: <b>TODO — inserir e-mail específico de privacidade.</b>
+          </p>
+
+          <h2>12. Quem controla seus dados</h2>
+          <p>
+            O controlador dos dados pessoais tratados pela MSY Academy é: <b>TODO — inserir nome
+            empresarial ou nome completo do responsável, CNPJ ou CPF e endereço.</b>
+          </p>
+          <p>
+            Para assuntos de privacidade e proteção de dados, entre em contato pelo e-mail:
+            <b> TODO — inserir contato específico de privacidade.</b>
           </p>
         </div>
 
