@@ -161,7 +161,7 @@ export async function moveQuestion(examId: string, questionId: string, direction
  * tipo/dificuldade da questão original) and overwrite it in place — o
  * question_id não muda, então a posição na prova é preservada.
  */
-export async function regenerateQuestion(examId: string, questionId: string): Promise<void> {
+export async function regenerateQuestion(examId: string, questionId: string): Promise<{ error?: string }> {
   const { supabase, user } = await requireUser();
 
   const { data: exam, error: examErr } = await supabase
@@ -169,9 +169,9 @@ export async function regenerateQuestion(examId: string, questionId: string): Pr
     .select("tenant_id, generation_params")
     .eq("id", examId)
     .single();
-  if (examErr || !exam) throw new Error("Prova não encontrada.");
+  if (examErr || !exam) return { error: "Prova não encontrada." };
 
-  await regenerateLinkedQuestion(
+  const result = await regenerateLinkedQuestion(
     supabase,
     questionId,
     (exam.generation_params as object) ?? {},
@@ -179,5 +179,8 @@ export async function regenerateQuestion(examId: string, questionId: string): Pr
     exam.tenant_id,
     user.id,
   );
+  if (result.error) return result;
+
   revalidatePath(`/professor/provas/${examId}`);
+  return {};
 }

@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
+import { checkRateLimit } from "@/lib/ratelimit";
+import { getClientIp } from "@/lib/http/client-ip";
 
 /**
  * Auth server actions, shared by the public (login/cadastro) routes and the
@@ -28,9 +30,15 @@ export async function login(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
   const redirectTo = safeRedirect(formData.get("redirect") as string | null);
+  const captchaToken = String(formData.get("captchaToken") ?? "").trim() || undefined;
+
+  const rateLimit = await checkRateLimit("auth", getClientIp(await headers()));
+  if (!rateLimit.success) {
+    redirect(`/login?error=${encodeURIComponent("Muitas tentativas. Tente novamente em alguns minutos.")}`);
+  }
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { error } = await supabase.auth.signInWithPassword({ email, password, options: { captchaToken } });
 
   if (error) {
     redirect(`/login?error=${encodeURIComponent(error.message)}`);
@@ -45,6 +53,7 @@ export async function signup(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
   const consent = formData.get("consent") === "on";
+  const captchaToken = String(formData.get("captchaToken") ?? "").trim() || undefined;
 
   if (!consent) {
     redirect(
@@ -52,18 +61,25 @@ export async function signup(formData: FormData) {
     );
   }
 
+  const rateLimit = await checkRateLimit("auth", getClientIp(await headers()));
+  if (!rateLimit.success) {
+    redirect(`/cadastro?error=${encodeURIComponent("Muitas tentativas. Tente novamente em alguns minutos.")}`);
+  }
+
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
-    options: { data: { full_name: fullName } },
+    options: { data: { full_name: fullName }, captchaToken },
   });
 
   if (error) {
     redirect(`/cadastro?error=${encodeURIComponent(error.message)}`);
   }
 
-  // If email confirmation is required, there is no active session yet.
+  // If email confirmation is required, there is no active session yet — no
+  // way to satisfy RLS to stamp consent now. The middleware consent gate
+  // (lib/supabase/middleware.ts) covers this at the first real login.
   if (!data.session) {
     redirect(
       `/login?message=${encodeURIComponent(
@@ -71,6 +87,10 @@ export async function signup(formData: FormData) {
       )}`,
     );
   }
+
+  // Persist the consent this action already required above (RNF-C01) — a
+  // session exists here, so RLS (profiles_update_own) allows the write.
+  await supabase.from("profiles").update({ terms_accepted_at: new Date().toISOString() }).eq("id", data.user!.id);
 
   revalidatePath("/", "layout");
   redirect("/onboarding");
@@ -90,11 +110,19 @@ export async function logout() {
  */
 export async function requestPasswordReset(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim();
+  const captchaToken = String(formData.get("captchaToken") ?? "").trim() || undefined;
 
   if (email) {
-    const supabase = await createClient();
-    const redirectTo = `${await origin()}/auth/callback?next=/redefinir-senha`;
-    await supabase.auth.resetPasswordForEmail(email, { redirectTo });
+    const rateLimit = await checkRateLimit("auth", getClientIp(await headers()));
+    if (rateLimit.success) {
+      const supabase = await createClient();
+      const redirectTo = `${await origin()}/auth/callback?next=/redefinir-senha&flow=recovery`;
+      await supabase.auth.resetPasswordForEmail(email, { redirectTo, captchaToken });
+    }
+    // Rate-limited requests fall through to the same generic message below —
+    // never a distinct error, preserves the anti-enumeration property (an
+    // attacker can't distinguish "rate limited" from "email doesn't exist"
+    // from "email sent").
   }
 
   redirect(

@@ -29,13 +29,13 @@ export function GradeDiscursiva({
   function onSuggest() {
     setError(null);
     startTransition(async () => {
-      try {
-        const suggestion = await suggestGrade(submissionId, statement, referenceAnswer, studentAnswer);
-        setScore(String(suggestion.score));
-        setFeedback(suggestion.feedback);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Algo deu errado.");
+      const result = await suggestGrade(submissionId, statement, referenceAnswer, studentAnswer);
+      if ("error" in result) {
+        setError(result.error);
+        return;
       }
+      setScore(String(result.data.score));
+      setFeedback(result.data.feedback);
     });
   }
 

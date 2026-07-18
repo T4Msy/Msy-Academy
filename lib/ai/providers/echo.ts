@@ -101,7 +101,7 @@ export const echoProvider: AIProvider = {
     throw new Error(`O provider echo ainda não implementa a tarefa "${task}".`);
   },
 
-  async *streamChat({ messages, context }) {
+  async *streamChat({ messages, context, onUsage }) {
     const lastUserMessage = [...messages].reverse().find((m) => m.role === "user")?.content ?? "";
     const reply = context?.trim()
       ? `[echo] Baseado no material: ${context.slice(0, 100)}. Pergunta recebida: "${lastUserMessage}".`
@@ -110,6 +110,11 @@ export const echoProvider: AIProvider = {
       await new Promise((resolve) => setTimeout(resolve, 10));
       yield chunk + " ";
     }
+
+    // Deterministic non-zero estimate, same reasoning as mock.ts.
+    const tokensIn = messages.reduce((sum, m) => sum + m.content.split(/\s+/).filter(Boolean).length, 0);
+    const tokensOut = reply.split(/\s+/).filter(Boolean).length;
+    onUsage?.({ tokensIn, tokensOut });
   },
 
   async embed({ texts }) {

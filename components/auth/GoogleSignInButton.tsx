@@ -6,13 +6,13 @@ import { createClient } from "@/lib/supabase/client";
 /**
  * RF-G01 — OAuth Google. Requires the Google provider to be enabled in the
  * Supabase Auth dashboard (client id/secret) — not something this app can
- * self-provision, so the provider isn't configured yet. Rather than let
- * users discover that only after clicking (a Supabase error mid-flow reads
- * as "this is broken"), the button is shown disabled with the real status
- * up front. Flip this to `true` once the Google provider is turned on in
- * the Supabase dashboard.
+ * self-provision. Driven by NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED (not a hardcoded
+ * const) so it can be flipped per-environment without a code change, once
+ * docs/17-setup-google-oauth.md's steps are done. Unset/false preserves the
+ * safe "Em breve" disabled state — never risk shipping a broken Google
+ * button before the dashboard provider is actually configured.
  */
-const GOOGLE_OAUTH_ENABLED = false;
+const GOOGLE_OAUTH_ENABLED = process.env.NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED === "true";
 
 function GoogleIcon() {
   return (
@@ -49,7 +49,7 @@ export function GoogleSignInButton({ redirectTo = "/", disabled = false }: { red
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectTo)}`,
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectTo)}&flow=oauth`,
       },
     });
     if (error) {

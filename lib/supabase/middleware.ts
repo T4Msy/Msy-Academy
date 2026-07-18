@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import type { CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { checkRateLimit, type RatelimitCategory } from "@/lib/ratelimit";
 
 /**
  * Refreshes the Supabase session on every request and owns the coarse
@@ -62,6 +63,31 @@ export async function updateSession(request: NextRequest) {
     pathname === "/termos" || pathname === "/privacidade" || pathname.startsWith("/consentimento/");
   const isPublic = isPublicAuthRoute || isAuthCallback || isLanding || isLegal;
 
+  // Rate limiting por requisição (RF/RNF de Fase 4, complementa a cota
+  // mensal de lib/billing/quota.ts) — único ponto de checagem para as 6
+  // rotas de geração de IA + busca, em vez de repetir em cada route.ts.
+  // Chaveado por user id (estas rotas já exigem auth — sem `user` aqui não
+  // há chave, e o próprio route handler responde 401 normalmente).
+  if (user) {
+    const rateLimitCategory: RatelimitCategory | null = pathname === "/api/ai/tutor/chat"
+      ? "tutor-chat"
+      : pathname.startsWith("/api/ai/")
+        ? "ai"
+        : pathname === "/api/search"
+          ? "search"
+          : null;
+
+    if (rateLimitCategory) {
+      const result = await checkRateLimit(rateLimitCategory, user.id);
+      if (!result.success) {
+        return NextResponse.json(
+          { error: "Muitas requisições. Tente novamente em instantes." },
+          { status: 429, headers: { "Retry-After": String(result.retryAfterSeconds ?? 60) } },
+        );
+      }
+    }
+  }
+
   // API routes own their own auth responses (401 JSON, not an HTML redirect).
   if (isApi) return supabaseResponse;
 
@@ -74,6 +100,27 @@ export async function updateSession(request: NextRequest) {
   }
 
   // From here on, `user` is authenticated.
+
+  // LGPD consent gate (RNF-C01) — precedes onboarding/role, since accepting
+  // terms is a precondition to using the product at all, not a role concern.
+  // Backstop for Google sign-ins (RF-G01), which skip /cadastro's checkbox
+  // entirely — see app/consentimento-conta/.
+  const isConsentGate = pathname === "/consentimento-conta";
+  if (!isConsentGate && !isAuthCallback && !isLegal) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("terms_accepted_at")
+      .eq("id", user.id)
+      .maybeSingle();
+    if (profile && !profile.terms_accepted_at) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/consentimento-conta";
+      url.search = "";
+      if (!isPublicAuthRoute && !isLanding) url.searchParams.set("redirect", pathname);
+      return NextResponse.redirect(url);
+    }
+  }
+
   const needsRoleCheck = isPublicAuthRoute || isLanding || (!isOnboarding && !isAuthCallback && !isLegal);
   if (needsRoleCheck) {
     const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", user.id);

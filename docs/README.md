@@ -35,6 +35,9 @@ A IA é o **núcleo** do produto, não um recurso adicional.
 | 12 | [12-adr-stack.md](./12-adr-stack.md) | ADR: stack do MVP (Next + Supabase) |
 | 13 | [13-adr-revisao-arquitetural-2026-07.md](./13-adr-revisao-arquitetural-2026-07.md) | **ADR vigente: revisão arquitetural completa (UI, DS, dados, IA, qualidade)** |
 | 14 | [14-design-system-guidelines.md](./14-design-system-guidelines.md) | Design System: princípios, tokens e regras de uso (`/design-system`) |
+| 15 | [15-guardrail-sanitizacao-tiptap.md](./15-guardrail-sanitizacao-tiptap.md) | Checklist de sanitização para quando o Tiptap for adotado em conteúdo de IA |
+| 16 | [16-autenticacao.md](./16-autenticacao.md) | Autenticação: e-mail/senha, Google OAuth, sessão/middleware, consentimento LGPD, rate limiting, CAPTCHA, e-mail transacional |
+| 17 | [17-setup-google-oauth.md](./17-setup-google-oauth.md) | Guia passo a passo: habilitar login com Google (Google Cloud Console + Supabase Dashboard) |
 
 ---
 

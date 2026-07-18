@@ -174,7 +174,7 @@ export const mockProvider: AIProvider = {
     throw new Error(`O provider mock ainda não implementa a tarefa "${task}".`);
   },
 
-  async *streamChat({ messages, context }) {
+  async *streamChat({ messages, context, onUsage }) {
     const lastUserMessage = [...messages].reverse().find((m) => m.role === "user")?.content ?? "";
     const grounded = !!context?.trim();
     // Deterministic, context-aware "answer" — enough to prove retrieval fed
@@ -191,6 +191,13 @@ export const mockProvider: AIProvider = {
       await new Promise((resolve) => setTimeout(resolve, 15));
       yield word + " ";
     }
+
+    // Deterministic non-zero estimate (word counts) — not real token usage
+    // (mock never calls a real API), but non-zero so tests/regressions can
+    // actually verify usage flows end-to-end through the orchestrator.
+    const tokensIn = messages.reduce((sum, m) => sum + m.content.split(/\s+/).filter(Boolean).length, 0);
+    const tokensOut = responseText.split(/\s+/).filter(Boolean).length;
+    onUsage?.({ tokensIn, tokensOut });
   },
 
   async embed({ texts }) {

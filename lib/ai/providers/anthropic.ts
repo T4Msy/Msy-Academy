@@ -7,6 +7,7 @@ import { LESSON_PLAN_GENERATION_PROMPT_V1 } from "../prompts/lesson-plan-generat
 import { GRADING_PROMPT_V1 } from "../prompts/grading.v1";
 import { STUDY_PLAN_PROMPT_V1 } from "../prompts/study-plan.v1";
 import { FLASHCARDS_PROMPT_V1 } from "../prompts/flashcards.v1";
+import { TUTOR_SYSTEM_PROMPT_V1 } from "../prompts/tutor.v1";
 
 /**
  * Real provider adapter — the first one that isn't `mock`/`echo`. Selected
@@ -40,14 +41,6 @@ const TASK_PROMPTS: Partial<Record<AITask, string>> = {
   STUDY_PLAN: STUDY_PLAN_PROMPT_V1,
   FLASHCARDS: FLASHCARDS_PROMPT_V1,
 };
-
-const TUTOR_SYSTEM_PROMPT = `
-Você é um tutor de IA para estudantes brasileiros. Explique conceitos com
-clareza, adapte a linguagem ao nível da pergunta e responda em português.
-Quando material de referência da turma do aluno for fornecido, baseie sua
-resposta nele e diga quando a pergunta foge do que o material cobre — não
-invente conteúdo que não está no material nem no seu conhecimento geral.
-`.trim();
 
 export const anthropicProvider: AIProvider = {
   id: "anthropic",
@@ -95,10 +88,18 @@ export const anthropicProvider: AIProvider = {
     };
   },
 
-  async *streamChat({ messages, context }: { messages: ChatMessage[]; context?: string }) {
+  async *streamChat({
+    messages,
+    context,
+    onUsage,
+  }: {
+    messages: ChatMessage[];
+    context?: string;
+    onUsage?: (usage: { tokensIn: number; tokensOut: number }) => void;
+  }) {
     const system = context?.trim()
-      ? `${TUTOR_SYSTEM_PROMPT}\n\nMaterial de referência da turma:\n${context}`
-      : TUTOR_SYSTEM_PROMPT;
+      ? `${TUTOR_SYSTEM_PROMPT_V1}\n\nMaterial de referência da turma:\n${context}`
+      : TUTOR_SYSTEM_PROMPT_V1;
 
     const stream = getClient().messages.stream({
       model: MODEL,
@@ -112,6 +113,13 @@ export const anthropicProvider: AIProvider = {
         yield event.delta.text;
       }
     }
+
+    // The SDK's stream helper accumulates the full message internally as
+    // events are consumed above — calling finalMessage() here resolves from
+    // that cache instead of re-requesting, giving us the real token usage
+    // that content_block_delta events alone don't carry.
+    const finalMessage = await stream.finalMessage();
+    onUsage?.({ tokensIn: finalMessage.usage.input_tokens, tokensOut: finalMessage.usage.output_tokens });
   },
 
   async embed({ texts }: { texts: string[] }) {

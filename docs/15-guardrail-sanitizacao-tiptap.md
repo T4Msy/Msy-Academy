@@ -1,0 +1,10 @@
+# Guardrail — sanitização quando o Tiptap for adotado em conteúdo de IA
+
+**Contexto:** auditoria de sanitização de 2026-07-17 (ver `docs/13-adr-revisao-arquitetural-2026-07.md`, Fase 4) não encontrou nenhum vetor de XSS ativo — todo conteúdo gerado por IA hoje é `text`/`jsonb` puro, renderizado via interpolação JSX (escapada por padrão pelo React). O `<RichTextEditor>` (Tiptap, `components/ui/rich-text-editor.tsx`) só tem `StarterKit` habilitado (sem `Link`/`Image`) e ainda não está conectado a nenhum fluxo de IA — só é usado na vitrine `/design-system`.
+
+Esse quadro muda quando o Tiptap for de fato adotado para armazenar conteúdo gerado por IA (planos de aula, questões — mudança de formato de armazenamento prevista na Fase 3 do ADR 13). Neste dia, antes de considerar o trabalho pronto:
+
+1. **Se as extensões `Link`/`Image` do Tiptap forem adicionadas**, validar `href`/`src` contra allowlist (`http(s)://` apenas; bloquear `javascript:`, `data:` salvo exigência explícita e então restrito por MIME) — tanto na escrita (antes de persistir o JSON) quanto na leitura (antes de renderizar), já que uma migração de banco ou edição direta pode introduzir conteúdo não validado no momento da escrita original.
+2. **Qualquer `generateHTML()`/`editor.getHTML()` cujo resultado vire `dangerouslySetInnerHTML`** precisa passar por um sanitizador (`isomorphic-dompurify` ou equivalente) no momento da renderização, não só na escrita — hoje nenhum sanitizador está instalado porque não há HTML nenhum para sanitizar; instalar um agora sem uso seria escopo prematuro.
+3. **Revisitar a CSP** (`next.config.mjs`) nesse momento — conteúdo rico renderizado é uma fronteira de confiança diferente de texto plano. Em particular, considerar migrar `script-src`/`style-src` de `'unsafe-inline'` para nonce-based (ver comentário em `next.config.mjs`).
+4. Repetir a auditoria deste documento (`grep -rn "dangerouslySetInnerHTML\|generateHTML" app components lib`) como parte da PR que liga o Tiptap a um fluxo de IA — não assumir que o quadro de 2026-07-17 continua válido.

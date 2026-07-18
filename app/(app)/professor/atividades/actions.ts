@@ -86,7 +86,7 @@ export async function moveQuestionInActivity(activityId: string, questionId: str
 }
 
 /** Regenerate a single question via the AI orchestrator, mesmo tipo/dificuldade da original. */
-export async function regenerateQuestionInActivity(activityId: string, questionId: string): Promise<void> {
+export async function regenerateQuestionInActivity(activityId: string, questionId: string): Promise<{ error?: string }> {
   const { supabase, user } = await requireUser();
 
   const { data: activity, error: activityErr } = await supabase
@@ -94,9 +94,9 @@ export async function regenerateQuestionInActivity(activityId: string, questionI
     .select("tenant_id, generation_params")
     .eq("id", activityId)
     .single();
-  if (activityErr || !activity) throw new Error("Atividade não encontrada.");
+  if (activityErr || !activity) return { error: "Atividade não encontrada." };
 
-  await regenerateLinkedQuestion(
+  const result = await regenerateLinkedQuestion(
     supabase,
     questionId,
     (activity.generation_params as object) ?? {},
@@ -104,5 +104,8 @@ export async function regenerateQuestionInActivity(activityId: string, questionI
     activity.tenant_id,
     user.id,
   );
+  if (result.error) return result;
+
   revalidatePath(`/professor/atividades/${activityId}`);
+  return {};
 }

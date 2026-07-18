@@ -4,6 +4,8 @@ import { EXAM_GENERATION_SCHEMA_V1 } from "@/lib/ai/prompts/exam-generation.v1";
 import { normalizeBnccCodes } from "./bncc";
 import type { GeneratedExam } from "@/lib/ai/types";
 import type { NewQuestionInput } from "./types";
+import { checkRateLimit } from "@/lib/ratelimit";
+import { QuotaExceededError } from "@/lib/billing/quota";
 
 /**
  * Genérico sobre `exam_questions`/`activity_items` (migrations 0005/0007) —
@@ -123,6 +125,11 @@ export async function moveLinkedQuestion(
  * `task` varia por kind (EXAM_GEN/ACTIVITY_GEN) só para o log de
  * `ai_interactions`; o schema de saída é o mesmo nos dois casos (activity-
  * generation.v1.ts reexporta EXAM_GENERATION_SCHEMA_V1 sem alteração).
+ *
+ * Retorna `{ error }` em vez de lançar — chamado a partir de Server Actions
+ * (provas/actions.ts, atividades/actions.ts), e um `throw` aqui é redigido
+ * pro Next.js numa mensagem genérica em produção (ver memória do projeto
+ * `nextjs-server-action-error-redaction`).
  */
 export async function regenerateLinkedQuestion(
   supabase: Supabase,
@@ -131,13 +138,18 @@ export async function regenerateLinkedQuestion(
   task: "EXAM_GEN" | "ACTIVITY_GEN",
   tenantId: string,
   userId: string,
-): Promise<void> {
+): Promise<{ error?: string }> {
+  const rateLimit = await checkRateLimit("ai", userId);
+  if (!rateLimit.success) {
+    return { error: "Muitas regenerações em pouco tempo. Aguarde um momento e tente novamente." };
+  }
+
   const { data: question, error: qErr } = await supabase
     .from("questions")
     .select("type, difficulty")
     .eq("id", questionId)
     .single();
-  if (qErr || !question) throw new Error("Questão não encontrada.");
+  if (qErr || !question) return { error: "Questão não encontrada." };
 
   const typeMap: Record<string, string> = { MULTIPLA: "multipla", VF: "vf", DISCURSIVA: "discursiva" };
   const input = {
@@ -147,16 +159,22 @@ export async function regenerateLinkedQuestion(
     nivel: question.difficulty.toLowerCase(),
   };
 
-  const generated = await generateStructured<GeneratedExam>({
-    task,
-    schema: EXAM_GENERATION_SCHEMA_V1,
-    input,
-    tenantId,
-    userId,
-  });
+  let generated: GeneratedExam;
+  try {
+    generated = await generateStructured<GeneratedExam>({
+      task,
+      schema: EXAM_GENERATION_SCHEMA_V1,
+      input,
+      tenantId,
+      userId,
+    });
+  } catch (err) {
+    if (err instanceof QuotaExceededError) return { error: err.message };
+    return { error: "Não foi possível regenerar a questão. Tente novamente." };
+  }
 
   const newQuestion = generated.questions[0];
-  if (!newQuestion) throw new Error("A IA não retornou uma nova questão.");
+  if (!newQuestion) return { error: "A IA não retornou uma nova questão." };
 
   const { error } = await supabase
     .from("questions")
@@ -169,5 +187,7 @@ export async function regenerateLinkedQuestion(
       tags: newQuestion.tags ?? [],
     })
     .eq("id", questionId);
-  if (error) throw new Error(`Não foi possível regenerar: ${error.message}`);
+  if (error) return { error: `Não foi possível regenerar: ${error.message}` };
+
+  return {};
 }

@@ -22,7 +22,12 @@ export interface AIProvider {
     input: unknown;
   }): Promise<GenerateStructuredResult<T>>;
 
-  streamChat(args: { messages: ChatMessage[]; context?: string }): AsyncIterable<string>;
+  streamChat(args: {
+    messages: ChatMessage[];
+    context?: string;
+    /** Called once, after the stream finishes, with real usage if the provider has it (mock/echo report a deterministic estimate). */
+    onUsage?: (usage: { tokensIn: number; tokensOut: number }) => void;
+  }): AsyncIterable<string>;
 
   embed(args: { texts: string[] }): Promise<number[][]>;
 }

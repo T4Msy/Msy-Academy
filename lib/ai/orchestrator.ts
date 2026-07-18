@@ -1,7 +1,7 @@
 import { createAdminClient } from "@/lib/supabase/server";
 import { getAIProvider } from "./registry";
 import { checkQuota } from "@/lib/billing/quota";
-import type { AITask } from "./types";
+import type { AITask, ChatMessage } from "./types";
 
 interface OrchestrateArgs {
   task: AITask;
@@ -78,4 +78,97 @@ export async function generateStructured<T>(args: OrchestrateArgs): Promise<T> {
   });
 
   return data;
+}
+
+interface StreamGenerateArgs {
+  task: AITask;
+  messages: ChatMessage[];
+  context?: string;
+  tenantId: string;
+  userId: string;
+}
+
+/**
+ * Streaming choke point — the `streamChat` counterpart to `generateStructured`.
+ * Checks quota eagerly (fails before any token is yielded, matching
+ * `generateStructured`'s "reject before doing any work" behavior), then
+ * streams tokens through to the caller while accumulating them, and logs
+ * usage once the stream ends (in a `finally`, so it also fires if the
+ * consumer breaks out of the `for await` early — same as a generator's
+ * `.return()` being called on early exit).
+ */
+export async function streamGenerate(args: StreamGenerateArgs): Promise<AsyncIterable<string>> {
+  await checkQuota(args.tenantId);
+
+  const provider = getAIProvider();
+  const startedAt = Date.now();
+  let usage = { tokensIn: 0, tokensOut: 0 };
+  let output = "";
+
+  async function* wrapped() {
+    try {
+      for await (const token of provider.streamChat({
+        messages: args.messages,
+        context: args.context,
+        onUsage: (u) => {
+          usage = u;
+        },
+      })) {
+        output += token;
+        yield token;
+      }
+    } finally {
+      await logAIUsage({
+        tenantId: args.tenantId,
+        userId: args.userId,
+        feature: args.task,
+        provider: provider.id,
+        input: { messages: args.messages },
+        output: { response: output },
+        tokensIn: usage.tokensIn,
+        tokensOut: usage.tokensOut,
+        latencyMs: Date.now() - startedAt,
+      });
+    }
+  }
+
+  return wrapped();
+}
+
+interface EmbedTextsArgs {
+  texts: string[];
+  tenantId: string;
+  userId?: string;
+  feature: AITask;
+}
+
+/**
+ * Embedding choke point — closes the gap where the tutor's RAG query embed
+ * and `ingestMaterial`'s bulk embed were both invisible to quota/logging
+ * (calling `provider.embed()` directly, outside `generateStructured`).
+ * `tokensIn`/`tokensOut` are logged as 0: none of the current providers
+ * (mock/echo/anthropic) have a real embeddings cost today — see
+ * `lib/ai/providers/anthropic.ts`'s own comment on why `embed()` is a
+ * placeholder hash, not an API call. This is a different, currently-correct
+ * zero, not the same bug `streamGenerate` fixes for `streamChat`.
+ */
+export async function embedTexts(args: EmbedTextsArgs): Promise<number[][]> {
+  await checkQuota(args.tenantId);
+
+  const provider = getAIProvider();
+  const startedAt = Date.now();
+  const embeddings = await provider.embed({ texts: args.texts });
+
+  await logAIUsage({
+    tenantId: args.tenantId,
+    userId: args.userId,
+    feature: args.feature,
+    provider: provider.id,
+    input: { texts: args.texts.length },
+    tokensIn: 0,
+    tokensOut: 0,
+    latencyMs: Date.now() - startedAt,
+  });
+
+  return embeddings;
 }

@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { Logo } from "@/components/Logo";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
+import { TurnstileWidget } from "@/components/auth/TurnstileWidget";
 import { login } from "@/lib/auth/actions";
 
 export const metadata: Metadata = { title: "Entrar" };
@@ -62,6 +63,7 @@ export default async function LoginPage({
               placeholder="••••••••"
             />
           </div>
+          <TurnstileWidget />
           <button data-testid="login-submit" type="submit" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 bg-primary font-bold text-primary-foreground shadow-[0_4px_14px_rgba(217,119,87,0.16)] hover:-translate-y-px hover:opacity-90 px-4 py-2.5 w-full">
             Entrar
           </button>

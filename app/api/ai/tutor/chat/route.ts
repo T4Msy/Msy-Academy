@@ -1,6 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { getAIProvider } from "@/lib/ai/registry";
-import { logAIUsage } from "@/lib/ai/orchestrator";
+import { streamGenerate, embedTexts } from "@/lib/ai/orchestrator";
 import { checkQuota, QuotaExceededError } from "@/lib/billing/quota";
 
 export const runtime = "nodejs";
@@ -39,6 +38,12 @@ export async function POST(request: Request) {
   const { data: profile } = await supabase.from("profiles").select("tenant_id").eq("id", user.id).single();
   if (!profile) return new Response(JSON.stringify({ error: "Perfil não encontrado." }), { status: 500 });
 
+  // Checked explicitly here (not just inside embedTexts/streamGenerate below)
+  // so a 402 can be returned *before* any conversation/message row gets
+  // written — the internal checks in embedTexts/streamGenerate happen too
+  // late for that. This makes quota get checked twice per request (redundant
+  // but harmless, both are cheap reads) — not dead code if someone's tempted
+  // to remove one.
   try {
     await checkQuota(profile.tenant_id);
   } catch (err) {
@@ -74,8 +79,12 @@ export async function POST(request: Request) {
     .eq("conversation_id", conversationId)
     .order("created_at");
 
-  const provider = getAIProvider();
-  const [queryEmbedding] = await provider.embed({ texts: [message] });
+  const [queryEmbedding] = await embedTexts({
+    texts: [message],
+    tenantId: profile.tenant_id,
+    userId: user.id,
+    feature: "TUTOR",
+  });
   const { data: matches } = await supabase.rpc("search_material_chunks", {
     p_query_embedding: `[${queryEmbedding.join(",")}]`,
     p_match_count: 4,
@@ -92,10 +101,18 @@ export async function POST(request: Request) {
   // insert above (which early-returns on failure).
   const finalConversationId = conversationId as string;
 
+  const tokens = await streamGenerate({
+    task: "TUTOR",
+    messages: chatMessages,
+    context,
+    tenantId: profile.tenant_id,
+    userId: user.id,
+  });
+
   const stream = new ReadableStream({
     async start(controller) {
       try {
-        for await (const token of provider.streamChat({ messages: chatMessages, context })) {
+        for await (const token of tokens) {
           fullText += token;
           controller.enqueue(encoder.encode(token));
         }
@@ -103,17 +120,6 @@ export async function POST(request: Request) {
         controller.close();
         await supabase.from("tutor_messages").insert({ conversation_id: finalConversationId, role: "assistant", content: fullText });
         await supabase.from("tutor_conversations").update({ updated_at: new Date().toISOString() }).eq("id", finalConversationId);
-
-        await logAIUsage({
-          tenantId: profile!.tenant_id,
-          userId: user.id,
-          feature: "TUTOR",
-          provider: provider.id,
-          input: { message },
-          output: { response: fullText },
-          tokensIn: 0,
-          tokensOut: 0,
-        });
       }
     },
   });

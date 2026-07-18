@@ -1,6 +1,6 @@
 import { PDFParse } from "pdf-parse";
 import { createAdminClient } from "@/lib/supabase/server";
-import { getAIProvider } from "@/lib/ai/registry";
+import { embedTexts } from "@/lib/ai/orchestrator";
 
 const CHUNK_SIZE = 800;
 const CHUNK_OVERLAP = 100;
@@ -31,12 +31,12 @@ function chunkText(text: string): string[] {
  * FILE, or not attached to a class (materials.class_id null — see migration
  * 0012's note on why that's what makes content "da turma").
  */
-export async function ingestMaterial(materialId: string): Promise<{ chunks: number }> {
+export async function ingestMaterial(materialId: string, userId?: string): Promise<{ chunks: number }> {
   const admin = createAdminClient();
 
   const { data: material } = await admin
     .from("materials")
-    .select("id, storage_path, class_id, kind")
+    .select("id, storage_path, class_id, kind, tenant_id")
     .eq("id", materialId)
     .single();
 
@@ -54,8 +54,7 @@ export async function ingestMaterial(materialId: string): Promise<{ chunks: numb
   const chunks = chunkText(text);
   if (chunks.length === 0) return { chunks: 0 };
 
-  const provider = getAIProvider();
-  const embeddings = await provider.embed({ texts: chunks });
+  const embeddings = await embedTexts({ texts: chunks, tenantId: material.tenant_id, userId, feature: "TUTOR" });
 
   const rows = chunks.map((content, i) => ({
     material_id: materialId,

@@ -30,7 +30,7 @@ export interface QuestionsEditorActions {
   onAdd: (input: NewQuestionInput) => Promise<void>;
   onRemove: (questionId: string) => Promise<void>;
   onMove: (questionId: string, direction: "up" | "down") => Promise<void>;
-  onRegenerate: (questionId: string) => Promise<void>;
+  onRegenerate: (questionId: string) => Promise<{ error?: string }>;
 }
 
 /** Fisher-Yates — display-only shuffle for "Versão B" exams (RF-P08); never mutates stored data. */
@@ -98,13 +98,13 @@ function QuestionCard({
   function onRegenerate() {
     setError(null);
     startTransition(async () => {
-      try {
-        await actions.onRegenerate(question.id);
-        setEditing(false);
-        router.refresh();
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Algo deu errado.");
+      const result = await actions.onRegenerate(question.id);
+      if (result.error) {
+        setError(result.error);
+        return;
       }
+      setEditing(false);
+      router.refresh();
     });
   }
 
