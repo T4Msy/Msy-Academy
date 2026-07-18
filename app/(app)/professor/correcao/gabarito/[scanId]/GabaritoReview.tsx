@@ -43,7 +43,7 @@ export function GabaritoReview({
         await confirmScan(scanId, answers);
         router.push("/professor/correcao");
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Algo deu errado.");
+        setError(err instanceof Error ? err.message : "Não conseguimos confirmar o gabarito. Tente novamente.");
       }
     });
   }

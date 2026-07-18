@@ -59,7 +59,7 @@ export function RenameDeleteMenu({
         await action.onRun();
         close();
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Algo deu errado.");
+        setError(err instanceof Error ? err.message : "Não conseguimos renomear este item. Tente novamente.");
       }
     });
   }
@@ -74,7 +74,7 @@ export function RenameDeleteMenu({
         close();
         router.refresh();
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Algo deu errado.");
+        setError(err instanceof Error ? err.message : "Não conseguimos duplicar este item. Tente novamente.");
       }
     });
   }
@@ -87,7 +87,7 @@ export function RenameDeleteMenu({
         close();
         router.push(redirectAfterDelete);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Algo deu errado.");
+        setError(err instanceof Error ? err.message : "Não conseguimos excluir este item. Tente novamente.");
       }
     });
   }

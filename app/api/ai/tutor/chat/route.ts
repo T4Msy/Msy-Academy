@@ -23,20 +23,20 @@ export async function POST(request: Request) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return new Response(JSON.stringify({ error: "Não autenticado." }), { status: 401 });
+  if (!user) return new Response(JSON.stringify({ error: "Sua sessão terminou. Entre novamente para continuar." }), { status: 401 });
 
   let body: { conversationId?: string; message?: string };
   try {
     body = await request.json();
   } catch {
-    return new Response(JSON.stringify({ error: "Requisição inválida." }), { status: 400 });
+    return new Response(JSON.stringify({ error: "Não conseguimos entender sua mensagem. Escreva novamente e tente enviar." }), { status: 400 });
   }
 
   const message = (body.message ?? "").trim();
   if (!message) return new Response(JSON.stringify({ error: "Mensagem vazia." }), { status: 400 });
 
   const { data: profile } = await supabase.from("profiles").select("tenant_id").eq("id", user.id).single();
-  if (!profile) return new Response(JSON.stringify({ error: "Perfil não encontrado." }), { status: 500 });
+  if (!profile) return new Response(JSON.stringify({ error: "Não encontramos seu perfil. Atualize a página e tente novamente." }), { status: 500 });
 
   // Checked explicitly here (not just inside embedTexts/streamGenerate below)
   // so a 402 can be returned *before* any conversation/message row gets

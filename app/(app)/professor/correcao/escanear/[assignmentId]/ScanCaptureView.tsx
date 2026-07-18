@@ -82,7 +82,7 @@ export function ScanCaptureView({ assignmentId }: { assignmentId: string }) {
       setUploadState({ status: "done", scanId, needsReview: status === "NEEDS_REVIEW" });
       setScannedCount((n) => n + 1);
     } catch (err) {
-      setUploadState({ status: "error", message: err instanceof Error ? err.message : "Falha ao enviar a foto." });
+      setUploadState({ status: "error", message: err instanceof Error ? err.message : "Não conseguimos enviar a foto. Tente novamente." });
     }
   }
 
@@ -102,7 +102,7 @@ export function ScanCaptureView({ assignmentId }: { assignmentId: string }) {
         )}
         {captureState === "denied" && (
           <div className="mt-3.5 rounded-md border border-danger-border bg-danger-dim px-4.5 py-3.5 text-[13.5px] leading-normal text-danger-text">
-            Não foi possível acessar a câmera — verifique a permissão do navegador e recarregue a página.
+            Não conseguimos acessar a câmera. Autorize o uso da câmera no navegador e recarregue a página.
           </div>
         )}
 

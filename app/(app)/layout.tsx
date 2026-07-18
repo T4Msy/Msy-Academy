@@ -9,8 +9,8 @@ import { getSession } from "@/lib/auth/session";
  * each renders a different sidebar.
  */
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const { user, suspendedAt, roles } = await getSession();
-  if (!user) redirect("/login");
+  const { user, suspendedAt, roles, accessError } = await getSession();
+  if (!user || accessError) redirect("/acesso-indisponivel");
   if (suspendedAt) redirect("/suspenso");
   if (roles.length === 0) redirect("/onboarding");
 

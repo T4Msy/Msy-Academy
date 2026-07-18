@@ -7,6 +7,7 @@ import { MobileTabBar } from "@/components/shell/MobileTabBar";
 import { Topbar } from "@/components/shell/Topbar";
 import { ThemeToggle } from "@/components/shell/ThemeToggle";
 import { IconHome, IconUsuarios, IconTenants, IconPlanosAdmin } from "@/components/shell/navIcons";
+import { homeForRoles } from "@/lib/auth/access";
 
 const NAV: SidebarSection[] = [
   { items: [{ href: "/admin", label: "Visão geral", icon: <IconHome />, exact: true, mobilePrimary: true }] },
@@ -29,11 +30,11 @@ const NAV: SidebarSection[] = [
  * discipline as lib/ai/orchestrator.ts.
  */
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const { user, roles } = await getSession();
-  if (!user) redirect("/login");
+  const { user, roles, accessError } = await getSession();
+  if (!user || accessError) redirect("/acesso-indisponivel");
 
   const isAdmin = roles.includes("ADMIN");
-  if (!isAdmin) redirect("/");
+  if (!isAdmin) redirect(homeForRoles(roles) ?? "/acesso-indisponivel");
 
   return (
     <div className="app-shell">

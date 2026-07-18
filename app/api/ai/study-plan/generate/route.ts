@@ -14,13 +14,13 @@ export async function POST(request: Request) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Não autenticado." }, { status: 401 });
+  if (!user) return NextResponse.json({ error: "Sua sessão terminou. Entre novamente para continuar." }, { status: 401 });
 
   let params: { goal?: string; examDate?: string; availability?: Record<string, number> };
   try {
     params = await request.json();
   } catch {
-    return NextResponse.json({ error: "Requisição inválida." }, { status: 400 });
+    return NextResponse.json({ error: "Não conseguimos entender os dados enviados. Revise as informações e tente novamente." }, { status: 400 });
   }
 
   // Contrato único (decisão nº 9 do ADR 13): mesmo schema Zod do client
@@ -29,7 +29,7 @@ export async function POST(request: Request) {
   const schemaCheck = studyPlanGenerationSchema.safeParse(params);
   if (!schemaCheck.success) {
     return NextResponse.json(
-      { error: schemaCheck.error.issues[0]?.message ?? "Dados inválidos." },
+      { error: schemaCheck.error.issues[0]?.message ?? "Revise as informações preenchidas e tente novamente." },
       { status: 400 },
     );
   }
@@ -38,7 +38,7 @@ export async function POST(request: Request) {
   if (!goal) return NextResponse.json({ error: "Informe seu objetivo." }, { status: 400 });
 
   const { data: profile } = await supabase.from("profiles").select("tenant_id").eq("id", user.id).single();
-  if (!profile) return NextResponse.json({ error: "Perfil não encontrado." }, { status: 500 });
+  if (!profile) return NextResponse.json({ error: "Não encontramos seu perfil. Atualize a página e tente novamente." }, { status: 500 });
 
   let generated: GeneratedStudyPlan;
   try {
@@ -53,8 +53,7 @@ export async function POST(request: Request) {
     if (err instanceof QuotaExceededError) {
       return NextResponse.json({ error: err.message }, { status: 402 });
     }
-    const message = err instanceof Error ? err.message : String(err);
-    return NextResponse.json({ error: `Falha ao gerar o plano: ${message}` }, { status: 502 });
+    return NextResponse.json({ error: "Não conseguimos criar o plano agora. Tente novamente em alguns instantes." }, { status: 502 });
   }
 
   const { data: plan, error: planErr } = await supabase
@@ -69,7 +68,7 @@ export async function POST(request: Request) {
     .select("id")
     .single();
   if (planErr || !plan) {
-    return NextResponse.json({ error: `Falha ao salvar o plano: ${planErr?.message ?? "erro"}` }, { status: 500 });
+    return NextResponse.json({ error: "O plano foi criado, mas não conseguimos salvá-lo. Tente novamente." }, { status: 500 });
   }
 
   if (generated.items.length > 0) {
@@ -81,7 +80,7 @@ export async function POST(request: Request) {
     }));
     const { error: itemsErr } = await supabase.from("study_plan_items").insert(rows);
     if (itemsErr) {
-      return NextResponse.json({ error: `Falha ao salvar os itens: ${itemsErr.message}` }, { status: 500 });
+      return NextResponse.json({ error: "Não conseguimos salvar as etapas do plano. Tente novamente." }, { status: 500 });
     }
   }
 

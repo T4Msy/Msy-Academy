@@ -21,7 +21,7 @@ export function CreateClassForm() {
         setName("");
         router.push(`/professor/turmas/${id}`);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Algo deu errado.");
+        setError(err instanceof Error ? err.message : "Não conseguimos criar a turma. Tente novamente.");
       }
     });
   }

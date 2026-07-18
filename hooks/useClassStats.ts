@@ -2,9 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import type { ClassStat } from "@/lib/dashboard/deriveClassStats";
-
-/** Chave única compartilhada entre o prefetch do server e o useQuery. */
-export const classStatsQueryKey = ["professor", "dashboard", "class-stats"] as const;
+import { classStatsQueryKey } from "@/lib/dashboard/queryKeys";
 
 /**
  * Fonte de dados do dashboard no client. O primeiro render vem hidratado do

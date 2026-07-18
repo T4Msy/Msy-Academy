@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Logo } from "@/components/Logo";
 import { OnboardingForm } from "./OnboardingForm";
+import { homeForRoles, safePostAuthRedirect } from "@/lib/auth/access";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Bem-vindo" };
@@ -20,9 +21,10 @@ export default async function OnboardingPage({
   if (!user) redirect("/login");
 
   // Already onboarded (e.g. revisiting the URL) — send to the right shell.
-  const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
+  const { data: roles, error: rolesError } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
+  if (rolesError) redirect("/acesso-indisponivel");
   if (roles && roles.length > 0) {
-    redirect(redirectTo?.startsWith("/") ? redirectTo : roles.some((r) => r.role === "PROFESSOR") ? "/professor" : "/aluno");
+    redirect(safePostAuthRedirect(redirectTo) ?? homeForRoles(roles.map((r) => r.role)) ?? "/acesso-indisponivel");
   }
 
   return (

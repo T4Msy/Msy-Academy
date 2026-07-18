@@ -2,6 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import type { CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { checkRateLimit, type RatelimitCategory } from "@/lib/ratelimit";
+import { homeForRoles } from "@/lib/auth/access";
 
 /**
  * Refreshes the Supabase session on every request and owns the coarse
@@ -53,6 +54,7 @@ export async function updateSession(request: NextRequest) {
   const isApi = pathname.startsWith("/api");
   const isAuthCallback = pathname.startsWith("/auth");
   const isOnboarding = pathname.startsWith("/onboarding");
+  const isRecovery = pathname === "/acesso-indisponivel";
   const isPublicAuthRoute =
     pathname === "/login" ||
     pathname === "/cadastro" ||
@@ -61,7 +63,7 @@ export async function updateSession(request: NextRequest) {
   const isLanding = pathname === "/";
   const isLegal =
     pathname === "/termos" || pathname === "/privacidade" || pathname.startsWith("/consentimento/");
-  const isPublic = isPublicAuthRoute || isAuthCallback || isLanding || isLegal;
+  const isPublic = isPublicAuthRoute || isAuthCallback || isLanding || isLegal || isRecovery;
 
   // Rate limiting por requisição (RF/RNF de Fase 4, complementa a cota
   // mensal de lib/billing/quota.ts) — único ponto de checagem para as 6
@@ -106,13 +108,19 @@ export async function updateSession(request: NextRequest) {
   // Backstop for Google sign-ins (RF-G01), which skip /cadastro's checkbox
   // entirely — see app/consentimento-conta/.
   const isConsentGate = pathname === "/consentimento-conta";
-  if (!isConsentGate && !isAuthCallback && !isLegal) {
-    const { data: profile } = await supabase
+  if (!isConsentGate && !isAuthCallback && !isLegal && !isRecovery) {
+    const { data: profile, error: profileError } = await supabase
       .from("profiles")
       .select("terms_accepted_at")
       .eq("id", user.id)
       .maybeSingle();
-    if (profile && !profile.terms_accepted_at) {
+    if (profileError || !profile) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/acesso-indisponivel";
+      url.search = "";
+      return NextResponse.redirect(url);
+    }
+    if (!profile.terms_accepted_at) {
       const url = request.nextUrl.clone();
       url.pathname = "/consentimento-conta";
       url.search = "";
@@ -121,18 +129,23 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
-  const needsRoleCheck = isPublicAuthRoute || isLanding || (!isOnboarding && !isAuthCallback && !isLegal);
+  const needsRoleCheck =
+    isPublicAuthRoute ||
+    isLanding ||
+    (!isOnboarding && !isConsentGate && !isAuthCallback && !isLegal && !isRecovery);
   if (needsRoleCheck) {
-    const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
+    const { data: roles, error: rolesError } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
+    if (rolesError) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/acesso-indisponivel";
+      url.search = "";
+      return NextResponse.redirect(url);
+    }
     const hasRoles = (roles?.length ?? 0) > 0;
 
     if (isPublicAuthRoute || isLanding) {
       const url = request.nextUrl.clone();
-      url.pathname = !hasRoles
-        ? "/onboarding"
-        : roles!.some((r) => r.role === "PROFESSOR")
-          ? "/professor"
-          : "/aluno";
+      url.pathname = !hasRoles ? "/onboarding" : homeForRoles(roles!.map((r) => r.role)) ?? "/acesso-indisponivel";
       url.search = "";
       return NextResponse.redirect(url);
     }

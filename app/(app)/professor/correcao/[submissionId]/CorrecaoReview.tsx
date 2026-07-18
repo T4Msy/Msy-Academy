@@ -37,7 +37,7 @@ export function CorrecaoReview({
         await saveGrade(submissionId, totalScore, feedback, "AI_SUGGESTED");
         router.push("/professor/correcao");
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Algo deu errado.");
+        setError(err instanceof Error ? err.message : "Não conseguimos salvar a correção. Tente novamente.");
       }
     });
   }

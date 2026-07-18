@@ -15,10 +15,10 @@ export const getSession = cache(async () => {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return { supabase, user: null, fullName: null as string | null, suspendedAt: null as string | null, roles: [] as string[] };
+    return { supabase, user: null, fullName: null as string | null, suspendedAt: null as string | null, roles: [] as string[], accessError: false };
   }
 
-  const [{ data: profileRow }, { data: roleRows }] = await Promise.all([
+  const [{ data: profileRow, error: profileError }, { data: roleRows, error: rolesError }] = await Promise.all([
     supabase.from("profiles").select("full_name, suspended_at").eq("id", user.id).single(),
     supabase.from("user_roles").select("role").eq("user_id", user.id),
   ]);
@@ -29,6 +29,7 @@ export const getSession = cache(async () => {
     fullName: profileRow?.full_name ?? null,
     suspendedAt: profileRow?.suspended_at ?? null,
     roles: (roleRows ?? []).map((r) => r.role),
+    accessError: Boolean(profileError || rolesError || !profileRow),
   };
 });
 

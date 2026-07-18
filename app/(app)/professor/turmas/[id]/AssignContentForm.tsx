@@ -40,7 +40,7 @@ export function AssignContentForm({
         setDueAt("");
         router.refresh();
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Algo deu errado.");
+        setError(err instanceof Error ? err.message : "Não conseguimos enviar este conteúdo para a turma. Tente novamente.");
       }
     });
   }

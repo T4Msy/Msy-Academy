@@ -31,7 +31,7 @@ export async function updateProfile(_prevState: UpdateProfileState | null, formD
     .update({ full_name: clean })
     .eq("id", user.id);
 
-  if (error) return { error: `Não foi possível salvar: ${error.message}` };
+  if (error) return { error: "Não conseguimos salvar suas alterações. Tente novamente." };
 
   // Topbar reads full_name from each environment layout's own fetch — refresh it.
   revalidatePath("/", "layout");
@@ -58,7 +58,7 @@ export async function changePassword(_prevState: ChangePasswordState | null, for
 
   if (!currentPassword || !newPassword) return { error: "Preencha a senha atual e a nova senha." };
   if (newPassword.length < 8) return { error: "A nova senha precisa ter pelo menos 8 caracteres." };
-  if (newPassword !== confirmPassword) return { error: "A confirmação não bate com a nova senha." };
+  if (newPassword !== confirmPassword) return { error: "A confirmação precisa ser igual à nova senha." };
 
   const supabase = await createClient();
   const {
@@ -73,7 +73,7 @@ export async function changePassword(_prevState: ChangePasswordState | null, for
   if (signInError) return { error: "Senha atual incorreta." };
 
   const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
-  if (updateError) return { error: `Não foi possível trocar a senha: ${updateError.message}` };
+  if (updateError) return { error: "Não conseguimos trocar sua senha. Tente novamente." };
 
   return { ok: true };
 }
@@ -115,7 +115,7 @@ export async function deleteMyAccount(returnPath: string, formData: FormData): P
 
   const { error: deleteUserError } = await admin.auth.admin.deleteUser(user.id);
   if (deleteUserError) {
-    redirect(`${returnPath}?deleteError=${encodeURIComponent("Não foi possível excluir a conta. Tente novamente.")}`);
+    redirect(`${returnPath}?deleteError=${encodeURIComponent("Não conseguimos excluir sua conta agora. Tente novamente.")}`);
   }
 
   if (profile?.tenant_id) {
@@ -133,5 +133,5 @@ export async function deleteMyAccount(returnPath: string, formData: FormData): P
   }
 
   await supabase.auth.signOut();
-  redirect("/login?message=" + encodeURIComponent("Sua conta foi excluída."));
+  redirect("/login?message=" + encodeURIComponent("Sua conta foi excluída com sucesso."));
 }

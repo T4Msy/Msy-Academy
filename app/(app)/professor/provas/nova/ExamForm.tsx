@@ -1,9 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import ReactMarkdown from "react-markdown";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
 import { Upload } from "lucide-react";
 import { examGenerationSchema, type ExamGenerationInput } from "@/lib/exam/schemas";
 import { AiThinking } from "@/components/AiThinking";
@@ -76,6 +79,20 @@ const DIST_OPTIONS = [
   ["20/40/40", "20% fácil, 40% médio, 40% difícil"],
 ] as const;
 
+const OBSERVATION_ATTACHMENT_MAX_SIZE = 10 * 1024 * 1024;
+const OBSERVATION_ATTACHMENT_TYPES = new Set([
+  "image/png",
+  "image/jpeg",
+  "image/webp",
+  "application/pdf",
+]);
+
+function markdownWithMathDelimiters(value: string) {
+  return value
+    .replace(/\\\[([\s\S]*?)\\\]/g, (_, formula: string) => `\n$$\n${formula}\n$$\n`)
+    .replace(/\\\(([\s\S]*?)\\\)/g, (_, formula: string) => `$${formula}$`);
+}
+
 function StepBadge({ n, accent = false }: { n: number; accent?: boolean }) {
   return (
     <Badge
@@ -121,7 +138,21 @@ export function ExamForm() {
   const [activeStep, setActiveStep] = useState(1);
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [observationAttachment, setObservationAttachment] = useState<File | null>(null);
+  const [observationAttachmentError, setObservationAttachmentError] = useState<string | null>(null);
+  const [observationDragOver, setObservationDragOver] = useState(false);
+  const observationFileInputRef = useRef<HTMLInputElement>(null);
+  const observationPreviewUrl = useMemo(
+    () => observationAttachment?.type.startsWith("image/") ? URL.createObjectURL(observationAttachment) : null,
+    [observationAttachment],
+  );
   const loading = form.formState.isSubmitting;
+
+  useEffect(() => {
+    return () => {
+      if (observationPreviewUrl) URL.revokeObjectURL(observationPreviewUrl);
+    };
+  }, [observationPreviewUrl]);
 
   // ── Scroll-driven progress tracker (parity with legacy) ────
   useEffect(() => {
@@ -143,12 +174,30 @@ export function ExamForm() {
 
   function handleFile(file: File | null) {
     if (file && !/\.pdf$/i.test(file.name)) {
-      setErro("Por favor, envie apenas arquivos no formato .pdf");
+      setErro("Escolha um arquivo PDF para continuar.");
       return;
     }
     setErro(null);
     setApostila(file);
     form.setValue("usarapostila", !!file);
+  }
+
+  function handleObservationAttachment(file: File | null) {
+    if (!file) {
+      setObservationAttachment(null);
+      setObservationAttachmentError(null);
+      return;
+    }
+    if (!OBSERVATION_ATTACHMENT_TYPES.has(file.type)) {
+      setObservationAttachmentError("Escolha uma imagem PNG, JPG, JPEG ou WEBP, ou um arquivo PDF.");
+      return;
+    }
+    if (file.size > OBSERVATION_ATTACHMENT_MAX_SIZE) {
+      setObservationAttachmentError("O anexo deve ter no máximo 10 MB.");
+      return;
+    }
+    setObservationAttachment(file);
+    setObservationAttachmentError(null);
   }
 
   async function onSubmit(values: ExamGenerationInput) {
@@ -166,7 +215,7 @@ export function ExamForm() {
         setQuotaHit(true);
         return;
       }
-      if (!res.ok) throw new Error(data?.error ?? `Erro ${res.status}`);
+      if (!res.ok) throw new Error(data?.error ?? "Não conseguimos gerar a prova agora. Tente novamente.");
       router.push(`/professor/provas/${data.id}`);
     } catch (err) {
       setErro(err instanceof Error ? err.message : String(err));
@@ -339,10 +388,87 @@ export function ExamForm() {
                       <FormLabel>Observações do professor</FormLabel>
                       <FormControl>
                         <Textarea
-                          placeholder="Ex: inclua exemplos práticos, enfoque em conceitos-chave, pegadinhas leves, etc."
+                          placeholder="Ex: inclua exemplos práticos ou fórmulas como \\(\\sqrt{4} = 2\\)."
                           {...field}
                         />
                       </FormControl>
+                      {field.value.trim() && (
+                        <div className="rounded-md border border-border bg-card-2 p-4">
+                          <p className="mb-2 text-xs font-semibold text-muted-foreground">Pré-visualização</p>
+                          <div className="prose prose-sm max-w-none text-foreground [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:my-2 [&_ul]:list-disc [&_ul]:pl-5">
+                            <ReactMarkdown
+                              remarkPlugins={[remarkMath]}
+                              rehypePlugins={[[rehypeKatex, { throwOnError: false }]]}
+                            >
+                              {markdownWithMathDelimiters(field.value)}
+                            </ReactMarkdown>
+                          </div>
+                        </div>
+                      )}
+                      <div
+                        className={`flex flex-wrap items-center gap-3 rounded-md border border-dashed p-4 transition-colors outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow ${
+                          observationDragOver ? "border-brand bg-brand-dim" : "border-border-hover bg-card-2"
+                        }`}
+                        role="button"
+                        tabIndex={0}
+                        aria-label="Anexar imagem ou PDF às observações"
+                        onClick={() => observationFileInputRef.current?.click()}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault();
+                            observationFileInputRef.current?.click();
+                          }
+                        }}
+                        onDragOver={(event) => {
+                          event.preventDefault();
+                          setObservationDragOver(true);
+                        }}
+                        onDragLeave={() => setObservationDragOver(false)}
+                        onDrop={(event) => {
+                          event.preventDefault();
+                          setObservationDragOver(false);
+                          handleObservationAttachment(event.dataTransfer.files?.[0] ?? null);
+                        }}
+                      >
+                        {observationPreviewUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element -- local object URL selected by the professor.
+                          <img src={observationPreviewUrl} alt="Pré-visualização do anexo" className="size-16 rounded-sm object-cover" />
+                        ) : (
+                          <Upload size={22} className="shrink-0 text-muted-foreground" aria-hidden />
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <span className="block truncate text-sm font-semibold text-foreground">
+                            {observationAttachment?.name ?? "Arraste uma imagem ou PDF aqui"}
+                          </span>
+                          <span className="block text-xs text-muted-foreground">
+                            {observationAttachment ? "Anexo selecionado para pré-visualização." : "ou clique para selecionar · até 10 MB"}
+                          </span>
+                        </div>
+                        {observationAttachment && (
+                          <Button
+                            type="button"
+                            variant="destructive-ghost"
+                            size="sm"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              if (observationFileInputRef.current) observationFileInputRef.current.value = "";
+                              handleObservationAttachment(null);
+                            }}
+                          >
+                            Remover
+                          </Button>
+                        )}
+                      </div>
+                      <input
+                        ref={observationFileInputRef}
+                        type="file"
+                        accept="image/png,image/jpeg,image/webp,application/pdf"
+                        className="sr-only"
+                        onChange={(event) => handleObservationAttachment(event.target.files?.[0] ?? null)}
+                      />
+                      {observationAttachmentError && (
+                        <p className="text-sm text-danger-text">{observationAttachmentError}</p>
+                      )}
                       <FormMessage />
                     </FormItem>
                   )}

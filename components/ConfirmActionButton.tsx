@@ -55,7 +55,7 @@ export function ConfirmActionButton({
           router.refresh();
         }
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Algo deu errado.");
+        toast.error(err instanceof Error ? err.message : "Não conseguimos concluir esta ação. Tente novamente.");
       }
     });
   }

@@ -28,7 +28,7 @@ export function SimuladoWizard({ subjects }: { subjects: { id: string; name: str
         });
         router.push(`/aluno/simulados/${id}`);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Algo deu errado.");
+        setError(err instanceof Error ? err.message : "Não conseguimos criar o simulado. Tente novamente.");
       }
     });
   }

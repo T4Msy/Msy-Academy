@@ -78,7 +78,7 @@ export function QuestionForm({
           difficulty,
         });
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Algo deu errado.");
+        setError(err instanceof Error ? err.message : "Não conseguimos salvar a questão. Tente novamente.");
       }
     });
   }

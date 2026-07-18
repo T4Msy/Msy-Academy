@@ -32,7 +32,7 @@ export function BlankLessonPlanForm() {
         });
         router.push(`/professor/planos-de-aula/${id}`);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Algo deu errado.");
+        setError(err instanceof Error ? err.message : "Não conseguimos criar o plano de aula. Tente novamente.");
       }
     });
   }

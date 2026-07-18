@@ -56,7 +56,7 @@ export function ExamExportActions({
       const blob = await pdf(<ExamPdfDocument exam={exam} />).toBlob();
       downloadBlob(blob, `${filename}.pdf`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Falha ao gerar PDF.");
+      setError(err instanceof Error ? err.message : "Não conseguimos criar o arquivo em PDF. Tente novamente.");
     } finally {
       setBusy(null);
     }
@@ -70,7 +70,7 @@ export function ExamExportActions({
       const blob = await buildExamDocxBlob(exam);
       downloadBlob(blob, `${filename}.docx`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Falha ao gerar Word.");
+      setError(err instanceof Error ? err.message : "Não conseguimos criar o arquivo do Word. Tente novamente.");
     } finally {
       setBusy(null);
     }

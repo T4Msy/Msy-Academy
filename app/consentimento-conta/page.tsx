@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { Logo } from "@/components/Logo";
 import { createClient } from "@/lib/supabase/server";
 import { acceptTerms } from "./actions";
+import { safePostAuthRedirect } from "@/lib/auth/access";
 
 export const metadata: Metadata = { title: "Termos e privacidade" };
 
@@ -53,7 +54,7 @@ export default async function ConsentimentoContaPage({
         )}
 
         <form className="mt-3.5 flex flex-col gap-3.5" action={acceptTerms}>
-          <input type="hidden" name="redirect" value={redirectTo ?? "/"} />
+          <input type="hidden" name="redirect" value={safePostAuthRedirect(redirectTo) ?? "/"} />
           <label className="opt-check" htmlFor="accept">
             <input type="checkbox" id="accept" name="accept" />
             <span className="opt-box" aria-hidden="true">

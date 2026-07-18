@@ -16,7 +16,7 @@ export function JoinClassCard({ inviteCode }: { inviteCode: string }) {
         const { className } = await joinClass(inviteCode);
         setState({ status: "ok", className });
       } catch (err) {
-        setState({ status: "error", error: err instanceof Error ? err.message : "Algo deu errado." });
+        setState({ status: "error", error: err instanceof Error ? err.message : "Não conseguimos entrar na turma. Tente novamente." });
       }
     });
   }, [inviteCode]);

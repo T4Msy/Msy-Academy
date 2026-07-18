@@ -23,7 +23,7 @@ export interface AddRoleState {
  */
 export async function addRoleToCurrentUser(_prevState: AddRoleState | null, formData: FormData): Promise<AddRoleState> {
   const role = formData.get("role") as Role | null;
-  if (role !== "PROFESSOR" && role !== "ALUNO") return { error: "Papel inválido." };
+  if (role !== "PROFESSOR" && role !== "ALUNO") return { error: "Escolha o ambiente de professor ou de aluno." };
 
   const supabase = await createClient();
   const {
@@ -34,7 +34,7 @@ export async function addRoleToCurrentUser(_prevState: AddRoleState | null, form
   const { error } = await supabase.from("user_roles").insert({ user_id: user.id, role });
   if (error) {
     if (error.code === "23505") return { ok: true }; // already has this role — nothing to do
-    return { error: `Não foi possível ativar esse ambiente: ${error.message}` };
+    return { error: "Não conseguimos ativar esse ambiente agora. Tente novamente." };
   }
 
   revalidatePath("/", "layout");

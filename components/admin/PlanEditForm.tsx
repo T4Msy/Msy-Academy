@@ -21,9 +21,9 @@ export function PlanEditForm({ plan }: { plan: Plan }) {
           price_cents: Number(priceCents),
           stripe_price_id: priceId,
         });
-        setNotice({ type: "ok", text: "Plano salvo." });
+        setNotice({ type: "ok", text: "As alterações do plano foram salvas." });
       } catch (err) {
-        setNotice({ type: "error", text: err instanceof Error ? err.message : "Algo deu errado." });
+        setNotice({ type: "error", text: err instanceof Error ? err.message : "Não conseguimos salvar o plano. Tente novamente." });
       }
     });
   }

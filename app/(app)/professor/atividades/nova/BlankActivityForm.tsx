@@ -22,7 +22,7 @@ export function BlankActivityForm() {
         const id = await createBlankActivity(titulo);
         router.push(`/professor/atividades/${id}`);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Algo deu errado.");
+        setError(err instanceof Error ? err.message : "Não conseguimos criar a atividade. Tente novamente.");
       }
     });
   }

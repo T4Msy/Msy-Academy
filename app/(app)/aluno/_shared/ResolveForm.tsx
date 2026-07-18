@@ -37,7 +37,7 @@ export function ResolveForm({
         await submitAnswers(parent, answers);
         router.refresh();
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Algo deu errado.");
+        setError(err instanceof Error ? err.message : "Não conseguimos enviar suas respostas. Tente novamente.");
       }
     });
   }

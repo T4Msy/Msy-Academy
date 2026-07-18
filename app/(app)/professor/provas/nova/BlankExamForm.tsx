@@ -23,7 +23,7 @@ export function BlankExamForm() {
         const id = await createBlankExam(titulo, curso);
         router.push(`/professor/provas/${id}`);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Algo deu errado.");
+        setError(err instanceof Error ? err.message : "Não conseguimos criar a prova. Tente novamente.");
       }
     });
   }

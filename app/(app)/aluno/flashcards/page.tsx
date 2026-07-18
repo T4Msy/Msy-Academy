@@ -24,7 +24,7 @@ export default async function FlashcardsPage() {
         <div>
           <h1 className="font-display text-3xl font-extrabold tracking-[-0.6px] text-foreground">Flashcards</h1>
           <p className="mt-1 text-[13.5px] text-muted-foreground">
-            {list.length > 0 ? `${list.length} deck${list.length > 1 ? "s" : ""}` : "Gere flashcards a partir dos materiais das suas turmas."}
+            {list.length > 0 ? `${list.length} conjunto${list.length > 1 ? "s" : ""} de cartões` : "Crie cartões de estudo a partir dos materiais das suas turmas."}
           </p>
         </div>
       </div>
@@ -33,7 +33,7 @@ export default async function FlashcardsPage() {
         aiLabel="Gerar com IA"
         aiDesc="A IA monta os cartões a partir de um material já processado."
         blankLabel="Criar do zero"
-        blankDesc="Comece com um deck em branco e adicione os cartões manualmente."
+        blankDesc="Comece com um conjunto vazio e adicione os cartões como preferir."
         aiForm={<GenerateDeckForm materials={materials ?? []} />}
         blankForm={<NewDeckForm />}
       />

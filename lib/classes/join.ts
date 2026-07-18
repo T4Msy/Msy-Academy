@@ -10,7 +10,7 @@ export async function joinClassByInviteCode(inviteCode: string): Promise<{ class
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) throw new Error("Não autenticado.");
+  if (!user) throw new Error("Sua sessão terminou. Entre novamente para continuar.");
 
   const { data: classId, error } = await supabase.rpc("join_class_by_invite_code", {
     p_invite_code: code,
@@ -20,7 +20,7 @@ export async function joinClassByInviteCode(inviteCode: string): Promise<{ class
     if (error?.code === "23505") {
       throw new Error("Você já está matriculado nesta turma.");
     }
-    throw new Error("Código de convite inválido ou turma inativa.");
+    throw new Error("Este código não foi encontrado ou a turma não está mais aceitando alunos.");
   }
 
   const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", user.id);

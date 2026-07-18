@@ -90,7 +90,7 @@ function QuestionCard({
         setEditing(false);
         router.refresh();
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Algo deu errado.");
+        setError(err instanceof Error ? err.message : "Não conseguimos atualizar as questões. Tente novamente.");
       }
     });
   }
@@ -115,7 +115,7 @@ function QuestionCard({
         await actions.onMove(question.id, direction);
         router.refresh();
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Algo deu errado.");
+        setError(err instanceof Error ? err.message : "Não conseguimos atualizar as questões. Tente novamente.");
       }
     });
   }
@@ -127,7 +127,7 @@ function QuestionCard({
         await actions.onRemove(question.id);
         router.refresh();
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Algo deu errado.");
+        setError(err instanceof Error ? err.message : "Não conseguimos atualizar as questões. Tente novamente.");
       }
     });
   }

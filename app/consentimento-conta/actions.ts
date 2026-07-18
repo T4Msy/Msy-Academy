@@ -2,10 +2,10 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { safePostAuthRedirect } from "@/lib/auth/access";
 
 function safeRedirect(target: string | null | undefined): string {
-  if (target && target.startsWith("/") && !target.startsWith("//")) return target;
-  return "/";
+  return safePostAuthRedirect(target) ?? "/";
 }
 
 /**

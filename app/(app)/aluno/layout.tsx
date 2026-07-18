@@ -3,6 +3,7 @@ import { getSession, getRecentNotifications } from "@/lib/auth/session";
 import { Topbar } from "@/components/shell/Topbar";
 import { Sidebar, type SidebarSection } from "@/components/shell/Sidebar";
 import { MobileTabBar } from "@/components/shell/MobileTabBar";
+import { homeForRoles } from "@/lib/auth/access";
 import {
   IconHome,
   IconTutorIA,
@@ -55,11 +56,11 @@ const NAV: SidebarSection[] = [
 ];
 
 export default async function AlunoLayout({ children }: { children: React.ReactNode }) {
-  const { supabase, user, fullName, roles } = await getSession();
-  if (!user) redirect("/login");
+  const { supabase, user, fullName, roles, accessError } = await getSession();
+  if (!user || accessError) redirect("/acesso-indisponivel");
 
   const roleSet = new Set(roles);
-  if (!roleSet.has("ALUNO")) redirect("/professor");
+  if (!roleSet.has("ALUNO")) redirect(homeForRoles(roles) ?? "/acesso-indisponivel");
 
   const [notifications, { data: guardianConsent }] = await Promise.all([
     getRecentNotifications(),

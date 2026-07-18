@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Inter_Tight } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import { QueryProvider } from "@/components/providers/QueryProvider";
+import "katex/dist/katex.min.css";
 import "./tailwind.css";
 
 // As variáveis expõem a *fonte-fonte* (--font-inter*); os tokens de uso

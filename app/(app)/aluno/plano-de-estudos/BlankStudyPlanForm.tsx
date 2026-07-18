@@ -23,7 +23,7 @@ export function BlankStudyPlanForm() {
         const id = await createBlankStudyPlan(goal, examDate || undefined);
         router.push(`/aluno/plano-de-estudos/${id}`);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Algo deu errado.");
+        setError(err instanceof Error ? err.message : "Não conseguimos criar o plano de estudos. Tente novamente.");
       }
     });
   }

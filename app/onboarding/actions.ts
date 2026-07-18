@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
+import { homeForRoles, safePostAuthRedirect } from "@/lib/auth/access";
 
 type Role = "PROFESSOR" | "ALUNO";
 
@@ -30,11 +31,6 @@ export interface OnboardingState {
  * generic message in `next build`/`next start` — see
  * [[nextjs-server-action-error-redaction]].
  */
-function safeRedirect(target: string | null | undefined): string | null {
-  if (target && target.startsWith("/") && !target.startsWith("//")) return target;
-  return null;
-}
-
 async function origin(): Promise<string> {
   const h = await headers();
   const host = h.get("x-forwarded-host") ?? h.get("host") ?? "localhost:3000";
@@ -83,7 +79,7 @@ export async function completeOnboarding(
     .from("user_roles")
     .insert(roles.map((role) => ({ user_id: user.id, role })));
 
-  if (error) return { error: `Não foi possível salvar seu papel: ${error.message}` };
+  if (error) return { error: "Não conseguimos salvar sua escolha. Tente novamente." };
 
   let guardianConsentUrl: string | undefined;
 
@@ -118,5 +114,5 @@ export async function completeOnboarding(
   // Honor a pending destination (e.g. a class invite link) instead of the
   // default shell, so a brand-new user who clicked "/entrar/CODE" actually
   // lands back there after choosing a role.
-  redirect(safeRedirect(redirectTo) ?? (roles.includes("PROFESSOR") ? "/professor" : "/aluno"));
+  redirect(safePostAuthRedirect(redirectTo) ?? homeForRoles(roles) ?? "/acesso-indisponivel");
 }

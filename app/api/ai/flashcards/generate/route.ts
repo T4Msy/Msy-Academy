@@ -20,13 +20,13 @@ export async function POST(request: Request) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Não autenticado." }, { status: 401 });
+  if (!user) return NextResponse.json({ error: "Sua sessão terminou. Entre novamente para continuar." }, { status: 401 });
 
   let body: { materialId?: string };
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Requisição inválida." }, { status: 400 });
+    return NextResponse.json({ error: "Não conseguimos entender os dados enviados. Revise as informações e tente novamente." }, { status: 400 });
   }
 
   // Contrato único (decisão nº 9 do ADR 13): mesmo schema Zod do client
@@ -35,7 +35,7 @@ export async function POST(request: Request) {
   const schemaCheck = deckGenerationSchema.safeParse(body);
   if (!schemaCheck.success) {
     return NextResponse.json(
-      { error: schemaCheck.error.issues[0]?.message ?? "Dados inválidos." },
+      { error: schemaCheck.error.issues[0]?.message ?? "Revise as informações preenchidas e tente novamente." },
       { status: 400 },
     );
   }
@@ -57,7 +57,7 @@ export async function POST(request: Request) {
   }
 
   const { data: profile } = await supabase.from("profiles").select("tenant_id").eq("id", user.id).single();
-  if (!profile) return NextResponse.json({ error: "Perfil não encontrado." }, { status: 500 });
+  if (!profile) return NextResponse.json({ error: "Não encontramos seu perfil. Atualize a página e tente novamente." }, { status: 500 });
 
   let generated: GeneratedFlashcardDeck;
   try {
@@ -72,8 +72,7 @@ export async function POST(request: Request) {
     if (err instanceof QuotaExceededError) {
       return NextResponse.json({ error: err.message }, { status: 402 });
     }
-    const message = err instanceof Error ? err.message : String(err);
-    return NextResponse.json({ error: `Falha ao gerar os flashcards: ${message}` }, { status: 502 });
+    return NextResponse.json({ error: "Não conseguimos criar os cartões agora. Tente novamente em alguns instantes." }, { status: 502 });
   }
 
   const { data: deck, error: deckErr } = await supabase
@@ -82,14 +81,14 @@ export async function POST(request: Request) {
     .select("id")
     .single();
   if (deckErr || !deck) {
-    return NextResponse.json({ error: `Falha ao salvar o deck: ${deckErr?.message ?? "erro"}` }, { status: 500 });
+    return NextResponse.json({ error: "Os cartões foram criados, mas não conseguimos salvá-los. Tente novamente." }, { status: 500 });
   }
 
   if (generated.cards.length > 0) {
     const rows = generated.cards.map((c) => ({ deck_id: deck.id, front: c.front, back: c.back }));
     const { error: cardsErr } = await supabase.from("flashcards").insert(rows);
     if (cardsErr) {
-      return NextResponse.json({ error: `Falha ao salvar os cartões: ${cardsErr.message}` }, { status: 500 });
+      return NextResponse.json({ error: "Não conseguimos salvar os cartões. Tente novamente." }, { status: 500 });
     }
   }
 

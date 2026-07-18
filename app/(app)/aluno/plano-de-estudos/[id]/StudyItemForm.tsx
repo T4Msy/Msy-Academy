@@ -38,7 +38,7 @@ export function StudyItemForm({
       try {
         await onSubmit({ item_date: itemDate, topic: topic.trim(), item_type: itemType });
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Algo deu errado.");
+        setError(err instanceof Error ? err.message : "Não conseguimos salvar este tópico. Tente novamente.");
       }
     });
   }

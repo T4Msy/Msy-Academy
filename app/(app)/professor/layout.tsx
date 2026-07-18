@@ -3,6 +3,7 @@ import { getSession, getRecentNotifications } from "@/lib/auth/session";
 import { Topbar } from "@/components/shell/Topbar";
 import { Sidebar, type SidebarSection } from "@/components/shell/Sidebar";
 import { MobileTabBar } from "@/components/shell/MobileTabBar";
+import { homeForRoles } from "@/lib/auth/access";
 import {
   IconHome,
   IconProvas,
@@ -62,11 +63,11 @@ const NAV: SidebarSection[] = [
 ];
 
 export default async function ProfessorLayout({ children }: { children: React.ReactNode }) {
-  const { user, fullName, roles } = await getSession();
-  if (!user) redirect("/login");
+  const { user, fullName, roles, accessError } = await getSession();
+  if (!user || accessError) redirect("/acesso-indisponivel");
 
   const roleSet = new Set(roles);
-  if (!roleSet.has("PROFESSOR")) redirect("/aluno");
+  if (!roleSet.has("PROFESSOR")) redirect(homeForRoles(roles) ?? "/acesso-indisponivel");
 
   const notifications = await getRecentNotifications();
 

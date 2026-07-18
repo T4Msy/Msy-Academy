@@ -41,7 +41,7 @@ export function TutorChat({
 
         if (!res.ok || !res.body) {
           const data = await res.json().catch(() => ({}));
-          throw new Error(data?.error ?? `Erro ${res.status}`);
+          throw new Error(data?.error ?? "O tutor não conseguiu responder agora. Tente novamente.");
         }
 
         const newConvId = res.headers.get("X-Conversation-Id");
@@ -65,7 +65,7 @@ export function TutorChat({
         }
         router.refresh();
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Algo deu errado.");
+        setError(err instanceof Error ? err.message : "O tutor não conseguiu responder agora. Tente novamente.");
         setMessages((prev) => prev.slice(0, -1));
       }
     });

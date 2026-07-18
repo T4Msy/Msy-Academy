@@ -61,7 +61,7 @@ export async function POST(request: Request) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return NextResponse.json({ error: "Não autenticado." }, { status: 401 });
+    return NextResponse.json({ error: "Sua sessão terminou. Entre novamente para continuar." }, { status: 401 });
   }
 
   let rawParams: Record<string, unknown> = {};
@@ -73,14 +73,14 @@ export async function POST(request: Request) {
     const apostila = form.get("apostila");
     if (apostila instanceof File && apostila.size > 0) apostilaFile = apostila;
   } catch {
-    return NextResponse.json({ error: "Requisição inválida." }, { status: 400 });
+    return NextResponse.json({ error: "Não conseguimos entender os dados enviados. Revise as informações e tente novamente." }, { status: 400 });
   }
 
   // Contrato único (decisão nº 9 do ADR 13): mesmo schema do client valida
   // aqui antes da normalização — substitui os checks manuais por campo.
   const parsed = examGenerationSchema.safeParse(rawParams);
   if (!parsed.success) {
-    const message = parsed.error.issues[0]?.message ?? "Dados inválidos.";
+    const message = parsed.error.issues[0]?.message ?? "Revise as informações preenchidas e tente novamente.";
     return NextResponse.json({ error: message }, { status: 400 });
   }
 
@@ -93,7 +93,7 @@ export async function POST(request: Request) {
     .single();
 
   if (!profile) {
-    return NextResponse.json({ error: "Perfil não encontrado." }, { status: 500 });
+    return NextResponse.json({ error: "Não encontramos seu perfil. Atualize a página e tente novamente." }, { status: 500 });
   }
 
   const apostilaContent = params.usarapostila && apostilaFile ? await extractApostilaText(apostilaFile) : null;
@@ -111,8 +111,7 @@ export async function POST(request: Request) {
     if (err instanceof QuotaExceededError) {
       return NextResponse.json({ error: err.message }, { status: 402 });
     }
-    const message = err instanceof Error ? err.message : String(err);
-    return NextResponse.json({ error: `Falha ao gerar a prova: ${message}` }, { status: 502 });
+    return NextResponse.json({ error: "Não conseguimos criar a prova agora. Tente novamente em alguns instantes." }, { status: 502 });
   }
 
   const provider = getAIProvider();
@@ -129,7 +128,7 @@ export async function POST(request: Request) {
 
   if (rpcError || !examId) {
     return NextResponse.json(
-      { error: `Falha ao salvar a prova: ${rpcError?.message ?? "erro desconhecido"}` },
+      { error: "A prova foi criada, mas não conseguimos salvá-la. Tente novamente." },
       { status: 500 },
     );
   }

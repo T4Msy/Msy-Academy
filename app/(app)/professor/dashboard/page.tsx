@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
 import { getQueryClient } from "@/lib/query/client";
-import { classStatsQueryKey } from "@/hooks/useClassStats";
+import { classStatsQueryKey } from "@/lib/dashboard/queryKeys";
 import { getProfessorClassStats } from "@/lib/dashboard/classStats";
 import { DashboardContent } from "./DashboardContent";
 

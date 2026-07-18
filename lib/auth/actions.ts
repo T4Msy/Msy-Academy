@@ -6,6 +6,7 @@ import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { checkRateLimit } from "@/lib/ratelimit";
 import { getClientIp } from "@/lib/http/client-ip";
+import { safePostAuthRedirect } from "@/lib/auth/access";
 
 /**
  * Auth server actions, shared by the public (login/cadastro) routes and the
@@ -15,8 +16,7 @@ import { getClientIp } from "@/lib/http/client-ip";
  */
 
 function safeRedirect(target: string | null | undefined): string {
-  if (target && target.startsWith("/") && !target.startsWith("//")) return target;
-  return "/";
+  return safePostAuthRedirect(target) ?? "/";
 }
 
 async function origin(): Promise<string> {

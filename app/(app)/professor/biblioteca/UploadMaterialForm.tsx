@@ -44,7 +44,7 @@ export function UploadMaterialForm({ classes }: { classes: { id: string; name: s
         setClassId("");
         router.refresh();
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Algo deu errado.");
+        setError(err instanceof Error ? err.message : "Não conseguimos enviar o material. Tente novamente.");
       }
     });
   }

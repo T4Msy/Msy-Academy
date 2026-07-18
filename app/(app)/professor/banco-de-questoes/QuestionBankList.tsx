@@ -42,7 +42,7 @@ export function QuestionBankList({ questions, exams }: { questions: Question[]; 
         await addQuestionsToExam(examId, Array.from(selected));
         router.push(`/professor/provas/${examId}`);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Algo deu errado.");
+        setError(err instanceof Error ? err.message : "Não conseguimos atualizar o banco de questões. Tente novamente.");
       }
     });
   }

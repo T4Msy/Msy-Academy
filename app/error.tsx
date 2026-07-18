@@ -22,7 +22,7 @@ export default function GlobalError({
         <div className="state-code state-code--danger">Ops</div>
         <h1 className="state-title">Algo deu errado</h1>
         <p className="state-desc">
-          Não foi possível carregar esta página. Tente novamente — se persistir,
+          Não conseguimos carregar esta página. Tente novamente. Se o problema continuar,
           volte para o início.
         </p>
         <div className="mt-5 flex flex-wrap justify-center gap-2">

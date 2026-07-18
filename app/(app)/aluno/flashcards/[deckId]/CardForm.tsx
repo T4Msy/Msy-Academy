@@ -31,7 +31,7 @@ export function CardForm({
       try {
         await onSubmit(front, back);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Algo deu errado.");
+        setError(err instanceof Error ? err.message : "Não conseguimos salvar o cartão. Tente novamente.");
       }
     });
   }

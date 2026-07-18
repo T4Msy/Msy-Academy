@@ -38,7 +38,7 @@ function StudyItemRow({ planId, item }: { planId: string; item: StudyItem }) {
         await toggleStudyItem(item.id, planId, item.status !== "DONE");
         router.refresh();
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Algo deu errado.");
+        setError(err instanceof Error ? err.message : "Não conseguimos atualizar este tópico. Tente novamente.");
       }
     });
   }
@@ -50,7 +50,7 @@ function StudyItemRow({ planId, item }: { planId: string; item: StudyItem }) {
         await deleteStudyItem(item.id, planId);
         router.refresh();
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Algo deu errado.");
+        setError(err instanceof Error ? err.message : "Não conseguimos excluir este tópico. Tente novamente.");
       }
     });
   }

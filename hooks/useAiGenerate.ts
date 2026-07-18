@@ -32,10 +32,10 @@ export function useAiGenerate(endpoint: string, redirectTo: (id: string) => stri
         setQuotaHit(true);
         return;
       }
-      if (!res.ok) throw new Error(data?.error ?? `Erro ${res.status}`);
+      if (!res.ok) throw new Error(data?.error ?? "Não conseguimos gerar o conteúdo agora. Tente novamente.");
       router.push(redirectTo(data.id));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Algo deu errado.");
+      setError(err instanceof Error ? err.message : "Não conseguimos concluir a geração. Tente novamente.");
     }
   }
 

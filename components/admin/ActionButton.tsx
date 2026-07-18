@@ -29,7 +29,7 @@ export function ActionButton({
 
   return (
     <button type="button" className={className} disabled={pending} onClick={onClick}>
-      {pending ? (pendingLabel ?? "Aguarde…") : label}
+      {pending ? (pendingLabel ?? "Só um momento…") : label}
     </button>
   );
 }

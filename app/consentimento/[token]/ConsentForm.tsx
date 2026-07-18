@@ -17,7 +17,7 @@ export function ConsentForm({ token }: { token: string }) {
         await confirmGuardianConsent(token, name);
         setDone(true);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Algo deu errado.");
+        setError(err instanceof Error ? err.message : "Não conseguimos registrar sua resposta. Tente novamente.");
       }
     });
   }

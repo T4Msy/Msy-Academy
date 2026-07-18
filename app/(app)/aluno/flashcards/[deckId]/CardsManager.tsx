@@ -27,7 +27,7 @@ function CardRow({ deckId, card }: { deckId: string; card: CardData }) {
         await deleteCard(deckId, card.id);
         router.refresh();
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Algo deu errado.");
+        setError(err instanceof Error ? err.message : "Não conseguimos excluir o cartão. Tente novamente.");
       }
     });
   }
