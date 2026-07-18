@@ -49,7 +49,7 @@ const NAV: SidebarSection[] = [
     items: [
       { href: "/professor/turmas", label: "Turmas", icon: <IconTurma />, mobilePrimary: true },
       { href: "/professor/correcao", label: "Correção", icon: <IconCorrecao />, mobilePrimary: true },
-      { href: "/professor/correcao/escanear", label: "Escanear Gabarito", icon: <IconScan />, mobilePrimary: true },
+      { href: "/professor/correcao/escanear", label: "Escanear Gabarito", mobileLabel: "Escanear", icon: <IconScan />, mobilePrimary: true },
     ],
   },
   {
