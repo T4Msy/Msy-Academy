@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { IconChevronDown } from "./navIcons";
 
 /** mobilePrimary marks the ≤4 items MobileTabBar shows directly — the rest land under "Mais". */
-export type SidebarItem = { href: string; label: string; icon: React.ReactNode; exact?: boolean; mobilePrimary?: boolean };
+export type SidebarItem = { href: string; label: string; mobileLabel?: string; icon: React.ReactNode; exact?: boolean; mobilePrimary?: boolean };
 
 /** A section entry is either a leaf link or a group with its own sub-items (e.g. "Criar" > Nova Prova/Atividade/Plano). */
 export type SidebarEntry =

@@ -17,7 +17,7 @@ export async function getStudentDashboardStats(): Promise<StudentDashboardStats>
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) throw new Error("N\u00e3o autenticado.");
+  if (!user) throw new Error("Não autenticado.");
 
   const [{ data: submissions }, { data: studyPlans }, { data: decks }] = await Promise.all([
     supabase.from("submissions").select("id, status").eq("student_id", user.id),

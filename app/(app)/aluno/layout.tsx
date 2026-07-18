@@ -44,6 +44,7 @@ const NAV: SidebarSection[] = [
       {
         href: "/aluno/dashboard",
         label: "Meu Progresso",
+        mobileLabel: "Progresso",
         icon: <IconDashboard />,
         mobilePrimary: true,
       },

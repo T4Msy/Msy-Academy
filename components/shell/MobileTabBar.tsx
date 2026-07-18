@@ -49,7 +49,7 @@ export function MobileTabBar({ sections }: { sections: SidebarSection[] }) {
             onClick={() => setMoreOpen(false)}
           >
             <span className="tabbar-item-icon">{item.icon}</span>
-            <span>{item.label}</span>
+            <span>{item.mobileLabel ?? item.label}</span>
           </Link>
         ))}
         {restSections.length > 0 && (

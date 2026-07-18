@@ -37,7 +37,7 @@ export function DashboardContent() {
         <div className="flex flex-wrap items-center justify-between gap-3 p-5.5">
           <div>
             <h2 className="font-display text-lg font-bold tracking-[-0.2px] text-foreground">Alunos em risco</h2>
-            <p className="mt-1 text-xs leading-snug text-muted-foreground">Identificados por acerto m\u00e9dio abaixo de 50% em objetivas ou tarefas vencidas sem envio.</p>
+            <p className="mt-1 text-xs leading-snug text-muted-foreground">Identificados por acerto médio abaixo de 50% em objetivas ou tarefas vencidas sem envio.</p>
           </div>
           <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 text-sm text-muted-foreground">
             <span><b className="font-display text-2xl text-danger-text">{studentsAtRisk.length}</b> alunos</span>

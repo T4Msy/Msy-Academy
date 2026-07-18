@@ -1196,6 +1196,7 @@ select.input option { background-color: var(--bg-card); color: var(--fg); }
 .tabbar-item:hover { color: var(--fg); }
 .tabbar-item.active { color: var(--accent-text); font-weight: 700; }
 .tabbar-item.active .tabbar-item-icon { background: var(--accent-dim); transform: scale(1.04); }
+.tabbar-item > span:last-child { white-space: nowrap; line-height: 12px; }
 
 .tabbar-more-sheet {
   position: fixed;

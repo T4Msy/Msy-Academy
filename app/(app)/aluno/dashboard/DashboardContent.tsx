@@ -6,16 +6,16 @@ import { useStudentDashboardStats } from "@/hooks/useStudentDashboardStats";
 export function DashboardContent() {
   const { data, isError } = useStudentDashboardStats();
 
-  if (isError) return <p className="mt-1 text-xs leading-snug text-muted-foreground">N\u00e3o foi poss\u00edvel carregar seu progresso.</p>;
+  if (isError) return <p className="mt-1 text-xs leading-snug text-muted-foreground">Não foi possível carregar seu progresso.</p>;
   if (!data) return null;
 
   return (
     <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-3.5">
-      <MetricCard label="Tarefas conclu\u00eddas" value={data.completedAssignments} />
+      <MetricCard label="Tarefas concluídas" value={data.completedAssignments} />
       <div className="overflow-hidden rounded-lg border border-border bg-card shadow-elevated transition-colors">
         <div className="flex flex-col gap-4.5 p-5.5"><StatRing value={data.accuracyPct} label="Acerto em objetivas" size={72} strokeWidth={7} /></div>
       </div>
-      <MetricCard label="Itens de estudo conclu\u00eddos" value={`${data.completedStudyItems}/${data.totalStudyItems}`} />
+      <MetricCard label="Itens de estudo concluídos" value={`${data.completedStudyItems}/${data.totalStudyItems}`} />
       <MetricCard label="Decks de flashcards" value={data.flashcardDecks} />
     </div>
   );

@@ -9,7 +9,7 @@ export function useStudentDashboardStats() {
     queryKey: studentDashboardStatsQueryKey,
     queryFn: async () => {
       const response = await fetch("/api/aluno/dashboard");
-      if (!response.ok) throw new Error("N\u00e3o foi poss\u00edvel carregar seu progresso.");
+      if (!response.ok) throw new Error("Não foi possível carregar seu progresso.");
       return response.json();
     },
   });

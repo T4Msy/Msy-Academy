@@ -17,7 +17,7 @@ export default async function AlunoDashboardPage() {
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="font-display text-3xl font-extrabold tracking-[-0.6px] text-foreground">Meu Progresso</h1>
-          <p className="mt-1 text-[13.5px] text-muted-foreground">Sua evolu\u00e7\u00e3o, desempenho e metas.</p>
+          <p className="mt-1 text-[13.5px] text-muted-foreground">Sua evolução, desempenho e metas.</p>
         </div>
       </div>
       <HydrationBoundary state={dehydrate(queryClient)}><DashboardContent /></HydrationBoundary>
