@@ -15,6 +15,8 @@ import type { AITask, ChatMessage, GenerateStructuredResult } from "./types";
  */
 export interface AIProvider {
   readonly id: string;
+  /** Local/test providers do not consume paid AI quota or require admin usage logging. */
+  readonly metered?: boolean;
 
   generateStructured<T>(args: {
     task: AITask;

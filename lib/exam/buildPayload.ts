@@ -27,6 +27,7 @@ export function buildExamParams(raw: RawInput): ExamGenerationParams {
     pontosporquestao: int("pontos", 1),
     materia: str("materia"),
     assunto: str("assunto"),
+    serie: str("serie"),
     quantidade: int("quantidade", 10),
     nivel: (str("nivel") || "medio") as Difficulty,
     tipo: (str("tipo") || "multipla") as QuestionType,

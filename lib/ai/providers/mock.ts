@@ -1,6 +1,193 @@
 import type { AIProvider } from "../provider";
 import type { Question, QuestionType, Difficulty, AITask } from "../types";
 
+type LocalExamInput = {
+  tituloprova?: string;
+  materia?: string;
+  assunto?: string;
+  serie?: string;
+  publico?: string;
+  quantidade?: number | string;
+  tipo?: string;
+  nivel?: string;
+  apostilaContent?: string;
+  variationMode?: boolean;
+  variationAttempt?: number;
+  originalExam?: { questions?: Array<{ type?: QuestionType; statement?: string; difficulty?: Difficulty }> };
+};
+
+type LocalItem = {
+  prompt: string;
+  answer: string;
+  distractors: [string, string, string];
+  explanation: string;
+};
+
+const PLACEHOLDER_PATTERN = /questão\s+\d+\s+sobre|alternativa\s+[a-z]\s+para|explicação de exemplo|placeholder/i;
+
+function normalize(value: string) {
+  return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+}
+
+function gcd(a: number, b: number): number {
+  return b === 0 ? Math.abs(a) : gcd(b, a % b);
+}
+
+function squareRootItem(index: number, difficulty: Difficulty, variationSeed = 0): LocalItem {
+  const exactRoots = difficulty === "FACIL" ? [6, 8, 9, 10, 12] : difficulty === "DIFICIL" ? [15, 18, 20, 25, 30] : [10, 11, 12, 13, 15];
+  const root = exactRoots[(index + variationSeed) % exactRoots.length];
+  const area = root * root;
+  const radicalFactor = 5 + variationSeed;
+  const approximateBase = 7 + variationSeed;
+  const approximateRadicand = approximateBase ** 2 + 1;
+  const variants: LocalItem[] = [
+    {
+      prompt: `Qual é o valor de √${area}?`,
+      answer: String(root),
+      distractors: [String(root - 1), String(root + 1), String(root + 2)],
+      explanation: `Como ${root} × ${root} = ${area}, então √${area} = ${root}.`,
+    },
+    {
+      prompt: variationSeed
+        ? "Qual dos números abaixo possui raiz quadrada inteira?"
+        : "Qual dos números abaixo é um quadrado perfeito?",
+      answer: String(area),
+      distractors: [String(area - 2), String(area + 2), String(area + root)],
+      explanation: `${area} é quadrado perfeito porque pode ser escrito como ${root}².`,
+    },
+    {
+      prompt: `Simplifique √${radicalFactor ** 2 * 2}.`,
+      answer: `${radicalFactor}√2`,
+      distractors: [`${radicalFactor * 2}√2`, `${radicalFactor ** 2}√2`, `${radicalFactor}√${radicalFactor * 2}`],
+      explanation: `√${radicalFactor ** 2 * 2} = √(${radicalFactor ** 2} × 2) = ${radicalFactor}√2.`,
+    },
+    {
+      prompt: `Um terreno quadrado tem área de ${area} m². Quanto mede cada lado?`,
+      answer: `${root} m`,
+      distractors: [`${root - 1} m`, `${root + 1} m`, `${Math.round(area / 4)} m`],
+      explanation: `O lado de um quadrado é a raiz quadrada da área: √${area} = ${root} m.`,
+    },
+    {
+      prompt: `Compare √${area} e √${(root + 1) ** 2}.`,
+      answer: `√${area} < √${(root + 1) ** 2}`,
+      distractors: [`√${area} > √${(root + 1) ** 2}`, `√${area} = √${(root + 1) ** 2}`, "Não é possível comparar"],
+      explanation: `√${area} = ${root} e √${(root + 1) ** 2} = ${root + 1}; portanto, ${root} < ${root + 1}.`,
+    },
+    {
+      prompt: `Entre quais inteiros consecutivos está √${approximateRadicand}?`,
+      answer: `${approximateBase} e ${approximateBase + 1}`,
+      distractors: [`${approximateBase - 2} e ${approximateBase - 1}`, `${approximateBase - 1} e ${approximateBase}`, `${approximateBase + 1} e ${approximateBase + 2}`],
+      explanation: `Como ${approximateBase}² = ${approximateBase ** 2} e ${approximateBase + 1}² = ${(approximateBase + 1) ** 2}, √${approximateRadicand} está entre ${approximateBase} e ${approximateBase + 1}.`,
+    },
+  ];
+  return variants[index % variants.length];
+}
+
+function basicOperationsItem(index: number, difficulty: Difficulty, variationSeed = 0): LocalItem {
+  const factor = difficulty === "FACIL" ? 1 : difficulty === "MEDIO" ? 3 : 7;
+  const a = 12 + index * factor + variationSeed * 5;
+  const b = 4 + ((index + variationSeed) % 5);
+  const answer = a + b * 2;
+  return {
+    prompt: `Calcule ${a} + ${b} × 2, respeitando a ordem das operações.`,
+    answer: String(answer),
+    distractors: [String((a + b) * 2), String(answer - 2), String(answer + b)],
+    explanation: `Primeiro calculamos ${b} × 2 = ${b * 2}; depois, ${a} + ${b * 2} = ${answer}.`,
+  };
+}
+
+function fractionItem(index: number, variationSeed = 0): LocalItem {
+  const denominator = 4 + ((index + variationSeed) % 5);
+  const first = 1 + (index % 2);
+  const second = 1;
+  const numerator = first + second;
+  const divisor = gcd(numerator, denominator);
+  const answer = `${numerator / divisor}/${denominator / divisor}`;
+  return {
+    prompt: `Calcule ${first}/${denominator} + ${second}/${denominator} e simplifique o resultado.`,
+    answer,
+    distractors: [`${first}/${denominator + 1}`, `${numerator}/${denominator + 1}`, `${numerator + 1}/${denominator}`],
+    explanation: `Como os denominadores são iguais, somamos os numeradores: ${first} + ${second} = ${numerator}. Simplificando, obtemos ${answer}.`,
+  };
+}
+
+function percentageItem(index: number, difficulty: Difficulty, variationSeed = 0): LocalItem {
+  const rates = difficulty === "FACIL" ? [10, 20, 25, 50] : [15, 30, 35, 40];
+  const rate = rates[(index + variationSeed) % rates.length];
+  const total = 200 + (index + variationSeed) * 40;
+  const answer = (total * rate) / 100;
+  return {
+    prompt: `Quanto é ${rate}% de ${total}?`,
+    answer: String(answer),
+    distractors: [String(answer + 10), String(total - answer), String(rate + total / 100)],
+    explanation: `${rate}% de ${total} = ${rate}/100 × ${total} = ${answer}.`,
+  };
+}
+
+function equationItem(index: number, difficulty: Difficulty, variationSeed = 0): LocalItem {
+  const x = 3 + index + variationSeed;
+  const coefficient = difficulty === "FACIL" ? 1 : difficulty === "MEDIO" ? 2 : 3;
+  const constant = 4 + (index % 4);
+  const result = coefficient * x + constant;
+  const expression = coefficient === 1 ? `x + ${constant}` : `${coefficient}x + ${constant}`;
+  return {
+    prompt: `Resolva a equação ${expression} = ${result}.`,
+    answer: `x = ${x}`,
+    distractors: [`x = ${x - 1}`, `x = ${x + 1}`, `x = ${x + 2}`],
+    explanation: coefficient === 1
+      ? `Subtraindo ${constant} dos dois lados, obtemos x = ${x}.`
+      : `Subtraindo ${constant} dos dois lados, obtemos ${coefficient}x = ${coefficient * x}; dividindo por ${coefficient}, x = ${x}.`,
+  };
+}
+
+function pedagogicalFallback(index: number, materia: string, assunto: string, serie: string, variationSeed = 0): LocalItem {
+  const topic = assunto || materia;
+  const audience = serie ? ` para ${serie}` : "";
+  return {
+    prompt: variationSeed
+      ? `Em um novo contexto de aprendizagem ${index + variationSeed}, qual alternativa aplica corretamente ${topic}${audience}?`
+      : `Qual alternativa apresenta uma aplicação coerente de ${topic}${audience}?`,
+    answer: variationSeed
+      ? `Relacionar ${topic} a um caso concreto e sustentar a análise com evidências verificáveis.`
+      : `Usar o conceito de ${topic} para analisar uma situação e justificar a conclusão com evidências.`,
+    distractors: [
+      `Memorizar o nome de ${topic} sem relacioná-lo a exemplos.`,
+      `Ignorar os dados do problema e escolher uma conclusão ao acaso.`,
+      `Substituir a explicação por uma opinião sem justificativa.`,
+    ],
+    explanation: variationSeed
+      ? `A nova situação exige aplicar ${topic}, interpretar evidências e justificar a conclusão alcançada.`
+      : `Uma aplicação adequada de ${topic} relaciona o conceito a uma situação concreta e apresenta justificativa verificável.`,
+  };
+}
+
+function localItem(index: number, input: LocalExamInput, difficulty: Difficulty, variationSeed = 0): LocalItem {
+  const subject = normalize(input.materia ?? "");
+  const topic = normalize(input.assunto ?? "");
+  if (subject.includes("matemat") || ["raiz", "oper", "frac", "porcent", "equac"].some((term) => topic.includes(term))) {
+    if (topic.includes("raiz") || topic.includes("radic")) {
+      const original = normalize(input.originalExam?.questions?.[index]?.statement ?? "");
+      const objective = original.includes("quadrado perfeito") || original.includes("raiz quadrada inteira")
+        ? 1
+        : original.includes("simplifique")
+          ? 2
+          : original.includes("area")
+            ? 3
+            : original.includes("compare")
+              ? 4
+              : original.includes("inteiros consecutivos")
+                ? 5
+                : index;
+      return squareRootItem(objective, difficulty, variationSeed);
+    }
+    if (topic.includes("frac")) return fractionItem(index, variationSeed);
+    if (topic.includes("porcent")) return percentageItem(index, difficulty, variationSeed);
+    if (topic.includes("equac")) return equationItem(index, difficulty, variationSeed);
+    if (topic.includes("oper") || topic.includes("aritmet")) return basicOperationsItem(index, difficulty, variationSeed);
+  }
+  return pedagogicalFallback(index, input.materia || "a disciplina", input.assunto || "o conteúdo solicitado", input.serie || input.publico || "", variationSeed);
+}
+
 function pickTipo(tipo: string, i: number): QuestionType {
   if (tipo === "mista") {
     const cycle: QuestionType[] = ["MULTIPLA", "VF", "DISCURSIVA"];
@@ -17,40 +204,42 @@ function pickTipo(tipo: string, i: number): QuestionType {
 function buildQuestion(
   i: number,
   tipo: QuestionType,
-  materia: string,
-  assunto: string,
+  input: LocalExamInput,
   difficulty: Difficulty,
+  variationSeed = 0,
 ): Question {
-  const topic = assunto || materia || "o tema solicitado";
-  const base = `Questão ${i + 1} sobre ${topic} (${materia || "Geral"}).`;
-  const tags = assunto ? [assunto] : [];
+  const item = localItem(i, input, difficulty, variationSeed);
+  const tags = [input.materia, input.assunto, input.serie || input.publico].filter(Boolean) as string[];
 
   if (tipo === "MULTIPLA") {
-    const options = ["A", "B", "C", "D"].map((id) => ({
-      id,
-      text: `Alternativa ${id} para a questão ${i + 1}`,
-    }));
+    const texts = [item.answer, ...item.distractors];
+    const shift = (i + variationSeed) % texts.length;
+    const rotated = [...texts.slice(shift), ...texts.slice(0, shift)];
+    const options = rotated.map((text, optionIndex) => ({ id: String.fromCharCode(65 + optionIndex), text }));
+    const correctAnswer = options.find((option) => option.text === item.answer)!.id;
     return {
       type: "MULTIPLA",
-      statement: `${base} Assinale a alternativa correta.`,
+      statement: item.prompt,
       options,
-      correctAnswer: options[i % options.length].id,
-      explanation: `A alternativa correta é a ${options[i % options.length].id} (explicação de exemplo do provider mock).`,
+      correctAnswer,
+      explanation: item.explanation,
       difficulty,
       tags,
     };
   }
 
   if (tipo === "VF") {
+    const isTrue = (i + variationSeed) % 2 === 0;
+    const proposedAnswer = isTrue ? item.answer : item.distractors[0];
     return {
       type: "VF",
-      statement: `${base} A afirmação a seguir é verdadeira?`,
+      statement: `${item.prompt} Considere a resposta “${proposedAnswer}”. Essa afirmação é verdadeira?`,
       options: [
         { id: "V", text: "Verdadeiro" },
         { id: "F", text: "Falso" },
       ],
-      correctAnswer: i % 2 === 0 ? "V" : "F",
-      explanation: "Explicação de exemplo do provider mock.",
+      correctAnswer: isTrue ? "V" : "F",
+      explanation: isTrue ? item.explanation : `A afirmação é falsa. ${item.explanation}`,
       difficulty,
       tags,
     };
@@ -58,11 +247,25 @@ function buildQuestion(
 
   return {
     type: "DISCURSIVA",
-    statement: `${base} Desenvolva sua resposta com argumentos.`,
-    correctAnswer: `Resposta de referência de exemplo para a questão ${i + 1}.`,
+    statement: `${item.prompt} Apresente os cálculos ou a justificativa utilizada.`,
+    correctAnswer: item.answer,
+    explanation: item.explanation,
     difficulty,
     tags,
   };
+}
+
+function assertExamQuality(questions: Question[]): void {
+  for (const [index, question] of questions.entries()) {
+    const texts = [question.statement, question.explanation ?? "", ...(question.options?.map((option) => option.text) ?? [])];
+    if (texts.some((text) => !text.trim() || PLACEHOLDER_PATTERN.test(text))) throw new Error(`Questão local ${index + 1} contém texto inválido.`);
+    if (question.type !== "DISCURSIVA") {
+      const options = question.options ?? [];
+      const normalizedOptions = options.map((option) => normalize(option.text));
+      if (new Set(normalizedOptions).size !== normalizedOptions.length) throw new Error(`Questão local ${index + 1} contém alternativas duplicadas.`);
+      if (!options.some((option) => option.id === question.correctAnswer)) throw new Error(`Questão local ${index + 1} não possui a resposta correta nas alternativas.`);
+    }
+  }
 }
 
 /**
@@ -73,23 +276,26 @@ function buildQuestion(
  */
 export const mockProvider: AIProvider = {
   id: "mock",
+  metered: false,
 
   async generateStructured<T>({ task, input }: { task: AITask; schema: Record<string, unknown>; input: unknown }) {
     if (task === "EXAM_GEN" || task === "ACTIVITY_GEN") {
-      const p = input as {
-        tituloprova?: string;
-        materia?: string;
-        assunto?: string;
-        quantidade?: number | string;
-        tipo?: string;
-        nivel?: string;
-        apostilaContent?: string;
-      };
-      const quantidade = Number(p.quantidade) || 10;
+      const p = input as LocalExamInput;
+      const originalQuestions = p.originalExam?.questions ?? [];
+      const quantidade = p.variationMode ? originalQuestions.length : Number(p.quantidade) || 10;
       const difficulty = (p.nivel?.toUpperCase() as Difficulty) || "MEDIO";
-      const questions: Question[] = Array.from({ length: quantidade }, (_, i) =>
-        buildQuestion(i, pickTipo(p.tipo ?? "multipla", i), p.materia ?? "", p.assunto ?? "", difficulty),
-      );
+      const variationSeed = p.variationMode ? Math.max(1, p.variationAttempt ?? 1) : 0;
+      const questions: Question[] = Array.from({ length: quantidade }, (_, i) => {
+        const original = originalQuestions[i];
+        return buildQuestion(
+          i,
+          p.variationMode && original?.type ? original.type : pickTipo(p.tipo ?? "multipla", i),
+          p,
+          p.variationMode && original?.difficulty ? original.difficulty : difficulty,
+          variationSeed,
+        );
+      });
+      assertExamQuality(questions);
       const baseTitle = p.tituloprova || p.materia || (task === "EXAM_GEN" ? "Prova gerada" : "Atividade gerada");
       return {
         data: {

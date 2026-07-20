@@ -8,7 +8,11 @@ import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import { Upload } from "lucide-react";
-import { examGenerationSchema, type ExamGenerationInput } from "@/lib/exam/schemas";
+import {
+  examGenerationSchema,
+  toExamGenerationRequest,
+  type ExamGenerationInput,
+} from "@/lib/exam/schemas";
 import { AiThinking } from "@/components/AiThinking";
 import { QuotaNotice } from "@/components/ai/QuotaNotice";
 import { Badge } from "@/components/ui/badge";
@@ -119,6 +123,7 @@ export function ExamForm() {
       tituloprova: "",
       materia: "",
       assunto: "",
+      serie: "",
       publico: "medio",
       estilo: "escolar",
       observacoesprofessor: "",
@@ -204,18 +209,35 @@ export function ExamForm() {
     setErro(null);
     setQuotaHit(false);
 
+    const requestPayload = toExamGenerationRequest(values);
+    if (process.env.NODE_ENV === "development") {
+      console.info("[ExamForm] Payload de geração", {
+        ...requestPayload,
+        observacoesprofessor: requestPayload.observacoesprofessor ? "[preenchido]" : undefined,
+      });
+    }
+
     const body = new FormData();
-    body.append("dados", JSON.stringify(values));
+    body.append("dados", JSON.stringify(requestPayload));
     if (apostila) body.append("apostila", apostila);
 
     try {
       const res = await fetch("/api/ai/exams/generate", { method: "POST", body });
       const data = await res.json();
-      if (res.status === 402) {
+      if (res.status === 429 && data?.code === "AI_QUOTA_EXCEEDED") {
         setQuotaHit(true);
         return;
       }
-      if (!res.ok) throw new Error(data?.error ?? "Não conseguimos gerar a prova agora. Tente novamente.");
+      if (res.status === 400 && data?.error === "INVALID_REQUEST") {
+        const fieldErrors = data.fieldErrors as Record<string, string[] | undefined> | undefined;
+        for (const [field, messages] of Object.entries(fieldErrors ?? {})) {
+          if (messages?.[0]) {
+            form.setError(field as keyof ExamGenerationInput, { type: "server", message: messages[0] });
+          }
+        }
+        throw new Error(data.message ?? "Alguns dados da prova são inválidos.");
+      }
+      if (!res.ok) throw new Error(data?.message ?? data?.error ?? "Não conseguimos gerar a prova agora. Tente novamente.");
       router.push(`/professor/provas/${data.id}`);
     } catch (err) {
       setErro(err instanceof Error ? err.message : String(err));
@@ -352,6 +374,19 @@ export function ExamForm() {
                           ))}
                         </SelectContent>
                       </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="serie"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Ano/série (opcional)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Ex: 8º ano" {...field} />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}

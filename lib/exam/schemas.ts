@@ -10,6 +10,7 @@ export const examGenerationSchema = z.object({
   tituloprova: z.string().trim().min(1, "Informe o título da prova.").max(160, "Máximo de 160 caracteres."),
   materia: z.string().trim().min(1, "Informe a matéria.").max(120, "Máximo de 120 caracteres."),
   assunto: z.string().trim().min(1, "Informe o assunto/tema.").max(200, "Máximo de 200 caracteres."),
+  serie: z.string().trim().max(80, "Máximo de 80 caracteres.").optional(),
   publico: z.enum(["infantil", "fundamental", "medio", "graduacao", "tecnico", "concurso"]),
   estilo: z.enum(["escolar", "enem", "vestibular", "tecnico", "desafiador"]),
   observacoesprofessor: z.string().trim().max(2000, "Máximo de 2000 caracteres."),
@@ -34,3 +35,29 @@ export const examGenerationSchema = z.object({
 });
 
 export type ExamGenerationInput = z.infer<typeof examGenerationSchema>;
+
+/** Contrato HTTP: números já normalizados e campos opcionais omitidos, não vazios. */
+export const examGenerationRequestSchema = examGenerationSchema.extend({
+  curso: z.string().trim().max(120, "Máximo de 120 caracteres.").optional(),
+  serie: z.string().trim().max(80, "Máximo de 80 caracteres.").optional(),
+  observacoesprofessor: z.string().trim().max(2000, "Máximo de 2000 caracteres.").optional(),
+  quantidade: z.number().int("Use um número inteiro.").min(1, "Entre 1 e 50 questões.").max(50, "Entre 1 e 50 questões."),
+  pontos: z.number().min(0, "O valor não pode ser negativo.").max(100, "Máximo de 100 pontos."),
+});
+
+export type ExamGenerationRequest = z.infer<typeof examGenerationRequestSchema>;
+
+export function toExamGenerationRequest(values: ExamGenerationInput): ExamGenerationRequest {
+  const { curso, serie, observacoesprofessor, quantidade, pontos, ...required } = values;
+  const cleanCourse = curso.trim();
+  const cleanGrade = serie?.trim();
+  const cleanObservations = observacoesprofessor.trim();
+  return {
+    ...required,
+    ...(cleanCourse ? { curso: cleanCourse } : {}),
+    ...(cleanGrade ? { serie: cleanGrade } : {}),
+    ...(cleanObservations ? { observacoesprofessor: cleanObservations } : {}),
+    quantidade: Number(quantidade),
+    pontos: Number(pontos.replace(",", ".")),
+  };
+}

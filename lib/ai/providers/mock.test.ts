@@ -3,6 +3,107 @@ import { mockProvider } from "./mock";
 import type { GeneratedExam, GeneratedFlashcardDeck, GradingSuggestion } from "../types";
 
 describe("mockProvider.generateStructured", () => {
+  it("generates realistic square-root questions without placeholders", async () => {
+    const { data } = await mockProvider.generateStructured<GeneratedExam>({
+      task: "EXAM_GEN",
+      schema: {},
+      input: {
+        materia: "Matemática",
+        assunto: "raiz quadrada",
+        serie: "8º ano",
+        quantidade: 6,
+        tipo: "multipla",
+        nivel: "medio",
+      },
+    });
+
+    expect(data.questions).toHaveLength(6);
+    expect(data.questions[0]).toMatchObject({
+      statement: "Qual é o valor de √100?",
+      difficulty: "MEDIO",
+      explanation: "Como 10 × 10 = 100, então √100 = 10.",
+      tags: ["Matemática", "raiz quadrada", "8º ano"],
+    });
+
+    for (const question of data.questions) {
+      const allText = [
+        question.statement,
+        question.explanation,
+        ...(question.options?.map((option) => option.text) ?? []),
+      ].join(" ");
+      expect(allText).not.toMatch(/Questão \d+ sobre|Alternativa [A-Z] para|explicação de exemplo|placeholder/i);
+      expect(new Set(question.options?.map((option) => option.text)).size).toBe(4);
+      expect(question.options?.map((option) => option.id)).toContain(question.correctAnswer);
+      expect(question.explanation?.length).toBeGreaterThan(15);
+    }
+  });
+
+  it.each([
+    ["operações básicas", /primeiro calculamos/i],
+    ["frações", /denominadores/i],
+    ["porcentagem", /100/],
+    ["equações simples", /x =/],
+  ])("generates pedagogical Mathematics content for %s", async (assunto, expected) => {
+    const { data } = await mockProvider.generateStructured<GeneratedExam>({
+      task: "EXAM_GEN",
+      schema: {},
+      input: { materia: "Matemática", assunto, quantidade: 2, tipo: "multipla", nivel: "facil" },
+    });
+    expect(data.questions).toHaveLength(2);
+    expect(data.questions.map((question) => question.explanation).join(" ")).toMatch(expected);
+  });
+
+  it("is deterministic and does not require external services", async () => {
+    const args = {
+      task: "EXAM_GEN" as const,
+      schema: {},
+      input: { materia: "Matemática", assunto: "raiz quadrada", quantidade: 3, tipo: "mista", nivel: "dificil" },
+    };
+    const first = await mockProvider.generateStructured<GeneratedExam>(args);
+    const second = await mockProvider.generateStructured<GeneratedExam>(args);
+    expect(first.data).toEqual(second.data);
+    expect(mockProvider.metered).toBe(false);
+  });
+
+  it("creates a genuinely different but structurally equivalent variation", async () => {
+    const input = {
+      tituloprova: "Raízes",
+      materia: "Matemática",
+      assunto: "raiz quadrada",
+      serie: "8º ano",
+      quantidade: 3,
+      tipo: "multipla",
+      nivel: "medio",
+    };
+    const original = await mockProvider.generateStructured<GeneratedExam>({
+      task: "EXAM_GEN",
+      schema: {},
+      input,
+    });
+    const variation = await mockProvider.generateStructured<GeneratedExam>({
+      task: "EXAM_GEN",
+      schema: {},
+      input: {
+        ...input,
+        variationMode: true,
+        variationAttempt: 1,
+        originalExam: { questions: original.data.questions },
+      },
+    });
+
+    expect(variation.data.questions).toHaveLength(original.data.questions.length);
+    variation.data.questions.forEach((question, index) => {
+      const source = original.data.questions[index];
+      expect(question.type).toBe(source.type);
+      expect(question.difficulty).toBe(source.difficulty);
+      expect(question.statement).not.toBe(source.statement);
+      expect(question.options?.map((option) => option.text)).not.toEqual(
+        source.options?.map((option) => option.text),
+      );
+      expect(question.explanation).not.toBe(source.explanation);
+    });
+  });
+
   it("generates the requested number of exam questions, cycling types for 'mista'", async () => {
     const { data } = await mockProvider.generateStructured<GeneratedExam>({
       task: "EXAM_GEN",

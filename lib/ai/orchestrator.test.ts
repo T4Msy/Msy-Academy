@@ -55,6 +55,18 @@ afterEach(() => {
 });
 
 describe("generateStructured", () => {
+  it("runs an unmetered local provider without quota or admin logging", async () => {
+    getAIProviderMock.mockReturnValue(makeFakeProvider({ metered: false }));
+
+    await expect(
+      generateStructured({ task: "EXAM_GEN", schema: {}, input: {}, tenantId: "t1", userId: "u1" }),
+    ).resolves.toEqual({ ok: true });
+
+    expect(checkQuotaMock).not.toHaveBeenCalled();
+    expect(insertMock).not.toHaveBeenCalled();
+    expect(rpcMock).not.toHaveBeenCalled();
+  });
+
   it("throws QuotaExceededError and never calls the provider when quota is exceeded", async () => {
     checkQuotaMock.mockRejectedValueOnce(new QuotaExceededError());
     const provider = makeFakeProvider();

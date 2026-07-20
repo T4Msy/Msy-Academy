@@ -10,6 +10,8 @@ import {
   removeLinkedQuestion,
 } from "@/lib/questions/linkedQuestions";
 import type { NewQuestionInput } from "@/lib/questions/types";
+import { getAIProvider } from "@/lib/ai/registry";
+import { generatedExamVariationSchema, nextVariationTitle } from "@/lib/exam/variation";
 
 /**
  * Lifecycle + editing actions for a generated exam (Fase 1). All writes go
@@ -58,15 +60,25 @@ export async function createBlankExam(title: string, course?: string): Promise<s
   if (!clean) throw new Error("Informe um título para a prova.");
 
   const { supabase, user } = await requireUser();
-  const { data: profile } = await supabase.from("profiles").select("tenant_id").eq("id", user.id).single();
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("tenant_id")
+    .eq("id", user.id)
+    .single();
   if (!profile) throw new Error("Perfil não encontrado.");
 
   const { data, error } = await supabase
     .from("exams")
-    .insert({ tenant_id: profile.tenant_id, author_id: user.id, title: clean, course: course?.trim() || null })
+    .insert({
+      tenant_id: profile.tenant_id,
+      author_id: user.id,
+      title: clean,
+      course: course?.trim() || null,
+    })
     .select("id")
     .single();
-  if (error || !data) throw new Error(`Não foi possível criar a prova: ${error?.message ?? "erro"}`);
+  if (error || !data)
+    throw new Error(`Não foi possível criar a prova: ${error?.message ?? "erro"}`);
 
   revalidatePath("/professor/provas");
   return data.id;
@@ -75,7 +87,11 @@ export async function createBlankExam(title: string, course?: string): Promise<s
 /** Cria uma questão nova e anexa ao final da prova. */
 export async function addQuestionToExam(examId: string, input: NewQuestionInput): Promise<void> {
   const { supabase, user } = await requireUser();
-  const { data: profile } = await supabase.from("profiles").select("tenant_id").eq("id", user.id).single();
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("tenant_id")
+    .eq("id", user.id)
+    .single();
   if (!profile) throw new Error("Perfil não encontrado.");
 
   await addLinkedQuestion(supabase, LINK_CONFIG(examId), input, profile.tenant_id, user.id);
@@ -89,68 +105,72 @@ export async function removeQuestionFromExam(examId: string, questionId: string)
   revalidatePath(`/professor/provas/${examId}`);
 }
 
-/**
- * RF-P08 — gera uma "versão B": nova linha em `exams` (version+1), reaproveita
- * as MESMAS `questions` (nenhuma duplicada), mas embaralha a ordem das
- * `exam_questions.position`. Embaralhar a ordem das alternativas de múltipla
- * escolha acontece no render, não no dado — ver QuestionsEditor.
- */
-export async function duplicateExamVersion(examId: string): Promise<string> {
-  const { supabase, user } = await requireUser();
+/** Persiste somente uma prévia confirmada, sempre como outra prova e sem copiar vínculos. */
+export async function saveExamVariation(
+  examId: string,
+  variation: unknown,
+): Promise<{ id?: string; error?: string }> {
+  const parsed = generatedExamVariationSchema.safeParse(variation);
+  if (!parsed.success)
+    return { error: "A prévia da variação é inválida. Gere novamente antes de salvar." };
 
-  const { data: exam, error: examErr } = await supabase
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Sua sessão terminou. Entre novamente para continuar." };
+
+  const { data: exam, error: examError } = await supabase
     .from("exams")
-    .select("title, course, style, subject_id, grade_level_id, generation_params, include_answer_key, ai_provider, ai_model, version")
+    .select("title, course, style, generation_params, include_answer_key, author_id")
     .eq("id", examId)
     .single();
-  if (examErr || !exam) throw new Error("Prova não encontrada.");
+  if (examError || !exam) {
+    console.error("Failed to load original exam while saving variation", examError);
+    return { error: "Prova original não encontrada." };
+  }
+  if (exam.author_id !== user.id)
+    return { error: "Você não tem permissão para salvar uma variação desta prova." };
 
-  const { data: eqs, error: eqErr } = await supabase
-    .from("exam_questions")
-    .select("question_id, points")
-    .eq("exam_id", examId);
-  if (eqErr || !eqs || eqs.length === 0) throw new Error("Prova sem questões para duplicar.");
-
-  const { data: profile } = await supabase.from("profiles").select("tenant_id").eq("id", user.id).single();
-  if (!profile) throw new Error("Perfil não encontrado.");
-
-  const { data: newExam, error: insertErr } = await supabase
+  const { data: siblings, error: siblingsError } = await supabase
     .from("exams")
-    .insert({
-      tenant_id: profile.tenant_id,
-      author_id: user.id,
-      title: `${exam.title} (Versão B)`,
-      course: exam.course,
-      style: exam.style,
-      subject_id: exam.subject_id,
-      grade_level_id: exam.grade_level_id,
-      generation_params: exam.generation_params,
-      include_answer_key: exam.include_answer_key,
-      status: "READY",
-      ai_provider: exam.ai_provider,
-      ai_model: exam.ai_model,
-      version: (exam.version ?? 1) + 1,
-    })
-    .select("id")
-    .single();
-  if (insertErr || !newExam) throw new Error(`Não foi possível duplicar: ${insertErr?.message ?? "erro"}`);
+    .select("title")
+    .eq("author_id", user.id);
+  if (siblingsError) {
+    console.error("Failed to list exam variation titles", siblingsError);
+    return { error: "Não conseguimos preparar o título da nova prova. Tente novamente." };
+  }
 
-  const shuffled = [...eqs].sort(() => Math.random() - 0.5);
-  const rows = shuffled.map((eq, i) => ({
-    exam_id: newExam.id,
-    question_id: eq.question_id,
-    position: i + 1,
-    points: eq.points,
-  }));
-  const { error: linkErr } = await supabase.from("exam_questions").insert(rows);
-  if (linkErr) throw new Error(`Não foi possível copiar as questões: ${linkErr.message}`);
+  const title = nextVariationTitle(
+    exam.title,
+    (siblings ?? []).map((item) => item.title),
+  );
+  const provider = getAIProvider();
+  const { data: newExamId, error: rpcError } = await supabase.rpc("create_exam_with_questions", {
+    p_title: title,
+    p_course: exam.course,
+    p_style: exam.style,
+    p_generation_params: { ...((exam.generation_params as object) ?? {}), variationOf: examId },
+    p_include_answer_key: exam.include_answer_key,
+    p_ai_provider: provider.id,
+    p_questions: parsed.data.questions,
+  });
+
+  if (rpcError || !newExamId) {
+    console.error("Failed to save exam variation", rpcError);
+    return { error: "Não conseguimos salvar a nova prova. A prova original não foi alterada." };
+  }
 
   revalidatePath("/professor/provas");
-  return newExam.id;
+  return { id: newExamId };
 }
 
 /** Swap a question's position with its neighbor within the same exam. */
-export async function moveQuestion(examId: string, questionId: string, direction: "up" | "down"): Promise<void> {
+export async function moveQuestion(
+  examId: string,
+  questionId: string,
+  direction: "up" | "down",
+): Promise<void> {
   const { supabase } = await requireUser();
   await moveLinkedQuestion(supabase, LINK_CONFIG(examId), questionId, direction);
   revalidatePath(`/professor/provas/${examId}`);
@@ -161,7 +181,10 @@ export async function moveQuestion(examId: string, questionId: string, direction
  * tipo/dificuldade da questão original) and overwrite it in place — o
  * question_id não muda, então a posição na prova é preservada.
  */
-export async function regenerateQuestion(examId: string, questionId: string): Promise<{ error?: string }> {
+export async function regenerateQuestion(
+  examId: string,
+  questionId: string,
+): Promise<{ error?: string }> {
   const { supabase, user } = await requireUser();
 
   const { data: exam, error: examErr } = await supabase

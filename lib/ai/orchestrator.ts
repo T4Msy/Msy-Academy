@@ -11,6 +11,13 @@ interface OrchestrateArgs {
   userId: string;
 }
 
+export class AIProviderError extends Error {
+  constructor(providerId: string, cause: unknown) {
+    super(`Falha no provider de IA "${providerId}".`, { cause });
+    this.name = "AIProviderError";
+  }
+}
+
 /** Logs an ai_interactions row and increments the tenant's ai_usage for the current period (YYYY-MM). Server-only (admin client) — mirrors the write discipline of both tables (no client insert policy on either). */
 export async function logAIUsage(args: {
   tenantId: string;
@@ -52,30 +59,37 @@ export async function logAIUsage(args: {
  * logs usage via `logAIUsage`. Fallback/cache land in later phases.
  */
 export async function generateStructured<T>(args: OrchestrateArgs): Promise<T> {
-  await checkQuota(args.tenantId);
-
   const provider = getAIProvider();
+  if (provider.metered !== false) await checkQuota(args.tenantId);
   const startedAt = Date.now();
 
-  const { data, tokensIn, tokensOut } = await provider.generateStructured<T>({
-    task: args.task,
-    schema: args.schema,
-    input: args.input,
-  });
+  let result;
+  try {
+    result = await provider.generateStructured<T>({
+      task: args.task,
+      schema: args.schema,
+      input: args.input,
+    });
+  } catch (cause) {
+    throw new AIProviderError(provider.id, cause);
+  }
+  const { data, tokensIn, tokensOut } = result;
 
   const latencyMs = Date.now() - startedAt;
 
-  await logAIUsage({
-    tenantId: args.tenantId,
-    userId: args.userId,
-    feature: args.task,
-    provider: provider.id,
-    input: args.input,
-    output: data,
-    tokensIn,
-    tokensOut,
-    latencyMs,
-  });
+  if (provider.metered !== false) {
+    await logAIUsage({
+      tenantId: args.tenantId,
+      userId: args.userId,
+      feature: args.task,
+      provider: provider.id,
+      input: args.input,
+      output: data,
+      tokensIn,
+      tokensOut,
+      latencyMs,
+    });
+  }
 
   return data;
 }

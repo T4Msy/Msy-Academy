@@ -18,11 +18,13 @@ describe("buildExamParams", () => {
     const params = buildExamParams({
       curso: "  Ensino Médio  ",
       materia: " Biologia ",
+      serie: " 8º ano ",
       quantidade: "15",
       pontos: "2",
     });
     expect(params.curso).toBe("Ensino Médio");
     expect(params.materia).toBe("Biologia");
+    expect(params.serie).toBe("8º ano");
     expect(params.quantidade).toBe(15);
     expect(params.pontosporquestao).toBe(2);
   });

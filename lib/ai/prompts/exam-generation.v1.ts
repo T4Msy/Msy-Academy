@@ -13,6 +13,13 @@ no conteúdo desse material — ele é a apostila/material de referência que o
 professor enviou especificamente para isso; não ignore nem trate como
 contexto secundário. Responda estritamente no formato JSON definido pelo
 schema fornecido — sem nenhum texto fora do JSON.
+
+Quando a entrada contiver "variationMode": true, gere uma variação equivalente
+da prova enviada em "originalExam": preserve tema, disciplina, nível, estilo,
+distribuição de dificuldade, tipos e quantidade de questões. Cada questão nova
+deve avaliar a mesma habilidade da questão original na posição correspondente,
+mas usar enunciados, contextos, valores e alternativas diferentes. Não copie
+questões literalmente e não inclua comentários sobre a comparação no resultado.
 `.trim();
 
 export const EXAM_GENERATION_SCHEMA_V1 = {

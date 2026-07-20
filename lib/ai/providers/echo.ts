@@ -16,10 +16,37 @@ import type { AITask, Question, Difficulty } from "../types";
  */
 export const echoProvider: AIProvider = {
   id: "echo",
+  metered: false,
 
   async generateStructured<T>({ task, input }: { task: AITask; schema: Record<string, unknown>; input: unknown }) {
     if (task === "EXAM_GEN" || task === "ACTIVITY_GEN") {
-      const p = input as { tituloprova?: string; materia?: string; assunto?: string; quantidade?: number | string; nivel?: string };
+      const p = input as {
+        tituloprova?: string;
+        materia?: string;
+        assunto?: string;
+        quantidade?: number | string;
+        nivel?: string;
+        variationMode?: boolean;
+        variationAttempt?: number;
+        originalExam?: { questions?: Question[] };
+      };
+      if (p.variationMode && p.originalExam?.questions?.length) {
+        const attempt = Math.max(1, p.variationAttempt ?? 1);
+        const questions = p.originalExam.questions.map((question, index) => ({
+          ...question,
+          statement: `[echo] Variação ${attempt}.${index + 1}: aplique a mesma habilidade em um novo contexto.`,
+          options: question.options?.map((option, optionIndex) => ({
+            ...option,
+            text: `[echo] Alternativa reformulada ${attempt}.${index + 1}.${optionIndex + 1}`,
+          })),
+          explanation: `[echo] Nova justificativa equivalente para a questão ${index + 1}.`,
+        }));
+        return {
+          data: { title: `${p.tituloprova ?? "Prova"} — Variação`, questions } as unknown as T,
+          tokensIn: 0,
+          tokensOut: 0,
+        };
+      }
       const quantidade = Number(p.quantidade) || 5;
       const difficulty = (p.nivel?.toUpperCase() as Difficulty) || "MEDIO";
       const topic = p.assunto || p.materia || "conteúdo geral";

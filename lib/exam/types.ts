@@ -20,6 +20,7 @@ export interface ExamGenerationParams {
   pontosporquestao: number;
   materia: string;
   assunto: string;
+  serie: string;
   quantidade: number;
   nivel: Difficulty;
   tipo: QuestionType;
