@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { ChevronRight, ClipboardList, MessageCircleMore, Target, Users } from "lucide-react";
+import { ChevronRight, ClipboardList, Gamepad2, MessageCircleMore, Target, Users } from "lucide-react";
 import { getSession } from "@/lib/auth/session";
 
 export const dynamic = "force-dynamic";
@@ -30,6 +30,12 @@ const QUICK_ACTIONS = [
     title: "Fazer simulado",
     desc: "Pratique por matéria e nível de dificuldade.",
     icon: Target,
+  },
+  {
+    href: "/aluno/estudo-animado",
+    title: "Estudo Animado",
+    desc: "Jogue missões curtas, ganhe pontos e bata seus recordes.",
+    icon: Gamepad2,
   },
 ];
 

@@ -18,6 +18,7 @@ import {
   Copy,
   EllipsisVertical,
   FileText,
+  Gamepad2,
   House,
   Layers,
   MessageCircle,
@@ -86,6 +87,10 @@ export function IconPlanoDeEstudos() {
 
 export function IconFlashcards() {
   return <Copy {...ICON_PROPS} />;
+}
+
+export function IconEstudoAnimado() {
+  return <Gamepad2 {...ICON_PROPS} />;
 }
 
 export function IconUsuarios() {

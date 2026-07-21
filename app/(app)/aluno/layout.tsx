@@ -12,6 +12,7 @@ import {
   IconSimulados,
   IconPlanoDeEstudos,
   IconFlashcards,
+  IconEstudoAnimado,
   IconDashboard,
   IconConfiguracoes,
 } from "@/components/shell/navIcons";
@@ -36,6 +37,7 @@ const NAV: SidebarSection[] = [
     items: [
       { href: "/aluno/plano-de-estudos", label: "Plano de Estudos", icon: <IconPlanoDeEstudos /> },
       { href: "/aluno/flashcards", label: "Flashcards", icon: <IconFlashcards /> },
+      { href: "/aluno/estudo-animado", label: "Estudo Animado", icon: <IconEstudoAnimado /> },
     ],
   },
   {
