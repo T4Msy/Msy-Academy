@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { EmptyState } from "@/components/EmptyState";
+import { ExamCardActions } from "./ExamCardActions";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Minhas Provas" };
@@ -57,7 +58,8 @@ export default async function ProvasPage() {
       ) : (
         <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-3.5">
           {list.map((exam) => (
-            <Link key={exam.id} href={`/professor/provas/${exam.id}`} className="flex flex-col gap-2.5 rounded-md border border-border bg-card p-4.5 transition-all hover:-translate-y-0.5 hover:border-border-hover hover:bg-card-2">
+            <div key={exam.id} className="flex flex-col gap-2.5 rounded-md border border-border bg-card p-4.5 transition-all hover:-translate-y-0.5 hover:border-border-hover hover:bg-card-2">
+              <Link href={`/professor/provas/${exam.id}`} className="flex flex-1 flex-col gap-2.5">
               <div className="font-display text-base font-bold tracking-[-0.2px] text-foreground">{exam.title || "Prova sem título"}</div>
               <div className="mt-0.5 flex flex-wrap gap-1.5">
                 {exam.course && <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">{exam.course}</span>}
@@ -65,11 +67,15 @@ export default async function ProvasPage() {
                 {exam.version > 1 && <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">Versão {exam.version}</span>}
                 {exam.include_answer_key && <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">Com gabarito</span>}
               </div>
+              </Link>
               <div className="mt-auto flex items-center justify-between gap-2.5 pt-2 text-xs text-subtle">
                 <span>{exam.ai_provider ?? "IA"}</span>
-                <span>{formatDate(exam.created_at)}</span>
+                <div className="flex items-center gap-2">
+                  <span>{formatDate(exam.created_at)}</span>
+                  <ExamCardActions examId={exam.id} examTitle={exam.title || "Prova sem título"} />
+                </div>
               </div>
-            </Link>
+            </div>
           ))}
         </div>
       )}
