@@ -77,6 +77,10 @@ REQUISITOS INEGOCIÁVEIS:
 - ${countInstruction}
 - Cada questão deve avaliar diretamente "${topic}" dentro de "${subject}". Não use fatos ou perguntas de outra disciplina/tema.
 - Crie questões originais, específicas e adequadas ao nível informado. Em objetivas, use alternativas plausíveis e exatamente uma resposta correta.
+- Avalie uma habilidade ou conhecimento verificável em cada questão (conceito, interpretação, cálculo, causa e consequência, comparação ou aplicação), e não opiniões vagas nem perguntas que possam ser respondidas por senso comum.
+- Contextualize quando fizer sentido, mas inclua no enunciado todos os fatos necessários para respondê-lo. As alternativas devem representar erros de aprendizagem plausíveis, não opções aleatórias.
+- Quando houver um contexto narrativo, histórico ou investigativo, apresente-o naturalmente como parte do enunciado: não use expressões como "cenário ficcional", não revele a habilidade avaliada e não explique ao aluno por que a pergunta foi feita.
+- Nesses contextos, avalie a leitura do contexto, as motivações, as consequências e as evidências apresentadas; não peça instruções, planos ou táticas para praticar violência ou outros danos.
 - Nunca use placeholders, frases genéricas, nem mencione o provider.
 
 Contexto completo do professor:
