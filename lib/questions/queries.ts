@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import type { Difficulty, QuestionType } from "./types";
+import { normalizeQuestionTags } from "./tags";
 
 type Supabase = Awaited<ReturnType<typeof createClient>>;
 
@@ -8,6 +9,7 @@ export interface QuestionBankFilters {
   difficulty?: Difficulty;
   search?: string;
   bnccCodes?: string[];
+  tags?: string[];
 }
 
 export interface QuestionBankRow {
@@ -34,6 +36,7 @@ export async function listQuestionBank(
     p_difficulty: filters.difficulty ?? null,
     p_search: cleanSearch(filters.search),
     p_bncc_codes: filters.bnccCodes ?? [],
+    p_tags: normalizeQuestionTags(filters.tags) ?? [],
   });
 
   if (error) throw new Error(`Nao foi possivel consultar o banco de questoes: ${error.message}`);

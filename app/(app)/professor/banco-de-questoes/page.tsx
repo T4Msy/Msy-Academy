@@ -4,6 +4,7 @@ import { QuestionBankList } from "./QuestionBankList";
 import { NewQuestionPanel } from "./NewQuestionPanel";
 import { EmptyState } from "@/components/EmptyState";
 import { parseBnccCodesParam } from "@/lib/questions/bncc";
+import { parseTagsParam } from "@/lib/questions/tags";
 import { listQuestionBank } from "@/lib/questions/queries";
 import type { Difficulty, QuestionType } from "@/lib/questions/types";
 
@@ -24,9 +25,9 @@ export const metadata: Metadata = { title: "Banco de Questões" };
 export default async function BancoDeQuestoesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tipo?: string; dificuldade?: string; busca?: string; bncc?: string }>;
+  searchParams: Promise<{ tipo?: string; dificuldade?: string; busca?: string; bncc?: string; tags?: string }>;
 }) {
-  const { tipo, dificuldade, busca, bncc } = await searchParams;
+  const { tipo, dificuldade, busca, bncc, tags } = await searchParams;
   const supabase = await createClient();
 
   const [questions, { data: exams }] = await Promise.all([
@@ -35,6 +36,7 @@ export default async function BancoDeQuestoesPage({
       difficulty: parseDifficulty(dificuldade),
       search: busca,
       bnccCodes: parseBnccCodesParam(bncc),
+      tags: parseTagsParam(tags),
     }),
     supabase
       .from("exams")
@@ -67,6 +69,8 @@ export default async function BancoDeQuestoesPage({
             <label className="block text-sm font-semibold text-foreground" htmlFor="busca">Buscar</label>
             <input className="w-full appearance-none rounded-sm border border-border bg-[rgba(var(--overlay-rgb),0.04)] px-3 py-2.5 text-md text-foreground outline-none transition-colors focus:border-brand-border focus:ring-[3px] focus:ring-brand-glow" id="busca" name="busca" defaultValue={busca ?? ""} placeholder="Palavra no enunciado" />
           </div>
+          <div className="flex min-w-40 flex-col gap-1.5"><label className="text-sm font-semibold text-foreground" htmlFor="tags">Tags (qualquer)</label><input id="tags" name="tags" defaultValue={tags ?? ""} placeholder="DNA, revisão" className="w-full rounded-sm border border-border bg-card px-3 py-2.5 text-md" /></div>
+          <div className="flex min-w-40 flex-col gap-1.5"><label className="text-sm font-semibold text-foreground" htmlFor="bncc">BNCC</label><input id="bncc" name="bncc" defaultValue={bncc ?? ""} placeholder="EF06MA07" className="w-full rounded-sm border border-border bg-card px-3 py-2.5 text-md uppercase" /></div>
           <div className="flex min-w-40 flex-col gap-1.5">
             <label className="block text-sm font-semibold text-foreground" htmlFor="tipo">Tipo</label>
             <select className="w-full appearance-none rounded-sm border border-border bg-[rgba(var(--overlay-rgb),0.04)] px-3 py-2.5 text-md text-foreground outline-none transition-colors focus:border-brand-border focus:ring-[3px] focus:ring-brand-glow" id="tipo" name="tipo" defaultValue={tipo ?? ""}>

@@ -14,6 +14,7 @@ export function QuestionBankItem({
   type,
   difficulty,
   tags,
+  bnccCodes,
   selected,
   onToggleSelect,
 }: {
@@ -22,6 +23,7 @@ export function QuestionBankItem({
   type: string;
   difficulty: string;
   tags: string[];
+  bnccCodes: string[];
   selected: boolean;
   onToggleSelect: (id: string) => void;
 }) {
@@ -50,9 +52,11 @@ export function QuestionBankItem({
           <div className="mb-2 mt-0.5 flex flex-wrap gap-1.5">
             <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">{TYPE_LABEL[type] ?? type}</span>
             <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">{DIFFICULTY_LABEL[difficulty] ?? difficulty}</span>
-            {tags.map((t) => (
+            {tags.slice(0, 3).map((t) => (
               <span key={t} className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">{t}</span>
             ))}
+            {tags.length > 3 && <span className="text-xs text-muted-foreground">+{tags.length - 3}</span>}
+            {bnccCodes.length > 0 && <span className="text-xs text-muted-foreground">BNCC: {bnccCodes.join(", ")}</span>}
           </div>
           <p className="mb-2 text-[14.5px] leading-relaxed text-foreground">{statement}</p>
           <div className="flex flex-wrap justify-start gap-2">

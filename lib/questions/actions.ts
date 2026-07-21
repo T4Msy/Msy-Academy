@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { normalizeBnccCodes } from "./bncc";
+import { normalizeQuestionTags } from "./tags";
 import type { NewQuestionInput } from "./types";
 
 /**
@@ -35,6 +36,7 @@ async function setQuestionBnccCodes(
 export async function createQuestion(input: NewQuestionInput): Promise<string> {
   const { supabase, user } = await requireUser();
   const bnccCodes = normalizeBnccCodes(input.bnccCodes);
+  const tags = normalizeQuestionTags(input.tags) ?? [];
 
   const { data: profile } = await supabase.from("profiles").select("tenant_id").eq("id", user.id).single();
   if (!profile) throw new Error("Perfil nao encontrado.");
@@ -50,7 +52,7 @@ export async function createQuestion(input: NewQuestionInput): Promise<string> {
       options: input.options,
       correct_answer: input.correctAnswer,
       explanation: input.explanation ?? null,
-      tags: input.tags ?? [],
+      tags,
     })
     .select("id")
     .single();
@@ -71,17 +73,20 @@ export async function updateQuestion(
     options?: { id: string; text: string }[] | null;
     correctAnswer?: string | string[];
     explanation?: string | null;
+    tags?: string[];
     bnccCodes?: string[];
   },
 ): Promise<void> {
   const { supabase } = await requireUser();
   const bnccCodes = normalizeBnccCodes(patch.bnccCodes);
+  const tags = normalizeQuestionTags(patch.tags);
 
   const update: Record<string, unknown> = {};
   if (patch.statement !== undefined) update.statement = patch.statement;
   if (patch.options !== undefined) update.options = patch.options;
   if (patch.correctAnswer !== undefined) update.correct_answer = patch.correctAnswer;
   if (patch.explanation !== undefined) update.explanation = patch.explanation;
+  if (tags !== undefined) update.tags = tags;
 
   if (Object.keys(update).length > 0) {
     const { error } = await supabase.from("questions").update(update).eq("id", questionId);

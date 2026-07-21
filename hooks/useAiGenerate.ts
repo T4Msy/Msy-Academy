@@ -27,12 +27,14 @@ export function useAiGenerate(endpoint: string, redirectTo: (id: string) => stri
           };
     try {
       const res = await fetch(endpoint, init);
-      const data = await res.json();
+      const isJson = res.headers.get("content-type")?.includes("application/json");
+      const data = isJson ? await res.json().catch(() => null) : null;
       if (res.status === 402) {
         setQuotaHit(true);
         return;
       }
       if (!res.ok) throw new Error(data?.error ?? "Não conseguimos gerar o conteúdo agora. Tente novamente.");
+      if (!data?.id) throw new Error("Resposta inválida do servidor. Tente novamente.");
       router.push(redirectTo(data.id));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Não conseguimos concluir a geração. Tente novamente.");

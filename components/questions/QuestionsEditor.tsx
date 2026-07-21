@@ -8,6 +8,7 @@ import { AiThinking } from "@/components/AiThinking";
 import { EmptyState } from "@/components/EmptyState";
 import { InlineDeleteConfirm } from "@/components/InlineDeleteConfirm";
 import { QuestionForm } from "./QuestionForm";
+import { QuestionMetadataFields } from "./QuestionMetadataFields";
 
 const DIFFICULTY_LABEL: Record<QuestionData["difficulty"], string> = {
   FACIL: "Fácil",
@@ -62,6 +63,8 @@ function QuestionCard({
   const [options, setOptions] = useState(question.options ?? []);
   const [correctAnswer, setCorrectAnswer] = useState(question.correct_answer);
   const [explanation, setExplanation] = useState(question.explanation ?? "");
+  const [tags, setTags] = useState(question.tags ?? []);
+  const [bnccCodes, setBnccCodes] = useState(question.bncc_codes ?? []);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const router = useRouter();
@@ -73,6 +76,8 @@ function QuestionCard({
     setOptions(question.options ?? []);
     setCorrectAnswer(question.correct_answer);
     setExplanation(question.explanation ?? "");
+    setTags(question.tags ?? []);
+    setBnccCodes(question.bncc_codes ?? []);
     setError(null);
     setEditing(true);
   }
@@ -86,6 +91,8 @@ function QuestionCard({
           options: options.length > 0 ? options : null,
           correctAnswer,
           explanation: explanation || null,
+          tags,
+          bnccCodes,
         });
         setEditing(false);
         router.refresh();
@@ -139,6 +146,9 @@ function QuestionCard({
           <div className="whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2 py-[3px] font-display text-2xs font-bold tracking-[0.5px] uppercase text-muted-foreground">Questão {index + 1}</div>
           <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">{TYPE_LABEL[question.type]}</span>
           <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">{DIFFICULTY_LABEL[question.difficulty]}</span>
+          {(question.tags ?? []).slice(0, 3).map((tag) => <span key={tag} className="rounded-full border border-border bg-brand-dim px-2 py-1 text-xs">{tag}</span>)}
+          {(question.tags ?? []).length > 3 && <span className="text-xs text-muted-foreground">+{question.tags.length - 3}</span>}
+          {(question.bncc_codes ?? []).map((code) => <span key={code} className="rounded-full border border-border px-2 py-1 text-xs text-muted-foreground">{code}</span>)}
         </div>
         <div className="flex flex-wrap items-center gap-1.5">
           <button type="button" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 border border-border bg-[rgba(var(--overlay-rgb),0.06)] text-foreground hover:border-border-hover hover:bg-[rgba(var(--overlay-rgb),0.10)] px-3 py-[7px] text-sm" disabled={pending || index === 0} onClick={() => onMove("up")} aria-label="Mover para cima">
@@ -178,6 +188,7 @@ function QuestionCard({
               <label className="block text-sm font-semibold text-foreground" htmlFor={`statement-${question.id}`}>Enunciado</label>
               <textarea id={`statement-${question.id}`} className="w-full appearance-none rounded-sm border border-border bg-[rgba(var(--overlay-rgb),0.04)] px-3 py-2.5 text-md text-foreground outline-none transition-colors focus:border-brand-border focus:ring-[3px] focus:ring-brand-glow" value={statement} onChange={(e) => setStatement(e.target.value)} />
             </div>
+            <QuestionMetadataFields idPrefix={`question-${question.id}`} tags={tags} bnccCodes={bnccCodes} onTagsChange={setTags} onBnccCodesChange={setBnccCodes} />
 
             {question.type !== "DISCURSIVA" && (
               <fieldset className="form-field fieldset-reset">

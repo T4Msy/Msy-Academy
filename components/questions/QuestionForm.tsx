@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import type { QuestionType, Difficulty, NewQuestionInput } from "@/lib/questions/types";
+import { QuestionMetadataFields } from "./QuestionMetadataFields";
 
 const TYPE_LABEL: Record<QuestionType, string> = {
   MULTIPLA: "Múltipla escolha",
@@ -50,6 +51,8 @@ export function QuestionForm({
   const [correctAnswer, setCorrectAnswer] = useState<string | string[]>("A");
   const [explanation, setExplanation] = useState("");
   const [difficulty, setDifficulty] = useState<Difficulty>("MEDIO");
+  const [tags, setTags] = useState<string[]>([]);
+  const [bnccCodes, setBnccCodes] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -76,6 +79,8 @@ export function QuestionForm({
           correctAnswer,
           explanation: explanation || null,
           difficulty,
+          tags,
+          bnccCodes,
         });
       } catch (err) {
         setError(err instanceof Error ? err.message : "Não conseguimos salvar a questão. Tente novamente.");
@@ -118,6 +123,8 @@ export function QuestionForm({
         <label className="block text-sm font-semibold text-foreground" htmlFor="qf-statement">Enunciado</label>
         <textarea id="qf-statement" className="w-full appearance-none rounded-sm border border-border bg-[rgba(var(--overlay-rgb),0.04)] px-3 py-2.5 text-md text-foreground outline-none transition-colors focus:border-brand-border focus:ring-[3px] focus:ring-brand-glow" value={statement} onChange={(e) => setStatement(e.target.value)} />
       </div>
+
+      <QuestionMetadataFields tags={tags} bnccCodes={bnccCodes} onTagsChange={setTags} onBnccCodesChange={setBnccCodes} />
 
       {type !== "DISCURSIVA" && (
         <fieldset className="form-field fieldset-reset">

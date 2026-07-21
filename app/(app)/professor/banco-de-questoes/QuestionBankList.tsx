@@ -58,6 +58,7 @@ export function QuestionBankList({ questions, exams }: { questions: Question[]; 
             type={q.type}
             difficulty={q.difficulty}
             tags={q.tags}
+            bnccCodes={q.bnccCodes}
             selected={selected.has(q.id)}
             onToggleSelect={toggle}
           />

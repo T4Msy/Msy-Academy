@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { PDFParse } from "pdf-parse";
+import { createRequire } from "node:module";
 import { createClient } from "@/lib/supabase/server";
 import { buildExamParams } from "@/lib/exam/buildPayload";
 import { examGenerationRequestSchema } from "@/lib/exam/schemas";
@@ -10,6 +10,8 @@ import { QuotaExceededError } from "@/lib/billing/quota";
 import { EXAM_GENERATION_SCHEMA_V1 } from "@/lib/ai/prompts/exam-generation.v1";
 import type { GeneratedExam } from "@/lib/ai/types";
 import { generatedExamSchema } from "@/lib/exam/variation";
+
+const nodeRequire = createRequire(import.meta.url);
 
 export const runtime = "nodejs";
 
@@ -54,6 +56,7 @@ async function isRealPdf(file: File): Promise<boolean> {
 async function extractApostilaText(file: File): Promise<string | null> {
   try {
     if (!(await isRealPdf(file))) return null;
+    const { PDFParse } = nodeRequire("pdf-parse") as typeof import("pdf-parse");
     const arrayBuffer = await file.arrayBuffer();
     const parser = new PDFParse({ data: arrayBuffer });
     const { text } = await parser.getText();
