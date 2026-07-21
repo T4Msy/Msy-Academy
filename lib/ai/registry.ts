@@ -2,6 +2,7 @@ import type { AIProvider } from "./provider";
 import { mockProvider } from "./providers/mock";
 import { echoProvider } from "./providers/echo";
 import { anthropicProvider } from "./providers/anthropic";
+import { geminiProvider } from "./providers/gemini";
 
 /**
  * Provider registry. `AI_PROVIDER` env var selects the active one; defaults
@@ -19,6 +20,7 @@ const PROVIDERS: Record<string, AIProvider> = {
   mock: mockProvider,
   echo: echoProvider,
   anthropic: anthropicProvider,
+  gemini: geminiProvider,
 };
 
 export function getAIProvider(): AIProvider {
