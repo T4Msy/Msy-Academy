@@ -2,15 +2,18 @@
 
 import { StatRing } from "@/components/charts/StatRing";
 import { useStudentDashboardStats } from "@/hooks/useStudentDashboardStats";
+import { StudyStreakCard } from "@/components/ui/study-streak-card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function DashboardContent() {
   const { data, isError } = useStudentDashboardStats();
 
   if (isError) return <p className="mt-1 text-xs leading-snug text-muted-foreground">Não foi possível carregar seu progresso.</p>;
-  if (!data) return null;
+  if (!data) return <div className="rounded-lg border border-border bg-card p-5.5" aria-label="Carregando progresso de estudos"><Skeleton className="h-6 w-48" /><Skeleton className="mt-4 h-16 w-full" /></div>;
 
   return (
     <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-3.5">
+      <StudyStreakCard {...data.studyStreak} className="col-span-full" />
       <MetricCard label="Tarefas concluídas" value={data.completedAssignments} />
       <div className="overflow-hidden rounded-lg border border-border bg-card shadow-elevated transition-colors">
         <div className="flex flex-col gap-4.5 p-5.5"><StatRing value={data.accuracyPct} label="Acerto em objetivas" size={72} strokeWidth={7} /></div>
