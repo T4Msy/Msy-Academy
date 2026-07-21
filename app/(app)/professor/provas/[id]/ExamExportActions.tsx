@@ -66,8 +66,8 @@ export function ExamExportActions({
     setBusy("word");
     setError(null);
     try {
-      const { buildExamDocxBlob } = await import("@/lib/exam/export/docxDocument");
-      const blob = await buildExamDocxBlob(exam);
+      const { buildSchoolExamDocxBlob } = await import("@/lib/exam/export/schoolDocxDocument");
+      const blob = await buildSchoolExamDocxBlob(exam);
       downloadBlob(blob, `${filename}.docx`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Não conseguimos criar o arquivo do Word. Tente novamente.");
