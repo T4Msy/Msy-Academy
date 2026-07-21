@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { EmptyState } from "@/components/EmptyState";
+import { CorrectionQueue } from "./CorrectionQueue";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Correção" };
@@ -98,22 +99,12 @@ export default async function CorrecaoPage() {
       {list.length === 0 && scanList.length === 0 ? (
         <EmptyState variant="notificacao" title="Fila vazia" text="Envios com questões discursivas aparecem aqui para correção." />
       ) : (
-        <div className="flex flex-col gap-3.5">
-          {rows.map((s) => {
-            const title = s.assignments?.content_type === "EXAM" ? examTitleById.get(s.assignments.content_id) : activityTitleById.get(s.assignments?.content_id ?? "");
-            return (
-              <Link key={s.id} href={`/professor/correcao/${s.id}`} className="block overflow-hidden rounded-lg border border-border bg-card shadow-elevated transition-colors">
-                <div className="flex flex-row items-center justify-between gap-3 p-5.5">
-                  <div>
-                    <div className="font-display text-base font-bold tracking-[-0.2px] text-foreground">{nameById.get(s.student_id) || "Aluno"}</div>
-                    <div className="mt-1 text-xs leading-snug text-muted-foreground">{title ?? "Tarefa"}</div>
-                  </div>
-                  <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">Pendente</span>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
+        <CorrectionQueue key={rows.map((s) => s.id).join(",")} items={rows.map((s) => ({
+          id: s.id,
+          studentName: nameById.get(s.student_id) || "Aluno",
+          assignmentTitle: s.assignments?.content_type === "EXAM" ? examTitleById.get(s.assignments.content_id) ?? "Prova" : activityTitleById.get(s.assignments?.content_id ?? "") ?? "Tarefa",
+          eligible: true,
+        }))} />
       )}
     </>
   );

@@ -16,6 +16,7 @@ import {
 import { ExamExportActions } from "./ExamExportActions";
 import { AiBadge } from "@/components/AiBadge";
 import { ExamVariationDialog } from "./ExamVariationDialog";
+import { SendExamToClass } from "./SendExamToClass";
 
 export const dynamic = "force-dynamic";
 
@@ -26,7 +27,7 @@ export default async function ExamPage({ params }: { params: Promise<{ id: strin
     data: { user },
   } = await supabase.auth.getUser();
 
-  const [{ data: exam }, { data: examQuestions }] = await Promise.all([
+  const [{ data: exam }, { data: examQuestions }, { data: classes }] = await Promise.all([
     supabase
       .from("exams")
       .select(
@@ -41,6 +42,7 @@ export default async function ExamPage({ params }: { params: Promise<{ id: strin
       )
       .eq("exam_id", id)
       .order("position"),
+    supabase.from("classes").select("id, name").order("name"),
   ]);
 
   if (!exam) notFound();
@@ -67,6 +69,8 @@ export default async function ExamPage({ params }: { params: Promise<{ id: strin
     onMove: moveQuestion.bind(null, exam.id),
     onRegenerate: regenerateQuestion.bind(null, exam.id),
   };
+  const { data: existingAssignments } = await supabase.from("assignments").select("id, class_id").eq("content_type", "EXAM").eq("content_id", exam.id).is("deleted_at", null);
+  const assignmentByClass = new Map((existingAssignments ?? []).map((assignment) => [assignment.class_id, assignment.id]));
 
   return (
     <>
@@ -109,6 +113,9 @@ export default async function ExamPage({ params }: { params: Promise<{ id: strin
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {user?.id === exam.author_id && (
+            <SendExamToClass examId={exam.id} examTitle={exam.title || "Prova sem título"} questionCount={questions.length} classes={(classes ?? []).map((klass) => ({ id: klass.id, name: klass.name, assignmentId: assignmentByClass.get(klass.id) }))} />
+          )}
           {user?.id === exam.author_id && (
             <ExamVariationDialog
               examId={exam.id}

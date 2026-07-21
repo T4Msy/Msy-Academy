@@ -4,6 +4,7 @@ import { getQueryClient } from "@/lib/query/client";
 import { classStatsQueryKey } from "@/lib/dashboard/queryKeys";
 import { getProfessorClassStats } from "@/lib/dashboard/classStats";
 import { DashboardContent } from "./DashboardContent";
+import { getProfessorOnboardingProgress } from "@/lib/dashboard/onboardingProgress";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Desempenho das Turmas" };
@@ -16,6 +17,12 @@ export const metadata: Metadata = { title: "Desempenho das Turmas" };
  */
 export default async function ProfessorDashboardPage() {
   const queryClient = getQueryClient();
+  let onboardingProgress;
+  try {
+    onboardingProgress = await getProfessorOnboardingProgress();
+  } catch {
+    onboardingProgress = null;
+  }
   await queryClient.prefetchQuery({
     queryKey: classStatsQueryKey,
     queryFn: getProfessorClassStats,
@@ -30,7 +37,7 @@ export default async function ProfessorDashboardPage() {
         </div>
       </div>
       <HydrationBoundary state={dehydrate(queryClient)}>
-        <DashboardContent />
+        <DashboardContent onboardingProgress={onboardingProgress} />
       </HydrationBoundary>
     </>
   );

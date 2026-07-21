@@ -96,6 +96,27 @@ export async function assignContent(
     .single();
   if (!profile) throw new Error("Perfil não encontrado.");
 
+  if (dueAt && (!Number.isFinite(new Date(dueAt).getTime()) || new Date(dueAt).getTime() <= Date.now())) {
+    throw new Error("O prazo precisa estar no futuro.");
+  }
+  const { data: existing } = await supabase
+    .from("assignments")
+    .select("id")
+    .eq("class_id", classId)
+    .eq("content_type", contentType)
+    .eq("content_id", contentId)
+    .is("deleted_at", null)
+    .maybeSingle();
+  if (existing) throw new Error("Este conteúdo já está atribuído a esta turma.");
+
+  const contentTable = contentType === "EXAM" ? "exams" : "activities";
+  const { data: content } = await supabase.from(contentTable).select("id").eq("id", contentId).maybeSingle();
+  if (!content) throw new Error("O conteúdo não foi encontrado.");
+  const questionTable = contentType === "EXAM" ? "exam_questions" : "activity_items";
+  const questionParent = contentType === "EXAM" ? "exam_id" : "activity_id";
+  const { data: firstQuestion } = await supabase.from(questionTable).select("question_id").eq(questionParent, contentId).limit(1).maybeSingle();
+  if (!firstQuestion) throw new Error("Adicione pelo menos uma questão antes de enviar este conteúdo.");
+
   const { error } = await supabase.from("assignments").insert({
     tenant_id: profile.tenant_id,
     class_id: classId,

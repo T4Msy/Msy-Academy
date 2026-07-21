@@ -2,6 +2,8 @@
 
 import { EmptyState } from "@/components/EmptyState";
 import { useClassStats } from "@/hooks/useClassStats";
+import { DashboardProgressCard } from "@/components/ui/dashboard-progress-card";
+import type { ProfessorOnboardingProgress } from "@/lib/dashboard/onboardingProgress";
 
 /**
  * Metade client do piloto de hidratação: o primeiro render lê o cache
@@ -10,7 +12,7 @@ import { useClassStats } from "@/hooks/useClassStats";
  * Markup idêntico ao page server-only anterior (classes do shell legado —
  * a conversão visual desta página acontece na Fase 2).
  */
-export function DashboardContent() {
+export function DashboardContent({ onboardingProgress }: { onboardingProgress: ProfessorOnboardingProgress | null }) {
   const { data: classStats, isError } = useClassStats();
 
   if (isError) {
@@ -20,11 +22,10 @@ export function DashboardContent() {
 
   if (classStats.length === 0) {
     return (
-      <EmptyState
-        variant="turma"
-        title="Sem turmas ainda"
-        text="Crie uma turma para ver o desempenho dos alunos aqui."
-      />
+      <div className="flex flex-col gap-3.5">
+        {onboardingProgress && <DashboardProgressCard title="Comece pela sua primeira turma" description="Complete estas etapas para começar a acompanhar seus alunos." steps={[{ id: "class", label: "Criar uma turma", description: "Organize seus alunos em uma turma.", completed: onboardingProgress.hasClass, href: "/professor/turmas", actionLabel: "Criar turma" }, { id: "exam", label: "Salvar uma prova", description: "Prepare uma avaliação para sua turma.", completed: onboardingProgress.hasSavedExam, href: "/professor/provas/nova", actionLabel: "Criar prova" }, { id: "student", label: "Convidar um aluno", description: "Tenha pelo menos um aluno matriculado em uma turma.", completed: onboardingProgress.hasInvitedStudent, href: "/professor/turmas", actionLabel: "Convidar aluno" }]} />}
+        <EmptyState variant="turma" title="Sem turmas ainda" text="Crie uma turma para ver o desempenho dos alunos aqui." />
+      </div>
     );
   }
 
@@ -33,6 +34,7 @@ export function DashboardContent() {
 
   return (
     <div className="flex flex-col gap-3.5">
+      {onboardingProgress && <DashboardProgressCard title="Comece pela sua primeira turma" description="Complete estas etapas para começar a acompanhar seus alunos." steps={[{ id: "class", label: "Criar uma turma", description: "Organize seus alunos em uma turma.", completed: onboardingProgress.hasClass, href: "/professor/turmas", actionLabel: "Criar turma" }, { id: "exam", label: "Salvar uma prova", description: "Prepare uma avaliação para sua turma.", completed: onboardingProgress.hasSavedExam, href: "/professor/provas/nova", actionLabel: "Criar prova" }, { id: "student", label: "Convidar um aluno", description: "Tenha pelo menos um aluno matriculado em uma turma.", completed: onboardingProgress.hasInvitedStudent, href: "/professor/turmas", actionLabel: "Convidar aluno" }]} />}
       <section className="overflow-hidden rounded-lg border border-danger-border bg-card shadow-elevated transition-colors">
         <div className="flex flex-wrap items-center justify-between gap-3 p-5.5">
           <div>
