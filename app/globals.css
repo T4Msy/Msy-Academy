@@ -88,19 +88,22 @@
 
 /* ── Light theme ────────────────────────────────────────────── */
 :root[data-theme="light"] {
-  --overlay-rgb: 11,13,11;
-  --bg-rgb:      247,248,246;
+  --overlay-rgb: 47,41,35;
+  --bg-rgb:      240,233,223;
 
-  --bg:          #f7f8f6;
-  --bg-shell:    #f2f3f1;
-  --bg-card:     #ffffff;
-  --bg-card-2:   #f2f3f1;
-  --fg:          #101410;
-  --fg-muted:    #5b6059;
-  --fg-subtle:   #6b6f68;
-  --border:      rgba(var(--overlay-rgb),0.10);
-  --border-hover:rgba(var(--overlay-rgb),0.18);
-  --switch-thumb-off: #6b6f68;
+  --bg:          #eee8de;
+  --bg-shell:    #e9e1d6;
+  --bg-card:     #f8f4ee;
+  --bg-card-2:   #e7ded2;
+  --bg-popover:  #f8f4ee;
+  --bg-hover:    rgba(var(--overlay-rgb),0.055);
+  --fg:          #2f2923;
+  --fg-muted:    #6b6258;
+  --fg-subtle:   #8b8176;
+  --border:      #d2c5b5;
+  --border-hover:#bdaf9f;
+  --input:       #cfc1b1;
+  --switch-thumb-off: #81766b;
 
   /* --accent (button/badge fill) is brand-fixed across themes — only the
      *text* variant changes: mid-tone terracotta on white lands ~3.1:1
@@ -119,18 +122,21 @@
 
 @media (prefers-color-scheme: light) {
   :root:not([data-theme]) {
-    --overlay-rgb: 11,13,11;
-    --bg-rgb:      247,248,246;
-    --bg:          #f7f8f6;
-    --bg-shell:    #f2f3f1;
-    --bg-card:     #ffffff;
-    --bg-card-2:   #f2f3f1;
-    --fg:          #101410;
-    --fg-muted:    #5b6059;
-    --fg-subtle:   #6b6f68;
-    --border:      rgba(var(--overlay-rgb),0.10);
-    --border-hover:rgba(var(--overlay-rgb),0.18);
-    --switch-thumb-off: #6b6f68;
+    --overlay-rgb: 47,41,35;
+    --bg-rgb:      240,233,223;
+    --bg:          #eee8de;
+    --bg-shell:    #e9e1d6;
+    --bg-card:     #f8f4ee;
+    --bg-card-2:   #e7ded2;
+    --bg-popover:  #f8f4ee;
+    --bg-hover:    rgba(var(--overlay-rgb),0.055);
+    --fg:          #2f2923;
+    --fg-muted:    #6b6258;
+    --fg-subtle:   #8b8176;
+    --border:      #d2c5b5;
+    --border-hover:#bdaf9f;
+    --input:       #cfc1b1;
+    --switch-thumb-off: #81766b;
     --accent-text: #A8461F;
     --accent-dim:  rgba(217,119,87,0.12);
     --accent-border: rgba(217,119,87,0.40);

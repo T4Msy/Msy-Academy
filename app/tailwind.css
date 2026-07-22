@@ -29,7 +29,7 @@
   --color-card: var(--bg-card);
   --color-card-2: var(--bg-card-2);
   --color-card-foreground: var(--fg);
-  --color-popover: var(--bg-card-2);
+  --color-popover: var(--bg-popover, var(--bg-card-2));
   --color-popover-foreground: var(--fg);
   --color-foreground: var(--fg);
   --color-muted: var(--bg-card-2);
@@ -37,7 +37,7 @@
   --color-subtle: var(--fg-subtle);
   --color-border: var(--border);
   --color-border-hover: var(--border-hover);
-  --color-input: var(--border);
+  --color-input: var(--input, var(--border));
   --color-ring: var(--accent-border);
 
   /* ── Ações (semântica shadcn) ────────────────────────────── */

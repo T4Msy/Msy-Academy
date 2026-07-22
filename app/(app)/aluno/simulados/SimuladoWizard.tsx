@@ -2,6 +2,13 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { createSimulado } from "./actions";
 
 export function SimuladoWizard({ subjects }: { subjects: { id: string; name: string }[] }) {
@@ -46,21 +53,31 @@ export function SimuladoWizard({ subjects }: { subjects: { id: string; name: str
       <div className="flex flex-col p-5.5 gap-2.5">
         <div className="flex flex-col gap-1.5">
           <label className="block text-sm font-semibold text-foreground" htmlFor="subject">Matéria (opcional)</label>
-          <select className="w-full appearance-none rounded-sm border border-border bg-[rgba(var(--overlay-rgb),0.04)] px-3 py-2.5 text-md text-foreground outline-none transition-colors focus:border-brand-border focus:ring-[3px] focus:ring-brand-glow" id="subject" value={subjectId} onChange={(e) => setSubjectId(e.target.value)}>
-            <option value="">Todas</option>
-            {subjects.map((s) => (
-              <option key={s.id} value={s.id}>{s.name}</option>
-            ))}
-          </select>
+          <Select value={subjectId || "all"} onValueChange={(value) => setSubjectId(value === "all" ? "" : value)}>
+            <SelectTrigger id="subject" className="w-full bg-card text-md text-foreground">
+              <SelectValue aria-label={subjectId ? subjects.find((s) => s.id === subjectId)?.name : "Todas"} />
+            </SelectTrigger>
+            <SelectContent className="border-border bg-popover text-popover-foreground shadow-elevated">
+              <SelectItem value="all">Todas</SelectItem>
+              {subjects.map((s) => (
+                <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <div className="flex flex-col gap-1.5">
           <label className="block text-sm font-semibold text-foreground" htmlFor="difficulty">Dificuldade (opcional)</label>
-          <select className="w-full appearance-none rounded-sm border border-border bg-[rgba(var(--overlay-rgb),0.04)] px-3 py-2.5 text-md text-foreground outline-none transition-colors focus:border-brand-border focus:ring-[3px] focus:ring-brand-glow" id="difficulty" value={difficulty} onChange={(e) => setDifficulty(e.target.value)}>
-            <option value="">Todas</option>
-            <option value="FACIL">Fácil</option>
-            <option value="MEDIO">Médio</option>
-            <option value="DIFICIL">Difícil</option>
-          </select>
+          <Select value={difficulty || "all"} onValueChange={(value) => setDifficulty(value === "all" ? "" : value)}>
+            <SelectTrigger id="difficulty" className="w-full bg-card text-md text-foreground">
+              <SelectValue aria-label={difficulty || "Todas"} />
+            </SelectTrigger>
+            <SelectContent className="border-border bg-popover text-popover-foreground shadow-elevated">
+              <SelectItem value="all">Todas</SelectItem>
+              <SelectItem value="FACIL">Fácil</SelectItem>
+              <SelectItem value="MEDIO">Médio</SelectItem>
+              <SelectItem value="DIFICIL">Difícil</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         <div className="flex flex-col gap-1.5">
           <label className="block text-sm font-semibold text-foreground" htmlFor="quantidade">Quantidade de questões</label>
