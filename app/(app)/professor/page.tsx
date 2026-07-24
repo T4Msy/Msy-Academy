@@ -3,8 +3,9 @@ import type { Metadata } from "next";
 import { BookOpen, ChevronRight, FilePlus2, Users } from "lucide-react";
 import { getSession } from "@/lib/auth/session";
 import { ActivationChecklist } from "@/components/professor/ActivationChecklist";
-import { DashboardProgressCard } from "@/components/ui/dashboard-progress-card";
 import { getProfessorOnboardingProgress } from "@/lib/dashboard/onboardingProgress";
+import { ExploreResourcesCard } from "@/components/professor/ExploreResourcesCard";
+import { getProfessorExploreResources } from "@/lib/dashboard/exploreResources";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Início" };
@@ -19,10 +20,18 @@ export default async function ProfessorHomePage() {
   const { fullName } = await getSession();
   const firstName = (fullName || "Professor").split(" ")[0];
   let onboardingProgress;
+  let exploreResources;
   try {
     onboardingProgress = await getProfessorOnboardingProgress();
   } catch {
     onboardingProgress = null;
+  }
+  if (onboardingProgress && onboardingProgress.completedSteps === onboardingProgress.totalSteps) {
+    try {
+      exploreResources = await getProfessorExploreResources();
+    } catch {
+      exploreResources = null;
+    }
   }
 
   return (
@@ -34,7 +43,8 @@ export default async function ProfessorHomePage() {
         </div>
       </div>
 
-      {onboardingProgress && onboardingProgress.completedSteps < onboardingProgress.totalSteps && <DashboardProgressCard title="Comece pela sua primeira turma" description="Complete estas etapas para começar a acompanhar seus alunos." steps={[{ id: "class", label: "Criar uma turma", description: "Organize seus alunos em uma turma.", completed: onboardingProgress.hasClass, href: "/professor/turmas", actionLabel: "Criar turma" }, { id: "exam", label: "Salvar uma prova", description: "Prepare uma avaliação para sua turma.", completed: onboardingProgress.hasSavedExam, href: "/professor/provas/nova", actionLabel: "Criar prova" }, { id: "student", label: "Convidar um aluno", description: "Tenha pelo menos um aluno matriculado em uma turma.", completed: onboardingProgress.hasInvitedStudent, href: "/professor/turmas", actionLabel: "Convidar aluno" }]} />}
+
+      {exploreResources?.resources.length && exploreResources.userId && <ExploreResourcesCard resources={exploreResources.resources} userId={exploreResources.userId} />}
 
       <ActivationChecklist />
 

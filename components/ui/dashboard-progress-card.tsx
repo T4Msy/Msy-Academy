@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import type { LucideIcon } from "lucide-react";
+import type { ReactNode } from "react";
 
 export type ProgressStep = {
   id: string;
@@ -8,6 +10,7 @@ export type ProgressStep = {
   completed: boolean;
   href?: string;
   actionLabel?: string;
+  icon?: LucideIcon;
 };
 
 export type DashboardProgressCardProps = {
@@ -16,12 +19,16 @@ export type DashboardProgressCardProps = {
   steps: ProgressStep[];
   completedLabel?: string;
   className?: string;
+  footer?: ReactNode;
+  progress?: { completed: number; total: number };
 };
 
-export function DashboardProgressCard({ title, description, steps, completedLabel = "concluídas", className }: DashboardProgressCardProps) {
+export function DashboardProgressCard({ title, description, steps, completedLabel = "concluídas", className, footer, progress }: DashboardProgressCardProps) {
   const completed = steps.filter((step) => step.completed).length;
   const total = steps.length;
-  const percentage = total ? Math.round((completed / total) * 100) : 0;
+  const progressCompleted = progress?.completed ?? completed;
+  const progressTotal = progress?.total ?? total;
+  const percentage = progressTotal ? Math.round((progressCompleted / progressTotal) * 100) : 0;
 
   return (
     <section className={cn("overflow-hidden rounded-lg border border-border bg-card shadow-elevated", className)} aria-labelledby="dashboard-progress-title">
@@ -31,7 +38,7 @@ export function DashboardProgressCard({ title, description, steps, completedLabe
             <h2 id="dashboard-progress-title" className="font-display text-lg font-bold tracking-[-0.2px] text-foreground">{title}</h2>
             {description && <p className="mt-1 text-xs leading-snug text-muted-foreground">{description}</p>}
           </div>
-          <span className="font-display text-sm font-bold text-brand-text">{completed}/{total} {completedLabel}</span>
+          <span className="font-display text-sm font-bold text-brand-text">{progressCompleted}/{progressTotal} {completedLabel}</span>
         </div>
         <div className="mt-4 h-2 overflow-hidden rounded-full bg-[rgba(var(--overlay-rgb),0.08)]" role="progressbar" aria-label={`Progresso: ${completed} de ${total} etapas concluídas`} aria-valuemin={0} aria-valuemax={total} aria-valuenow={completed}>
           <div className="h-full rounded-full bg-brand transition-[width] duration-300" style={{ width: `${percentage}%` }} />
@@ -42,6 +49,7 @@ export function DashboardProgressCard({ title, description, steps, completedLabe
         {steps.map((step, index) => (
           <li key={step.id} className="flex items-start gap-3 px-5.5 py-4">
             <span className={cn("mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full border text-sm font-bold", step.completed ? "border-brand-border bg-brand-dim text-brand-text" : "border-border text-muted-foreground")} aria-hidden="true">{step.completed ? "✓" : index + 1}</span>
+            {step.icon && <step.icon className="mt-1 size-4 shrink-0 text-brand-text" aria-hidden="true" />}
             <div className="min-w-0 flex-1">
               <p className={cn("text-sm font-semibold", step.completed ? "text-foreground" : "text-muted-foreground")}>{step.label}</p>
               {step.description && <p className="mt-0.5 text-xs leading-snug text-muted-foreground">{step.description}</p>}
@@ -50,7 +58,8 @@ export function DashboardProgressCard({ title, description, steps, completedLabe
           </li>
         ))}
       </ol>
-      {completed === total && total > 0 && <p className="border-t border-border bg-brand-dim px-5.5 py-3 text-sm font-semibold text-brand-text">Tudo pronto para acompanhar suas turmas.</p>}
+      {footer}
+      {progressCompleted === progressTotal && progressTotal > 0 && <p className="border-t border-border bg-brand-dim px-5.5 py-3 text-sm font-semibold text-brand-text">Tudo pronto para acompanhar suas turmas.</p>}
     </section>
   );
 }
