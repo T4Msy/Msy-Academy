@@ -29,6 +29,7 @@ import {
   Tag,
   Target,
   Users,
+  UserRound,
 } from "lucide-react";
 
 const ICON_PROPS = { size: 18, strokeWidth: 1.6, "aria-hidden": true } as const;
@@ -107,6 +108,10 @@ export function IconPlanosAdmin() {
 
 export function IconConfiguracoes() {
   return <Settings {...ICON_PROPS} />;
+}
+
+export function IconPerfil() {
+  return <UserRound {...ICON_PROPS} />;
 }
 
 export function IconScan() {

@@ -9,6 +9,8 @@ type TopbarProps =
       variant?: "full";
       name: string;
       email: string;
+      avatarUrl?: string | null;
+      profileHref: string;
       currentEnv: "PROFESSOR" | "ALUNO";
       hasOtherEnv: boolean;
       settingsHref: string;
@@ -47,7 +49,7 @@ export function Topbar(props: TopbarProps) {
             <GlobalSearch environment={props.currentEnv} />
             <div className="topbar-right">
               <NotificationBell notifications={props.notifications} environment={props.currentEnv} />
-              <UserMenu name={props.name} email={props.email} settingsHref={props.settingsHref} />
+              <UserMenu name={props.name} email={props.email} avatarUrl={props.avatarUrl} profileHref={props.profileHref} settingsHref={props.settingsHref} />
             </div>
           </>
         )}

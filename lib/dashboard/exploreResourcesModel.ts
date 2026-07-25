@@ -19,7 +19,7 @@ export const EXPLORE_RESOURCE_DEFINITIONS = [
   { id: "publish-activity", title: "Publicar uma atividade para uma turma", description: "Compartilhe uma atividade com seus alunos e defina um prazo.", category: "Turmas", icon: "Send", href: "/professor/turmas" },
   { id: "correct-submission", title: "Corrigir uma entrega", description: "Revise as respostas dos alunos e acompanhe seu desenvolvimento.", category: "Avaliações", icon: "CheckCheck", href: "/professor/correcao" },
   { id: "class-reports", title: "Visualizar os relatórios da turma", description: "Veja o desempenho da turma e encontre oportunidades de intervenção.", category: "Turmas", icon: "ChartNoAxesCombined", href: "/professor/turmas" },
-  { id: "profile", title: "Configurar seu perfil", description: "Personalize seus dados e deixe seu espaço com a sua cara.", category: "Sua conta", icon: "UserRound", href: "/professor/configuracoes" },
+  { id: "profile", title: "Configurar seu perfil", description: "Personalize seus dados e deixe seu espaço com a sua cara.", category: "Sua conta", icon: "UserRound", href: "/professor/perfil" },
   { id: "ai-correction", title: "Utilizar o corretor por IA", description: "Acelere a correção de respostas discursivas com uma sugestão inteligente.", category: "Inteligência Artificial", icon: "Bot", href: "/professor/correcao" },
 ] as const;
 

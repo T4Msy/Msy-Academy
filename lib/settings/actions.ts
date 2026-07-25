@@ -3,8 +3,15 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
+import { validateProfileInput } from "@/lib/settings/profileValidation";
 
 export interface UpdateProfileState {
+  error?: string;
+  ok?: boolean;
+  warning?: string;
+}
+
+export interface AvatarState {
   error?: string;
   ok?: boolean;
 }
@@ -17,8 +24,18 @@ export interface UpdateProfileState {
  * validation messages like "O nome não pode ficar vazio."
  */
 export async function updateProfile(_prevState: UpdateProfileState | null, formData: FormData): Promise<UpdateProfileState> {
-  const clean = String(formData.get("full_name") ?? "").trim();
-  if (!clean) return { error: "O nome não pode ficar vazio." };
+  const values = {
+    fullName: String(formData.get("full_name") ?? ""),
+    displayName: String(formData.get("display_name") ?? ""),
+    bio: String(formData.get("bio") ?? ""),
+    institution: String(formData.get("institution") ?? ""),
+    discipline: String(formData.get("discipline") ?? ""),
+    gradeInterest: String(formData.get("grade_interest") ?? ""),
+    studyGoal: String(formData.get("study_goal") ?? ""),
+    showAvatar: formData.get("show_avatar") === "on",
+  };
+  const validationError = validateProfileInput(values);
+  if (validationError) return { error: validationError };
 
   const supabase = await createClient();
   const {
@@ -26,14 +43,90 @@ export async function updateProfile(_prevState: UpdateProfileState | null, formD
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { error } = await supabase
-    .from("profiles")
-    .update({ full_name: clean })
-    .eq("id", user.id);
+  // Explicit allow-list: protected fields (role, e-mail, plan, quotas and id)
+  // can never be changed by this form.
+  const { error } = await supabase.from("profiles").update({
+    full_name: values.fullName.trim(),
+    display_name: values.displayName.trim() || null,
+    bio: values.bio.trim() || null,
+    institution: values.institution.trim() || null,
+    discipline: values.discipline.trim() || null,
+    grade_interest: values.gradeInterest.trim() || null,
+    study_goal: values.studyGoal.trim() || null,
+    show_avatar: values.showAvatar,
+  }).eq("id", user.id);
 
-  if (error) return { error: "Não conseguimos salvar suas alterações. Tente novamente." };
+  if (error) {
+    // The migration is deployable independently from the app. Keep the
+    // original profile usable if optional columns are not deployed yet.
+    if (error.code === "42703" || /column .* does not exist/i.test(error.message)) {
+      const { error: baseError } = await supabase.from("profiles").update({ full_name: values.fullName.trim() }).eq("id", user.id);
+      if (baseError) return { error: "Não conseguimos salvar suas alterações. Tente novamente." };
+      revalidatePath("/", "layout");
+      return { ok: true, warning: "Seu nome foi salvo. Os demais campos estarão disponíveis após a atualização do perfil." };
+    }
+    return { error: "Não conseguimos salvar suas alterações. Tente novamente." };
+  }
 
   // Topbar reads full_name from each environment layout's own fetch — refresh it.
+  revalidatePath("/", "layout");
+  return { ok: true };
+}
+
+const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
+const AVATAR_MIME_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
+
+export async function updateAvatar(_prevState: AvatarState | null, formData: FormData): Promise<AvatarState> {
+  const file = formData.get("avatar");
+  if (!(file instanceof File) || file.size === 0) return { error: "Escolha uma imagem para enviar." };
+  if (file.size > MAX_AVATAR_BYTES || !AVATAR_MIME_TYPES.has(file.type)) {
+    return { error: "Use uma imagem JPG, PNG ou WebP de até 2 MB." };
+  }
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const input = Buffer.from(await file.arrayBuffer());
+  let output: Buffer;
+  try {
+    const sharp = (await import("sharp")).default;
+    const metadata = await sharp(input).metadata();
+    if (!metadata.format || !["jpeg", "png", "webp"].includes(metadata.format)) {
+      return { error: "O arquivo não parece ser uma imagem válida." };
+    }
+    output = await sharp(input).resize(512, 512, { fit: "cover" }).webp({ quality: 85 }).toBuffer();
+  } catch {
+    return { error: "Não foi possível processar essa imagem. Tente outra." };
+  }
+
+  const { data: current } = await supabase.from("profiles").select("avatar_path").eq("id", user.id).single();
+  const path = `${user.id}/${crypto.randomUUID()}.webp`;
+  const { error: uploadError } = await supabase.storage.from("avatars").upload(path, output, {
+    contentType: "image/webp",
+    cacheControl: "3600",
+    upsert: false,
+  });
+  if (uploadError) return { error: "Não foi possível enviar a foto. Tente novamente." };
+
+  const { error: profileError } = await supabase.from("profiles").update({ avatar_path: path }).eq("id", user.id);
+  if (profileError) {
+    await supabase.storage.from("avatars").remove([path]);
+    return { error: "Não foi possível salvar a foto. Tente novamente." };
+  }
+  if (current?.avatar_path) await supabase.storage.from("avatars").remove([current.avatar_path]);
+  revalidatePath("/", "layout");
+  return { ok: true };
+}
+
+export async function removeAvatar(): Promise<AvatarState> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+  const { data: current } = await supabase.from("profiles").select("avatar_path").eq("id", user.id).single();
+  const { error } = await supabase.from("profiles").update({ avatar_path: null }).eq("id", user.id);
+  if (error) return { error: "Não foi possível remover a foto. Tente novamente." };
+  if (current?.avatar_path) await supabase.storage.from("avatars").remove([current.avatar_path]);
   revalidatePath("/", "layout");
   return { ok: true };
 }
@@ -111,7 +204,11 @@ export async function deleteMyAccount(returnPath: string, formData: FormData): P
 
   const admin = createAdminClient();
 
-  const { data: profile } = await admin.from("profiles").select("tenant_id").eq("id", user.id).single();
+  const { data: profile } = await admin.from("profiles").select("tenant_id, avatar_path").eq("id", user.id).single();
+
+  if (profile?.avatar_path) {
+    await admin.storage.from("avatars").remove([profile.avatar_path]);
+  }
 
   const { error: deleteUserError } = await admin.auth.admin.deleteUser(user.id);
   if (deleteUserError) {

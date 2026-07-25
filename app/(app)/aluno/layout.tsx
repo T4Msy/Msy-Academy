@@ -15,6 +15,7 @@ import {
   IconEstudoAnimado,
   IconDashboard,
   IconConfiguracoes,
+  IconPerfil,
 } from "@/components/shell/navIcons";
 
 const NAV: SidebarSection[] = [
@@ -54,12 +55,15 @@ const NAV: SidebarSection[] = [
   },
   {
     title: "Conta",
-    items: [{ href: "/aluno/configuracoes", label: "Configurações", icon: <IconConfiguracoes /> }],
+    items: [
+      { href: "/aluno/perfil", label: "Perfil", icon: <IconPerfil /> },
+      { href: "/aluno/configuracoes", label: "Configurações", icon: <IconConfiguracoes /> },
+    ],
   },
 ];
 
 export default async function AlunoLayout({ children }: { children: React.ReactNode }) {
-  const { supabase, user, fullName, roles, accessError } = await getSession();
+  const { supabase, user, fullName, displayName, avatarUrl, roles, accessError } = await getSession();
   if (!user || accessError) redirect("/acesso-indisponivel");
 
   const roleSet = new Set(roles);
@@ -75,16 +79,18 @@ export default async function AlunoLayout({ children }: { children: React.ReactN
       .maybeSingle(),
   ]);
 
-  const name = fullName || user.email?.split("@")[0] || "Aluno";
+  const name = displayName || fullName || user.email?.split("@")[0] || "Aluno";
 
   return (
     <div className="app-shell">
       <Topbar
         name={name}
         email={user.email ?? ""}
+        avatarUrl={avatarUrl}
         currentEnv="ALUNO"
         hasOtherEnv={roleSet.has("PROFESSOR")}
         settingsHref="/aluno/configuracoes"
+        profileHref="/aluno/perfil"
         notifications={notifications}
       />
       <div className="app-body">

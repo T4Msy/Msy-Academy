@@ -115,6 +115,14 @@ export async function updateSession(request: NextRequest) {
       .eq("id", user.id)
       .maybeSingle();
     if (profileError || !profile) {
+      console.error("[auth/middleware] perfil/consentimento não pôde ser confirmado", {
+        code: profileError?.code,
+        message: profileError?.message,
+        userId: user.id.slice(0, 8),
+        table: "profiles",
+        stage: "terms-profile",
+        reason: profileError ? "query-error" : "profile-not-found",
+      });
       const url = request.nextUrl.clone();
       url.pathname = "/acesso-indisponivel";
       url.search = "";
@@ -136,6 +144,13 @@ export async function updateSession(request: NextRequest) {
   if (needsRoleCheck) {
     const { data: roles, error: rolesError } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
     if (rolesError) {
+      console.error("[auth/middleware] consulta de papéis falhou", {
+        code: rolesError.code,
+        message: rolesError.message,
+        userId: user.id.slice(0, 8),
+        table: "user_roles",
+        stage: "role-gate",
+      });
       const url = request.nextUrl.clone();
       url.pathname = "/acesso-indisponivel";
       url.search = "";

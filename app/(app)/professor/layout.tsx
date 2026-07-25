@@ -17,6 +17,7 @@ import {
   IconScan,
   IconDashboard,
   IconConfiguracoes,
+  IconPerfil,
 } from "@/components/shell/navIcons";
 
 const NAV: SidebarSection[] = [
@@ -58,12 +59,15 @@ const NAV: SidebarSection[] = [
   },
   {
     title: "Conta",
-    items: [{ href: "/professor/configuracoes", label: "Configurações", icon: <IconConfiguracoes /> }],
+    items: [
+      { href: "/professor/perfil", label: "Perfil", icon: <IconPerfil /> },
+      { href: "/professor/configuracoes", label: "Configurações", icon: <IconConfiguracoes /> },
+    ],
   },
 ];
 
 export default async function ProfessorLayout({ children }: { children: React.ReactNode }) {
-  const { user, fullName, roles, accessError } = await getSession();
+  const { user, fullName, displayName, avatarUrl, roles, accessError } = await getSession();
   if (!user || accessError) redirect("/acesso-indisponivel");
 
   const roleSet = new Set(roles);
@@ -71,16 +75,18 @@ export default async function ProfessorLayout({ children }: { children: React.Re
 
   const notifications = await getRecentNotifications();
 
-  const name = fullName || user.email?.split("@")[0] || "Professor";
+  const name = displayName || fullName || user.email?.split("@")[0] || "Professor";
 
   return (
     <div className="app-shell">
       <Topbar
         name={name}
         email={user.email ?? ""}
+        avatarUrl={avatarUrl}
         currentEnv="PROFESSOR"
         hasOtherEnv={roleSet.has("ALUNO")}
         settingsHref="/professor/configuracoes"
+        profileHref="/professor/perfil"
         notifications={notifications}
       />
       <div className="app-body">

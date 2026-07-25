@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRef } from "react";
-import { LogOut, Settings } from "lucide-react";
+import { LogOut, Settings, UserRound } from "lucide-react";
 import { logout } from "@/lib/auth/actions";
 import {
   DropdownMenu,
@@ -19,10 +19,14 @@ import {
 export function UserMenu({
   name,
   email,
+  avatarUrl,
+  profileHref,
   settingsHref,
 }: {
   name: string;
   email: string;
+  avatarUrl?: string | null;
+  profileHref: string;
   settingsHref: string;
 }) {
   const logoutFormRef = useRef<HTMLFormElement>(null);
@@ -38,7 +42,7 @@ export function UserMenu({
       <DropdownMenuTrigger asChild>
         <button type="button" className="user-menu-trigger" aria-label="Menu da conta">
           <span className="avatar" title={name}>
-            {initials || "?"}
+            {avatarUrl ? <img src={avatarUrl} alt="" className="h-full w-full rounded-full object-cover" /> : initials || "?"}
           </span>
         </button>
       </DropdownMenuTrigger>
@@ -50,6 +54,12 @@ export function UserMenu({
           )}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link href={profileHref}>
+            <UserRound aria-hidden />
+            Perfil
+          </Link>
+        </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link href={settingsHref}>
             <Settings aria-hidden />
