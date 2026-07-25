@@ -19,7 +19,9 @@ interface Assignment {
   id: string;
   class_id: string;
   due_at: string | null;
+  audience_type?: "class" | "students";
 }
+interface AssignmentStudent { assignment_id: string; student_id: string; }
 interface Submission {
   id: string;
   assignment_id: string;
@@ -48,6 +50,7 @@ export function deriveClassStats(
   answers: Answer[],
   profiles: Profile[],
   now: string,
+  assignmentStudents: AssignmentStudent[] = [],
 ): ClassStat[] {
   const nameById = new Map(profiles.map((p) => [p.id, p.full_name || "Aluno"]));
   const submissionById = new Map(submissions.map((s) => [s.id, s]));
@@ -79,6 +82,12 @@ export function deriveClassStats(
     list.push(a);
     answersBySubmission.set(a.submission_id, list);
   }
+  const recipientsByAssignment = new Map<string, Set<string>>();
+  for (const recipient of assignmentStudents) {
+    const set = recipientsByAssignment.get(recipient.assignment_id) ?? new Set<string>();
+    set.add(recipient.student_id);
+    recipientsByAssignment.set(recipient.assignment_id, set);
+  }
 
   return classes.map((klass) => {
     const classEnrollments = enrollmentsByClass.get(klass.id) ?? [];
@@ -91,10 +100,12 @@ export function deriveClassStats(
     const classSubmissions = classAssignments.flatMap((a) => submissionsByAssignment.get(a.id) ?? []);
 
     const students: StudentStat[] = studentIds.map((studentId) => {
+      const studentAssignments = classAssignments.filter((a) => a.audience_type !== "students" || recipientsByAssignment.get(a.id)?.has(studentId));
+      const studentAssignmentIds = new Set(studentAssignments.map((a) => a.id));
       const submitted = new Set(
         classSubmissions.filter((s) => s.student_id === studentId && s.status !== "PENDING").map((s) => s.assignment_id),
       );
-      const overdueCount = [...overdueAssignmentIds].filter((aid) => !submitted.has(aid)).length;
+      const overdueCount = [...overdueAssignmentIds].filter((aid) => studentAssignmentIds.has(aid) && !submitted.has(aid)).length;
 
       const studentSubmissionIds = new Set(
         classSubmissions.filter((s) => s.student_id === studentId && s.status !== "PENDING").map((s) => s.id),

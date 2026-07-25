@@ -47,6 +47,19 @@ describe("deriveClassStats", () => {
     expect(result[0].students[0].overdueCount).toBe(0);
   });
 
+  it("counts overdue individual assignments only for their explicit recipient", () => {
+    const result = deriveClassStats(
+      [{ id: "c1", name: "Turma A" }],
+      [{ class_id: "c1", student_id: "s1" }, { class_id: "c1", student_id: "s2" }],
+      [{ id: "a1", class_id: "c1", due_at: PAST, audience_type: "students" }],
+      [], [],
+      [{ id: "s1", full_name: "Ana" }, { id: "s2", full_name: "Bia" }],
+      NOW,
+      [{ assignment_id: "a1", student_id: "s1" }],
+    );
+    expect(result[0].students.map((student) => student.overdueCount)).toEqual([1, 0]);
+  });
+
   it("computes accuracy from the student's own submissions/answers only, isolated across classes", () => {
     const result = deriveClassStats(
       [{ id: "c1", name: "Turma A" }, { id: "c2", name: "Turma B" }],

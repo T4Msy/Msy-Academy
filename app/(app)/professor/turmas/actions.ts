@@ -83,50 +83,45 @@ export async function removeStudentFromClass(classId: string, studentId: string)
 
 /** Assigns an exam or activity to a class with an optional due date (RF-P21). */
 export async function assignContent(
-  classId: string,
-  contentType: "EXAM" | "ACTIVITY",
-  contentId: string,
-  dueAt: string | null,
+  input: {
+    classId: string;
+    contentType: "EXAM" | "ACTIVITY";
+    contentId: string;
+    audienceType: "class" | "students";
+    studentIds: string[];
+    dueAt: string | null;
+    startsAt?: string | null;
+    applicationType?: string;
+    instructions?: string | null;
+  },
 ): Promise<void> {
-  const { supabase, user } = await requireUser();
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("tenant_id")
-    .eq("id", user.id)
-    .single();
-  if (!profile) throw new Error("Perfil não encontrado.");
-
-  if (dueAt && (!Number.isFinite(new Date(dueAt).getTime()) || new Date(dueAt).getTime() <= Date.now())) {
+  const { supabase } = await requireUser();
+  if (input.dueAt && (!Number.isFinite(new Date(input.dueAt).getTime()) || new Date(input.dueAt).getTime() <= Date.now())) {
     throw new Error("O prazo precisa estar no futuro.");
   }
-  const { data: existing } = await supabase
-    .from("assignments")
-    .select("id")
-    .eq("class_id", classId)
-    .eq("content_type", contentType)
-    .eq("content_id", contentId)
-    .is("deleted_at", null)
-    .maybeSingle();
-  if (existing) throw new Error("Este conteúdo já está atribuído a esta turma.");
 
-  const contentTable = contentType === "EXAM" ? "exams" : "activities";
-  const { data: content } = await supabase.from(contentTable).select("id").eq("id", contentId).maybeSingle();
+  const contentTable = input.contentType === "EXAM" ? "exams" : "activities";
+  const { data: content } = await supabase.from(contentTable).select("id").eq("id", input.contentId).maybeSingle();
   if (!content) throw new Error("O conteúdo não foi encontrado.");
-  const questionTable = contentType === "EXAM" ? "exam_questions" : "activity_items";
-  const questionParent = contentType === "EXAM" ? "exam_id" : "activity_id";
-  const { data: firstQuestion } = await supabase.from(questionTable).select("question_id").eq(questionParent, contentId).limit(1).maybeSingle();
+  const questionTable = input.contentType === "EXAM" ? "exam_questions" : "activity_items";
+  const questionParent = input.contentType === "EXAM" ? "exam_id" : "activity_id";
+  const { data: firstQuestion } = await supabase.from(questionTable).select("question_id").eq(questionParent, input.contentId).limit(1).maybeSingle();
   if (!firstQuestion) throw new Error("Adicione pelo menos uma questão antes de enviar este conteúdo.");
 
-  const { error } = await supabase.from("assignments").insert({
-    tenant_id: profile.tenant_id,
-    class_id: classId,
-    content_type: contentType,
-    content_id: contentId,
-    due_at: dueAt || null,
+  const { error } = await supabase.rpc("create_assignment", {
+    p_class_id: input.classId,
+    p_content_type: input.contentType,
+    p_content_id: input.contentId,
+    p_audience_type: input.audienceType,
+    p_student_ids: input.studentIds,
+    p_due_at: input.dueAt || null,
+    p_starts_at: input.startsAt || null,
+    p_application_type: input.applicationType || "regular",
+    p_instructions: input.instructions || null,
   });
   if (error) throw new Error(`Não foi possível atribuir: ${error.message}`);
 
-  revalidatePath(`/professor/turmas/${classId}`);
+  revalidatePath(`/professor/turmas/${input.classId}`);
 }
 
 /** Soft-delete an assignment (un-assign) via the SECURITY DEFINER RPC (migration 0009). */

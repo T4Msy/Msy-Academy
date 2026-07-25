@@ -32,6 +32,7 @@ export async function renameActivity(id: string, title: string): Promise<void> {
   const { supabase } = await requireUser();
   const { error } = await supabase.from("activities").update({ title: clean }).eq("id", id);
   if (error) throw new Error(`Não foi possível renomear: ${error.message}`);
+  revalidatePath("/professor/atividades");
   revalidatePath(`/professor/atividades/${id}`);
 }
 
@@ -39,6 +40,7 @@ export async function renameActivity(id: string, title: string): Promise<void> {
 export async function deleteActivity(id: string): Promise<void> {
   const { supabase } = await requireUser();
   const { error } = await supabase.rpc("soft_delete_activity", { p_activity_id: id });
+  revalidatePath("/professor/atividades");
   if (error) throw new Error(`Não foi possível excluir: ${error.message}`);
 }
 
@@ -51,14 +53,41 @@ export async function createBlankActivity(title: string): Promise<string> {
   const { data: profile } = await supabase.from("profiles").select("tenant_id").eq("id", user.id).single();
   if (!profile) throw new Error("Perfil não encontrado.");
 
-  const { data, error } = await supabase
+  let { data, error } = await supabase
     .from("activities")
-    .insert({ tenant_id: profile.tenant_id, author_id: user.id, title: clean })
+    .insert({ tenant_id: profile.tenant_id, author_id: user.id, title: clean, origin: "manual", status: "DRAFT" })
     .select("id")
     .single();
+  if (error && (error.code === "42703" || /column .* does not exist/i.test(error.message))) {
+    const legacy = await supabase.from("activities").insert({ tenant_id: profile.tenant_id, author_id: user.id, title: clean }).select("id").single();
+    data = legacy.data;
+    error = legacy.error;
+  }
   if (error || !data) throw new Error(`Não foi possível criar a atividade: ${error?.message ?? "erro"}`);
 
+  revalidatePath("/professor/atividades");
   return data.id;
+}
+
+/** Duplica apenas o conteúdo editável, sem destinatários, respostas ou notas. */
+export async function duplicateActivity(id: string): Promise<string> {
+  const { supabase, user } = await requireUser();
+  const { data: profile } = await supabase.from("profiles").select("tenant_id").eq("id", user.id).single();
+  const { data: source } = await supabase.from("activities").select("title, description, subject_id, grade_level_id, generation_params").eq("id", id).single();
+  if (!profile || !source) throw new Error("Atividade não encontrada ou sem permissão.");
+  const { data: copy, error } = await supabase.from("activities").insert({
+    tenant_id: profile.tenant_id, author_id: user.id, title: `${source.title} — Cópia`, description: source.description,
+    subject_id: source.subject_id, grade_level_id: source.grade_level_id, generation_params: source.generation_params,
+    origin: "manual", status: "DRAFT", parent_activity_id: id,
+  }).select("id").single();
+  if (error || !copy) throw new Error(`Não foi possível duplicar: ${error?.message ?? "erro"}`);
+  const { data: items } = await supabase.from("activity_items").select("question_id, position, points").eq("activity_id", id).order("position");
+  if (items?.length) {
+    const { error: itemError } = await supabase.from("activity_items").insert(items.map((item) => ({ ...item, activity_id: copy.id })));
+    if (itemError) throw new Error(`Não foi possível copiar as questões: ${itemError.message}`);
+  }
+  revalidatePath("/professor/atividades");
+  return copy.id;
 }
 
 /** Cria uma questão nova e anexa ao final da atividade. */

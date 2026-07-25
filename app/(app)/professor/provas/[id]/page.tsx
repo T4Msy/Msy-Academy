@@ -71,6 +71,15 @@ export default async function ExamPage({ params }: { params: Promise<{ id: strin
   };
   const { data: existingAssignments } = await supabase.from("assignments").select("id, class_id").eq("content_type", "EXAM").eq("content_id", exam.id).is("deleted_at", null);
   const assignmentByClass = new Map((existingAssignments ?? []).map((assignment) => [assignment.class_id, assignment.id]));
+  const classIds = (classes ?? []).map((item) => item.id);
+  const { data: enrollments } = classIds.length ? await supabase.from("enrollments").select("class_id, student_id").in("class_id", classIds).eq("status", "ACTIVE") : { data: [] as { class_id: string; student_id: string }[] };
+  const studentIds = [...new Set((enrollments ?? []).map((item) => item.student_id))];
+  const { data: profiles } = studentIds.length ? await supabase.from("profiles").select("id, full_name").in("id", studentIds) : { data: [] as { id: string; full_name: string | null }[] };
+  const nameById = new Map((profiles ?? []).map((profile) => [profile.id, profile.full_name]));
+  const studentsByClass = (enrollments ?? []).reduce<Record<string, { id: string; name: string | null }[]>>((map, item) => {
+    (map[item.class_id] ??= []).push({ id: item.student_id, name: nameById.get(item.student_id) ?? null });
+    return map;
+  }, {});
 
   return (
     <>
@@ -114,7 +123,7 @@ export default async function ExamPage({ params }: { params: Promise<{ id: strin
         </div>
         <div className="flex items-center gap-2">
           {user?.id === exam.author_id && (
-            <SendExamToClass examId={exam.id} examTitle={exam.title || "Prova sem título"} questionCount={questions.length} classes={(classes ?? []).map((klass) => ({ id: klass.id, name: klass.name, assignmentId: assignmentByClass.get(klass.id) }))} />
+            <SendExamToClass examId={exam.id} examTitle={exam.title || "Prova sem título"} questionCount={questions.length} classes={(classes ?? []).map((klass) => ({ id: klass.id, name: klass.name, assignmentId: assignmentByClass.get(klass.id) }))} studentsByClass={studentsByClass} />
           )}
           {user?.id === exam.author_id && (
             <ExamVariationDialog

@@ -18,9 +18,10 @@ export async function getProfessorClassStats(): Promise<ClassStat[]> {
 
   if (classIds.length === 0) return [];
 
-  const [{ data: enrollments }, { data: assignments }] = await Promise.all([
+  const [{ data: enrollments }, { data: assignments }, { data: assignmentStudents }] = await Promise.all([
     supabase.from("enrollments").select("class_id, student_id").in("class_id", classIds).eq("status", "ACTIVE"),
-    supabase.from("assignments").select("id, class_id, due_at").in("class_id", classIds),
+    supabase.from("assignments").select("id, class_id, due_at, audience_type").in("class_id", classIds),
+    supabase.from("assignment_students").select("assignment_id, student_id"),
   ]);
 
   const studentIds = [...new Set((enrollments ?? []).map((e) => e.student_id))];
@@ -48,5 +49,6 @@ export async function getProfessorClassStats(): Promise<ClassStat[]> {
     answers ?? [],
     profiles ?? [],
     new Date().toISOString(),
+    assignmentStudents ?? [],
   );
 }

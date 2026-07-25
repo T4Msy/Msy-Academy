@@ -26,6 +26,7 @@ const NAV: SidebarSection[] = [
     title: "Gerar conteúdo",
     items: [
       { href: "/professor/provas", label: "Minhas Provas", icon: <IconProvas /> },
+      { href: "/professor/atividades", label: "Minhas Atividades", icon: <IconAtividade /> },
       {
         kind: "group",
         label: "Criar",

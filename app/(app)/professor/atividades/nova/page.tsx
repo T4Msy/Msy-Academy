@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { NovaAtividadeTabs } from "./NovaAtividadeTabs";
+import { ActivityLibrary } from "../ActivityLibrary";
 
 export const metadata: Metadata = { title: "Nova Atividade" };
 
@@ -13,6 +14,7 @@ export default function NovaAtividadePage() {
         </div>
       </div>
       <NovaAtividadeTabs />
+      <ActivityLibrary />
     </>
   );
 }

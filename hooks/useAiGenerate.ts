@@ -33,7 +33,10 @@ export function useAiGenerate(endpoint: string, redirectTo: (id: string) => stri
         setQuotaHit(true);
         return;
       }
-      if (!res.ok) throw new Error(data?.error ?? "Não conseguimos gerar o conteúdo agora. Tente novamente.");
+      if (!res.ok) {
+        const message = typeof data?.error === "string" ? data.error : data?.error?.message;
+        throw new Error(message ?? "Não conseguimos gerar o conteúdo agora. Tente novamente.");
+      }
       if (!data?.id) throw new Error("Resposta inválida do servidor. Tente novamente.");
       router.push(redirectTo(data.id));
     } catch (err) {

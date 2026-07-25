@@ -33,6 +33,7 @@ export default async function TurmaPage({ params }: { params: Promise<{ id: stri
   const [
     { data: klass },
     { data: enrollments },
+    { data: ownedClasses },
     { data: exams },
     { data: activities },
     { data: assignments },
@@ -47,6 +48,7 @@ export default async function TurmaPage({ params }: { params: Promise<{ id: stri
       .select("student_id, status, created_at")
       .eq("class_id", id)
       .order("created_at"),
+    supabase.from("classes").select("id, name").order("name"),
     supabase.from("exams").select("id, title").order("created_at", { ascending: false }),
     supabase.from("activities").select("id, title").order("created_at", { ascending: false }),
     supabase
@@ -72,6 +74,20 @@ export default async function TurmaPage({ params }: { params: Promise<{ id: stri
     ...e,
     full_name: nameById.get(e.student_id) ?? null,
   }));
+
+  const allClassIds = (ownedClasses ?? []).map((c) => c.id);
+  const { data: allEnrollments } = allClassIds.length
+    ? await supabase.from("enrollments").select("class_id, student_id").in("class_id", allClassIds).eq("status", "ACTIVE")
+    : { data: [] as { class_id: string; student_id: string }[] };
+  const allStudentIds = [...new Set((allEnrollments ?? []).map((e) => e.student_id))];
+  const { data: allProfiles } = allStudentIds.length
+    ? await supabase.from("profiles").select("id, full_name").in("id", allStudentIds)
+    : { data: [] as { id: string; full_name: string | null }[] };
+  const allNameById = new Map((allProfiles ?? []).map((p) => [p.id, p.full_name]));
+  const studentsByClass = (allEnrollments ?? []).reduce<Record<string, { id: string; name: string | null }[]>>((map, enrollment) => {
+    (map[enrollment.class_id] ??= []).push({ id: enrollment.student_id, name: allNameById.get(enrollment.student_id) ?? null });
+    return map;
+  }, {});
 
   const origin = process.env.NEXT_PUBLIC_SITE_URL ?? "";
   const inviteUrl = `${origin}/entrar/${klass.invite_code}`;
@@ -184,6 +200,8 @@ export default async function TurmaPage({ params }: { params: Promise<{ id: stri
           </div>
           <AssignContentForm
             classId={id}
+            classes={(ownedClasses ?? []).map((c) => ({ id: c.id, name: c.name }))}
+            studentsByClass={studentsByClass}
             exams={(exams ?? []).map((e) => ({ id: e.id, title: e.title }))}
             activities={(activities ?? []).map((a) => ({ id: a.id, title: a.title }))}
           />
