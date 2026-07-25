@@ -52,6 +52,16 @@ const nextConfig = {
           },
         ],
       },
+      {
+        // Only the authenticated material-file response may be embedded by
+        // the same-origin student page. The global policy above remains DENY
+        // for every other application route.
+        source: "/aluno/materiais/:id/arquivo",
+        headers: [
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          { key: "Content-Security-Policy", value: "default-src 'none'; frame-ancestors 'self'" },
+        ],
+      },
     ];
   },
 };
