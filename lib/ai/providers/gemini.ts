@@ -27,12 +27,29 @@ export const geminiProvider: AIProvider = {
     if (!envelope?.data || typeof envelope.data !== "object") throw new Error("A Edge Function Gemini retornou dados estruturados inválidos.");
     return { data: envelope.data, tokensIn: envelope.tokensIn ?? 0, tokensOut: envelope.tokensOut ?? 0 };
   },
-  async *streamChat(args: { messages: ChatMessage[]; context?: string; onUsage?: (usage: { tokensIn: number; tokensOut: number }) => void }) {
-    void args;
-    throw new Error("O provider Gemini não implementa streaming nesta integração.");
+  async *streamChat({ messages, context, onUsage }: { messages: ChatMessage[]; context?: string; onUsage?: (usage: { tokensIn: number; tokensOut: number }) => void }) {
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!serviceRoleKey) throw new Error("SUPABASE_SERVICE_ROLE_KEY não está configurada para a chamada Gemini.");
+    const response = await fetch(functionUrl(), {
+      method: "POST",
+      headers: { "Content-Type": "application/json", apikey: serviceRoleKey, Authorization: `Bearer ${serviceRoleKey}` },
+      body: JSON.stringify({ task: "TUTOR", input: { messages, context } }),
+      cache: "no-store",
+    });
+    if (!response.ok) throw new Error(`A Edge Function Gemini respondeu HTTP ${response.status}.`);
+    const envelope = await response.json() as GeminiEnvelope<{ text?: string }>;
+    const text = envelope.data?.text?.trim();
+    if (!text) throw new Error("A Edge Function Gemini não retornou uma resposta do tutor.");
+    for (const chunk of text.match(/\S+\s*/g) ?? []) yield chunk;
+    onUsage?.({ tokensIn: envelope.tokensIn ?? 0, tokensOut: envelope.tokensOut ?? 0 });
   },
   async embed(args: { texts: string[] }) {
-    void args;
-    throw new Error("O provider Gemini não implementa embeddings nesta integração.");
+    // A coluna de RAG atual é vector(8). Mantemos uma projeção determinística
+    // compatível enquanto um provider de embeddings dedicado não é integrado.
+    return args.texts.map((text) => {
+      let hash = 0;
+      for (let index = 0; index < text.length; index++) hash = (hash * 31 + text.charCodeAt(index)) >>> 0;
+      return Array.from({ length: 8 }, (_, index) => ((hash >> index) % 100) / 100);
+    });
   },
 };

@@ -20,6 +20,11 @@ type Question = {
   bnccCodes?: string[];
 };
 
+type TutorInput = {
+  messages?: { role?: "user" | "assistant"; content?: string }[];
+  context?: string;
+};
+
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 }
@@ -55,7 +60,25 @@ Deno.serve(async (request) => {
 
   try {
     const payload = await request.json() as { task?: string; schema?: unknown; input?: Record<string, unknown> };
-    if (!payload.input || (payload.task !== "EXAM_GEN" && payload.task !== "ACTIVITY_GEN")) return json({ error: "Payload de geração inválido." }, 400);
+    if (!payload.input || (payload.task !== "EXAM_GEN" && payload.task !== "ACTIVITY_GEN" && payload.task !== "TUTOR")) return json({ error: "Payload de geração inválido." }, 400);
+    if (payload.task === "TUTOR") {
+      const tutorInput = payload.input as TutorInput;
+      const messages = (tutorInput.messages ?? []).filter((message) => message.content?.trim());
+      if (!messages.length) return json({ error: "Mensagem do tutor ausente." }, 400);
+      const context = tutorInput.context?.trim();
+      const system = "Você é um tutor de IA para estudantes brasileiros. Responda em português, com clareza e em tom acolhedor. Explique o raciocínio passo a passo quando isso ajudar. " + (context ? `Use este material da turma como referência prioritária:\n${context}` : "Não há material da turma disponível; deixe claro quando a resposta for conhecimento geral.");
+      const contents = [{ role: "user", parts: [{ text: `${system}\n\nConversa:\n${messages.map((message) => `${message.role === "assistant" ? "Tutor" : "Aluno"}: ${message.content}`).join("\n")}\n\nResponda à última mensagem do aluno.` }] }];
+      const geminiResponse = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
+        body: JSON.stringify({ contents, generationConfig: { temperature: 0.6 } }),
+      });
+      if (!geminiResponse.ok) return json({ error: "Falha ao consultar o Gemini." }, 502);
+      const raw = await geminiResponse.json() as { candidates?: { content?: { parts?: { text?: string }[] } }[]; usageMetadata?: { promptTokenCount?: number; candidatesTokenCount?: number } };
+      const text = raw.candidates?.[0]?.content?.parts?.find((part) => part.text)?.text?.trim();
+      if (!text) return json({ error: "O Gemini não retornou uma resposta do tutor." }, 502);
+      return json({ data: { text }, tokensIn: raw.usageMetadata?.promptTokenCount ?? 0, tokensOut: raw.usageMetadata?.candidatesTokenCount ?? 0 });
+    }
     const input = payload.input;
     const subject = String(input.materia ?? "").trim();
     const topic = String(input.assunto ?? "").trim();
