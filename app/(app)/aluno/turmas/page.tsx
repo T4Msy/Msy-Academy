@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { EmptyState } from "@/components/EmptyState";
 import { JoinClassDialog } from "./JoinClassDialog";
@@ -79,9 +80,10 @@ export default async function AlunoTurmasPage() {
       ) : (
         <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,280px),1fr))] gap-3.5">
           {classes.map((klass) => (
-            <div
+            <Link
+              href={`/aluno/turmas/${klass.id}`}
               key={klass.id}
-              className="flex flex-col gap-2.5 rounded-md border border-border bg-card p-4.5 transition-all hover:-translate-y-0.5 hover:border-border-hover hover:bg-card-2"
+              className="flex min-h-36 flex-col gap-2.5 rounded-md border border-border bg-card p-4.5 transition-all hover:-translate-y-0.5 hover:border-border-hover hover:bg-card-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-glow"
             >
               <div className="font-display text-base font-bold tracking-[-0.2px] text-foreground">
                 {klass.name}
@@ -95,7 +97,7 @@ export default async function AlunoTurmasPage() {
                 <span>Entrada</span>
                 <span>{formatDate(klass.enrollmentCreatedAt)}</span>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       )}

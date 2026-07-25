@@ -13,6 +13,11 @@ async function requireUser() {
   return { supabase, user };
 }
 
+async function requireClassOwner(supabase: Awaited<ReturnType<typeof createClient>>, userId: string, classId: string) {
+  const { data: classroom } = await supabase.from("classes").select("owner_id").eq("id", classId).maybeSingle();
+  if (!classroom || classroom.owner_id !== userId) throw new Error("Você não possui permissão para modificar esta turma.");
+}
+
 function generateInviteCode(): string {
   // 6 chars from an unambiguous alphabet (no 0/O/1/I) — easy to read aloud/type.
   const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -62,7 +67,8 @@ export async function createClass(name: string): Promise<string> {
  * cascade in the database (enrollments, assignments, submissions, grades and
  * answer sheets/scans). */
 export async function deleteClass(classId: string): Promise<void> {
-  const { supabase } = await requireUser();
+  const { supabase, user } = await requireUser();
+  await requireClassOwner(supabase, user.id, classId);
   const { error } = await supabase.rpc("delete_class", { p_class_id: classId });
   if (error) throw new Error(`Não foi possível excluir a turma: ${error.message}`);
 
@@ -71,7 +77,8 @@ export async function deleteClass(classId: string): Promise<void> {
 
 /** Removes only the enrollment row. The student user/account is never touched. */
 export async function removeStudentFromClass(classId: string, studentId: string): Promise<void> {
-  const { supabase } = await requireUser();
+  const { supabase, user } = await requireUser();
+  await requireClassOwner(supabase, user.id, classId);
   const { error } = await supabase.rpc("remove_student_from_class", {
     p_class_id: classId,
     p_student_id: studentId,
@@ -95,7 +102,8 @@ export async function assignContent(
     instructions?: string | null;
   },
 ): Promise<void> {
-  const { supabase } = await requireUser();
+  const { supabase, user } = await requireUser();
+  await requireClassOwner(supabase, user.id, input.classId);
   if (input.dueAt && (!Number.isFinite(new Date(input.dueAt).getTime()) || new Date(input.dueAt).getTime() <= Date.now())) {
     throw new Error("O prazo precisa estar no futuro.");
   }

@@ -57,7 +57,7 @@ export default async function TurmaPage({ params }: { params: Promise<{ id: stri
       .eq("class_id", id)
       .order("created_at", { ascending: false }),
   ]);
-  if (!klass) notFound();
+  if (!klass || user?.id !== klass.owner_id) notFound();
   const isOwner = user?.id === klass.owner_id;
 
   const activeEnrollments = (enrollments ?? []).filter((e) => e.status === "ACTIVE");
