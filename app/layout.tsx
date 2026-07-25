@@ -65,6 +65,13 @@ const THEME_INIT_SCRIPT = `
       ? stored
       : (window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
     document.documentElement.setAttribute("data-theme", theme);
+    var media = window.matchMedia("(prefers-color-scheme: light)");
+    var followSystem = function () {
+      if (localStorage.getItem("theme") === "system") {
+        document.documentElement.setAttribute("data-theme", media.matches ? "light" : "dark");
+      }
+    };
+    media.addEventListener("change", followSystem);
   } catch (e) {}
   try {
     var sidebar = localStorage.getItem("sidebar-collapsed") === "true" ? "collapsed" : "expanded";

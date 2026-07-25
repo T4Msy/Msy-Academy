@@ -5,6 +5,7 @@ import { AiUsageCard } from "@/components/settings/AiUsageCard";
 import { PlanCard } from "@/components/settings/PlanCard";
 import { RolesCard } from "@/components/settings/RolesCard";
 import { DataAndDangerZone } from "@/components/settings/DataAndDangerZone";
+import { ThemePreferenceSelector } from "@/components/settings/ThemePreferenceSelector";
 
 /** Shared by professor/aluno configuracoes pages — identical except returnPath. */
 export async function ConfiguracoesPageContent({
@@ -23,6 +24,9 @@ export async function ConfiguracoesPageContent({
           <h1 className="font-display text-3xl font-extrabold tracking-[-0.6px] text-foreground">Configurações</h1>
           <p className="mt-1 text-[13.5px] text-muted-foreground">Gerencie suas informações de conta.</p>
         </div>
+      </div>
+      <div className="mb-4 max-w-[1480px]">
+        <ThemePreferenceSelector />
       </div>
       <div className="grid grid-cols-[repeat(auto-fit,minmax(320px,480px))] items-start gap-4">
         <section className="overflow-hidden rounded-lg border border-border bg-card shadow-elevated transition-colors">

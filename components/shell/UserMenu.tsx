@@ -12,9 +12,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ThemeToggle } from "./ThemeToggle";
 
-/** Topbar avatar dropdown: settings link, theme toggle e sign out.
+/** Topbar avatar dropdown: settings link e sign out.
  *  Primeiro overlay do shell nas primitivas do DS (Radix): ganha focus
  *  trap, navegação por teclado e fechamento por Esc de graça. */
 export function UserMenu({
@@ -56,13 +55,6 @@ export function UserMenu({
             <Settings aria-hidden />
             Configurações
           </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          asChild
-          className="my-0.5 bg-card text-foreground focus:bg-card-2 focus:text-foreground data-[highlighted]:bg-card-2"
-          onSelect={(e) => e.preventDefault()}
-        >
-          <ThemeToggle variant="menu-item" />
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <form ref={logoutFormRef} action={logout} className="contents">
