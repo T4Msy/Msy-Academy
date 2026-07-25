@@ -5,6 +5,7 @@ import { AssignContentForm } from "./AssignContentForm";
 import { UnassignButton } from "./UnassignButton";
 import { ConfirmActionButton } from "@/components/ConfirmActionButton";
 import { deleteClass, removeStudentFromClass } from "../actions";
+import { isAssessmentExpired } from "@/lib/assessments/deadline";
 
 export const dynamic = "force-dynamic";
 
@@ -208,6 +209,11 @@ export default async function TurmaPage({ params }: { params: Promise<{ id: stri
                       <span className="mr-2 inline-flex items-center gap-1.5 rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs whitespace-nowrap text-muted-foreground">
                         {a.content_type === "EXAM" ? "Prova" : "Atividade"}
                       </span>
+                      {isAssessmentExpired(a.due_at) && (
+                        <span className="mr-2 inline-flex items-center gap-1.5 rounded-full border border-danger-border bg-danger-dim px-2.5 py-1 text-xs font-semibold whitespace-nowrap text-danger-text">
+                          Encerrada
+                        </span>
+                      )}
                       {title ?? "(conteúdo removido)"} — {formatDueDate(a.due_at)}
                     </span>
                     <span className="flex flex-wrap items-center gap-2 sm:justify-end">

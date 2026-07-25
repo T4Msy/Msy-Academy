@@ -3,6 +3,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { ResolveForm, type ResolveQuestion } from "../../_shared/ResolveForm";
 import { ResultsView, type ResultQuestion, type AnswerRecord } from "../../_shared/ResultsView";
+import { isAssessmentExpired } from "@/lib/assessments/deadline";
 
 export const dynamic = "force-dynamic";
 
@@ -16,9 +17,30 @@ export default async function TarefaPage({ params }: { params: Promise<{ id: str
   const { data: assignment } = await supabase.from("assignments").select("id, content_type, content_id, due_at").eq("id", id).single();
   if (!assignment) notFound();
 
+  const { data: submission } = await supabase
+    .from("submissions")
+    .select("id, status, submitted_at")
+    .eq("assignment_id", id)
+    .eq("student_id", user!.id)
+    .maybeSingle();
+
   const title = assignment.content_type === "EXAM"
     ? (await supabase.from("exams").select("title").eq("id", assignment.content_id).single()).data?.title
     : (await supabase.from("activities").select("title").eq("id", assignment.content_id).single()).data?.title;
+
+  const expired = isAssessmentExpired(assignment.due_at);
+  if (expired && (!submission || submission.status === "PENDING")) {
+    return (
+      <section className="overflow-hidden rounded-lg border border-danger-border bg-card shadow-elevated" role="alert" aria-labelledby="expired-assessment-title">
+        <div className="p-5.5 sm:p-7">
+          <span className="inline-flex rounded-full border border-danger-border bg-danger-dim px-2.5 py-1 text-xs font-semibold text-danger-text">Prazo expirado</span>
+          <h1 id="expired-assessment-title" className="mt-4 font-display text-2xl font-extrabold text-foreground">{title ?? "Avaliação"}</h1>
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">A data limite desta avaliação foi encerrada. Ela não aceita mais respostas.</p>
+          <Link href="/aluno/tarefas?view=expired" className="mt-5 inline-flex items-center rounded-full border border-border px-4 py-2 text-sm font-semibold text-foreground outline-none transition-colors hover:border-border-hover hover:bg-card-2 focus-visible:ring-[3px] focus-visible:ring-brand-glow">Ver avaliações encerradas</Link>
+        </div>
+      </section>
+    );
+  }
 
   const items = assignment.content_type === "EXAM"
     ? await supabase.from("exam_questions").select("position, questions(id, type, statement, options, correct_answer, explanation)").eq("exam_id", assignment.content_id).order("position")
@@ -27,13 +49,6 @@ export default async function TarefaPage({ params }: { params: Promise<{ id: str
   const questions: ResultQuestion[] = (items.data ?? [])
     .filter((it) => it.questions)
     .map((it) => it.questions as unknown as ResultQuestion);
-
-  const { data: submission } = await supabase
-    .from("submissions")
-    .select("id, status, submitted_at")
-    .eq("assignment_id", id)
-    .eq("student_id", user!.id)
-    .maybeSingle();
 
   const isDone = submission && submission.status !== "PENDING";
 

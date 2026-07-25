@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { EmptyState } from "@/components/EmptyState";
+import { isAssessmentExpired } from "@/lib/assessments/deadline";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Tarefas" };
@@ -18,6 +19,7 @@ function formatDate(iso: string | null): string {
 export default async function TarefasPage({ searchParams }: { searchParams: Promise<{ view?: string }> }) {
   const { view } = await searchParams;
   const completedView = view === "completed";
+  const expiredView = view === "expired";
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -45,25 +47,29 @@ export default async function TarefasPage({ searchParams }: { searchParams: Prom
   const gradeBySubmission = new Map((grades ?? []).map((grade) => [grade.submission_id, grade.total_score]));
   const visibleAssignments = list.filter((assignment) => {
     const status = submissionByAssignment.get(assignment.id)?.status;
-    return completedView ? status === "SUBMITTED" || status === "GRADED" : !status || status === "PENDING";
+    const expired = isAssessmentExpired(assignment.due_at);
+    if (completedView) return status === "SUBMITTED" || status === "GRADED";
+    if (expiredView) return expired && (!status || status === "PENDING");
+    return !expired && (!status || status === "PENDING");
   });
 
   return (
     <>
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-display text-3xl font-extrabold tracking-[-0.6px] text-foreground">{completedView ? "Tarefas Concluídas" : "Tarefas"}</h1>
-          <p className="mt-1 text-[13.5px] text-muted-foreground">{visibleAssignments.length > 0 ? `${visibleAssignments.length} tarefa${visibleAssignments.length > 1 ? "s" : ""}` : completedView ? "As tarefas enviadas aparecem neste histórico." : "As tarefas atribuídas pela sua turma aparecem aqui."}</p>
+          <h1 className="font-display text-3xl font-extrabold tracking-[-0.6px] text-foreground">{completedView ? "Tarefas Concluídas" : expiredView ? "Tarefas Encerradas" : "Tarefas"}</h1>
+          <p className="mt-1 text-[13.5px] text-muted-foreground">{visibleAssignments.length > 0 ? `${visibleAssignments.length} tarefa${visibleAssignments.length > 1 ? "s" : ""}` : completedView ? "As tarefas enviadas aparecem neste histórico." : expiredView ? "Os prazos destas avaliações foram encerrados." : "As tarefas atribuídas pela sua turma aparecem aqui."}</p>
         </div>
       </div>
 
       <nav aria-label="Filtro de tarefas" className="mb-5 flex gap-2 border-b border-border">
-        <Link href="/aluno/tarefas" className={`border-b-2 px-3 py-2 text-sm font-semibold ${!completedView ? "border-brand text-brand-text" : "border-transparent text-muted-foreground hover:text-foreground"}`}>Pendentes</Link>
+        <Link href="/aluno/tarefas" className={`border-b-2 px-3 py-2 text-sm font-semibold ${!completedView && !expiredView ? "border-brand text-brand-text" : "border-transparent text-muted-foreground hover:text-foreground"}`}>Pendentes</Link>
+        <Link href="/aluno/tarefas?view=expired" className={`border-b-2 px-3 py-2 text-sm font-semibold ${expiredView ? "border-brand text-brand-text" : "border-transparent text-muted-foreground hover:text-foreground"}`}>Encerradas</Link>
         <Link href="/aluno/tarefas?view=completed" className={`border-b-2 px-3 py-2 text-sm font-semibold ${completedView ? "border-brand text-brand-text" : "border-transparent text-muted-foreground hover:text-foreground"}`}>Tarefas Concluídas</Link>
       </nav>
 
       {visibleAssignments.length === 0 ? (
-        <EmptyState variant="tarefa" title={completedView ? "Nenhuma tarefa concluída" : "Nenhuma tarefa pendente"} text={completedView ? "Envie uma atividade para consultá-la aqui depois." : "Entre em uma turma para ver as tarefas atribuídas pelo seu professor."} />
+        <EmptyState variant="tarefa" title={completedView ? "Nenhuma tarefa concluída" : expiredView ? "Nenhuma tarefa encerrada" : "Nenhuma tarefa pendente"} text={completedView ? "Envie uma atividade para consultá-la aqui depois." : expiredView ? "As avaliações vencidas aparecerão aqui." : "Entre em uma turma para ver as tarefas atribuídas pelo seu professor."} />
       ) : (
         <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-3.5">
           {visibleAssignments.map((assignment) => {
@@ -71,11 +77,13 @@ export default async function TarefasPage({ searchParams }: { searchParams: Prom
             const submission = submissionByAssignment.get(assignment.id);
             const status = submission?.status;
             const grade = submission ? gradeBySubmission.get(submission.id) : undefined;
+            const expired = isAssessmentExpired(assignment.due_at);
             return (
               <Link key={assignment.id} href={`/aluno/tarefas/${assignment.id}`} className="flex flex-col gap-2.5 rounded-md border border-border bg-card p-4.5 transition-all hover:-translate-y-0.5 hover:border-border-hover hover:bg-card-2">
                 <div className="font-display text-base font-bold tracking-[-0.2px] text-foreground">{title ?? "Tarefa"}</div>
                 <div className="mt-0.5 flex flex-wrap gap-1.5">
                   <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">{assignment.content_type === "EXAM" ? "Prova" : "Atividade"}</span>
+                  {expired && <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-danger-border bg-danger-dim px-2.5 py-1 text-xs font-semibold text-danger-text">Prazo expirado</span>}
                   <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">{status === "GRADED" ? "Corrigida" : status ? "Enviada" : "Pendente"}</span>
                   {grade !== undefined && <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">Nota: {grade}</span>}
                 </div>

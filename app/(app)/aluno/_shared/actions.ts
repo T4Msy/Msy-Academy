@@ -2,7 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createAdminClient, createClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
+import { isAssessmentExpired } from "@/lib/assessments/deadline";
 
 async function requireUser() {
   const supabase = await createClient();
@@ -25,6 +26,16 @@ export async function submitAnswers(
   answers: Record<string, string>,
 ): Promise<string> {
   const { supabase, user } = await requireUser();
+  let assignmentDueAt: string | null = null;
+
+  if ("assignmentId" in parent) {
+    const { data: assignment } = await supabase.from("assignments").select("due_at").eq("id", parent.assignmentId).maybeSingle();
+    if (!assignment) throw new Error("Esta avaliação não está mais disponível.");
+    assignmentDueAt = assignment.due_at;
+    if (isAssessmentExpired(assignment.due_at)) {
+      throw new Error("A avaliação foi encerrada e não aceita mais respostas.");
+    }
+  }
 
   const filter: { assignment_id: string | null; simulado_id: string | null; student_id: string } =
     "assignmentId" in parent
@@ -62,21 +73,23 @@ export async function submitAnswers(
   }));
   if (rows.length > 0) {
     const { error: insertErr } = await supabase.from("submission_answers").insert(rows);
-    if (insertErr) throw new Error(`Não foi possível salvar as respostas: ${insertErr.message}`);
+    if (insertErr) {
+      if (isAssessmentExpired(assignmentDueAt)) {
+        throw new Error("A avaliação foi encerrada e não aceita mais respostas.");
+      }
+      throw new Error("Não foi possível salvar as respostas. Tente novamente.");
+    }
   }
 
-  // A transição é feita server-side para que a entrega aguarde a correção do
-  // professor; não chamamos a RPC legada que atribui nota automaticamente.
-  const admin = createAdminClient();
-  const { data: submitted, error: submitErr } = await admin
-    .from("submissions")
-    .update({ status: "SUBMITTED", submitted_at: new Date().toISOString() })
-    .eq("id", submission.id)
-    .eq("student_id", user.id)
-    .eq("status", "PENDING")
-    .select("id")
-    .maybeSingle();
-  if (submitErr || !submitted) throw new Error(`Não foi possível enviar: ${submitErr?.message ?? "a entrega já foi alterada"}`);
+  // A transição é atômica e revalida o prazo no banco, protegendo também
+  // contra a corrida entre a checagem acima e o envio efetivo.
+  const { error: submitErr } = await supabase.rpc("close_submission", { p_submission_id: submission.id });
+  if (submitErr) {
+    if (submitErr.message.includes("avaliação foi encerrada")) {
+      throw new Error("A avaliação foi encerrada e não aceita mais respostas.");
+    }
+    throw new Error("Não foi possível enviar a avaliação. Tente novamente.");
+  }
 
   if ("assignmentId" in parent) {
     revalidatePath(`/aluno/tarefas/${parent.assignmentId}`);
