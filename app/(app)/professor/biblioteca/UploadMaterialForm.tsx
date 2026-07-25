@@ -3,6 +3,7 @@
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { uploadMaterialFile } from "./actions";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export function UploadMaterialForm({ classes }: { classes: { id: string; name: string }[] }) {
   const [open, setOpen] = useState(false);
@@ -76,12 +77,17 @@ export function UploadMaterialForm({ classes }: { classes: { id: string; name: s
         </div>
         <div className="flex flex-col gap-1.5">
           <label className="block text-sm font-semibold text-foreground" htmlFor="material-class">Turma (opcional)</label>
-          <select className="w-full appearance-none rounded-sm border border-border bg-[rgba(var(--overlay-rgb),0.04)] px-3 py-2.5 text-md text-foreground outline-none transition-colors focus:border-brand-border focus:ring-[3px] focus:ring-brand-glow" id="material-class" value={classId} onChange={(e) => setClassId(e.target.value)}>
-            <option value="">Nenhuma — só Biblioteca</option>
-            {classes.map((c) => (
-              <option key={c.id} value={c.id}>{c.name}</option>
-            ))}
-          </select>
+          <Select value={classId || "none"} onValueChange={(value) => setClassId(value === "none" ? "" : value)}>
+            <SelectTrigger id="material-class" className="w-full bg-[rgba(var(--overlay-rgb),0.04)] text-md text-foreground">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent position="popper" className="w-[var(--radix-select-trigger-width)] max-w-[calc(100vw-2rem)] border-border bg-popover text-popover-foreground shadow-elevated">
+              <SelectItem value="none">Nenhuma — só Biblioteca</SelectItem>
+              {classes.map((c) => (
+                <SelectItem key={c.id} value={c.id} className="whitespace-normal">{c.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <p className="mt-1 text-xs leading-snug text-muted-foreground">
             Anexar a uma turma torna o conteúdo disponível para o Tutor IA dos alunos matriculados.
           </p>

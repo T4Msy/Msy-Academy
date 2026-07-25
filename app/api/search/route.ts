@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { STUDY_MATERIAL_KIND } from "@/lib/materials/studyMaterial";
 
 export const runtime = "nodejs";
 
@@ -23,7 +24,7 @@ export async function GET(request: Request) {
   if (q.length < 2) return NextResponse.json({ materials: [], classes: [] });
 
   const [materialsRes, classesRes] = await Promise.all([
-    supabase.from("materials").select("id, kind, ref_id, title").textSearch("search_vector", q, { type: "plain", config: "portuguese" }).limit(5),
+    supabase.from("materials").select("id, kind, ref_id, title").eq("kind", STUDY_MATERIAL_KIND).textSearch("search_vector", q, { type: "plain", config: "portuguese" }).limit(5),
     supabase.from("classes").select("id, name").ilike("name", `%${q}%`).limit(5),
   ]);
 
