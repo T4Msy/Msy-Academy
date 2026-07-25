@@ -27,6 +27,7 @@ export function ResultsView({
   questions: ResultQuestion[];
   answersById: Map<string, AnswerRecord>;
 }) {
+  const revealCorrection = status === "GRADED";
   return (
     <>
       {status === "GRADED" && grade && (
@@ -52,8 +53,8 @@ export function ResultsView({
                 <div className="flex flex-wrap items-center gap-2.5">
                   <div className="whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2 py-[3px] font-display text-2xs font-bold tracking-[0.5px] uppercase text-muted-foreground">Questão {i + 1}</div>
                   <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">{TYPE_LABEL[q.type]}</span>
-                  {a?.is_correct === true && <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">Correta</span>}
-                  {a?.is_correct === false && <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">Incorreta</span>}
+                  {revealCorrection && a?.is_correct === true && <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">Correta</span>}
+                  {revealCorrection && a?.is_correct === false && <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">Incorreta</span>}
                 </div>
               </div>
               <div className="flex flex-col gap-4.5 p-5.5">
@@ -63,7 +64,7 @@ export function ResultsView({
                     {q.options.map((opt) => (
                       <li
                         key={opt.id}
-                        className={`flex items-baseline gap-2 rounded-sm border px-3 py-[9px] text-[13.5px] ${opt.id === q.correct_answer ? "border-brand-border bg-brand-dim text-foreground" : "border-border text-muted-foreground"}`}
+                        className={`flex items-baseline gap-2 rounded-sm border px-3 py-[9px] text-[13.5px] ${revealCorrection && opt.id === q.correct_answer ? "border-brand-border bg-brand-dim text-foreground" : "border-border text-muted-foreground"}`}
                       >
                         <span className="shrink-0 font-display font-bold text-brand-text">{opt.id}</span> {opt.text}
                         {a?.answer === opt.id && " (sua resposta)"}
@@ -74,12 +75,12 @@ export function ResultsView({
                 {q.type === "DISCURSIVA" && (
                   <>
                     <p className="text-[13.5px] leading-relaxed text-muted-foreground"><b>Sua resposta:</b> {a?.answer}</p>
-                    <p className="text-[13.5px] leading-relaxed text-muted-foreground">
+                    {revealCorrection && <p className="text-[13.5px] leading-relaxed text-muted-foreground">
                       <b>Resposta de referência:</b> {Array.isArray(q.correct_answer) ? q.correct_answer.join(", ") : q.correct_answer}
-                    </p>
+                    </p>}
                   </>
                 )}
-                {q.explanation && <p className="mt-1 text-xs leading-snug text-muted-foreground"><b>Explicação:</b> {q.explanation}</p>}
+                {revealCorrection && q.explanation && <p className="mt-1 text-xs leading-snug text-muted-foreground"><b>Explicação:</b> {q.explanation}</p>}
               </div>
             </section>
           );

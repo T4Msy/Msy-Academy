@@ -91,6 +91,15 @@ export async function saveGrade(
   revalidatePath("/professor/dashboard");
 }
 
+/** Applies objective-question answer keys only after the owning teacher asks for it. */
+export async function gradeByAnswerKey(submissionId: string): Promise<number> {
+  const { supabase } = await requireUser();
+  const { data, error } = await supabase.rpc("grade_submission_by_answer_key", { p_submission_id: submissionId });
+  if (error) throw new Error(`Não foi possível corrigir pelo gabarito: ${error.message}`);
+  revalidatePath(`/professor/correcao/${submissionId}`);
+  return Number(data ?? 0);
+}
+
 const batchInputSchema = z.object({ submissionIds: z.array(z.string().uuid()).min(1).max(25) });
 
 type BatchAnswerRow = {

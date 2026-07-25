@@ -34,7 +34,7 @@ export function CorrecaoReview({
     const feedback = Object.values(scores).map((s) => s.feedback).filter(Boolean).join(" ");
     startTransition(async () => {
       try {
-        await saveGrade(submissionId, totalScore, feedback, "AI_SUGGESTED");
+        await saveGrade(submissionId, totalScore, feedback, "TEACHER");
         router.push("/professor/correcao");
       } catch (err) {
         setError(err instanceof Error ? err.message : "Não conseguimos salvar a correção. Tente novamente.");
