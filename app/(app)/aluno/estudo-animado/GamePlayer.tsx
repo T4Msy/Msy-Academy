@@ -22,6 +22,7 @@ export function GamePlayer({ initialRun }: { initialRun: StudyGameRun }) {
   const [selected, setSelected] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<{ correct: boolean; correctAnswer: string; text: string | null } | null>(null);
   const [nextRun, setNextRun] = useState<StudyGameRun | null>(null);
+  const [preparingNextStage, setPreparingNextStage] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const router = useRouter();
@@ -33,12 +34,14 @@ export function GamePlayer({ initialRun }: { initialRun: StudyGameRun }) {
   function submit() {
     if (!selected || feedback) return;
     setError(null);
+    const needsNewBatch = (run.currentQuestionIndex + 1) % 10 === 0;
+    if (needsNewBatch) setPreparingNextStage(true);
     startTransition(async () => {
       try {
         const result = await answerStudyGameQuestion(run.id, run.currentQuestionIndex, selected);
         setFeedback({ correct: result.isCorrect, correctAnswer: result.correctAnswer, text: result.explanation });
         setNextRun({ ...run, questions: [...run.questions, ...result.appendedQuestions], score: result.score, combo: result.combo, livesRemaining: result.livesRemaining, status: result.status, currentQuestionIndex: result.nextQuestionIndex, correctCount: run.correctCount + (result.isCorrect ? 1 : 0) });
-      } catch (err) { setError(err instanceof Error ? err.message : "Não foi possível registrar sua resposta."); }
+      } catch (err) { setError(err instanceof Error ? err.message : "Não foi possível registrar sua resposta."); } finally { setPreparingNextStage(false); }
     });
   }
 
@@ -55,6 +58,28 @@ export function GamePlayer({ initialRun }: { initialRun: StudyGameRun }) {
     return <section className="relative mx-auto max-w-xl overflow-hidden rounded-[28px] border border-brand-border bg-card p-8 text-center shadow-elevated">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-48 bg-[radial-gradient(ellipse_at_top,rgba(217,119,87,.3),transparent_68%)]" />
       <div className="relative"><div className={`mx-auto flex size-20 items-center justify-center rounded-full border-4 ${won ? "border-brand bg-brand-dim" : "border-danger-border bg-danger-dim"}`}>{won ? <Trophy size={38} className="text-brand" /> : <Shield size={36} className="text-danger" />}</div><p className="mt-6 text-xs font-black uppercase tracking-[.2em] text-brand-text">Resultado da missão</p><h1 className="mt-2 font-display text-4xl font-extrabold">{won ? "Missão concluída!" : "Você chegou longe!"}</h1><p className="mx-auto mt-3 max-w-sm text-muted-foreground">{won ? "Você atravessou todas as fases." : "Treino bom é assim: você aprende, volta mais forte e bate o recorde."}</p><div className="mt-7 grid grid-cols-3 divide-x divide-border rounded-2xl border border-border bg-card-2 py-4"><div><b className="block text-2xl text-brand-text">{run.score}</b><span className="text-[11px] uppercase tracking-wide text-muted-foreground">XP ganhos</span></div><div><b className="block text-2xl">{run.correctCount}/{run.questions.length}</b><span className="text-[11px] uppercase tracking-wide text-muted-foreground">acertos</span></div><div><b className="block text-2xl text-warning">x{Math.max(1, run.combo)}</b><span className="text-[11px] uppercase tracking-wide text-muted-foreground">combo final</span></div></div><button onClick={() => router.replace("/aluno/estudo-animado")} className="mt-7 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3.5 font-display font-bold text-primary-foreground"><Rocket size={18} /> Escolher nova missão</button></div>
+    </section>;
+  }
+
+  if (preparingNextStage) {
+    const nextLevel = difficultyForStage(run.currentQuestionIndex + 1);
+    return <section className="relative mx-auto flex min-h-[560px] max-w-3xl items-center justify-center overflow-hidden rounded-[28px] border border-brand-border bg-[#20110c] p-8 text-center text-white shadow-elevated">
+      <div className="pointer-events-none absolute inset-0 opacity-45 [background-image:radial-gradient(#f8c5a9_1px,transparent_1px)] [background-size:22px_22px]" />
+      <div className="pointer-events-none absolute left-1/2 top-1/2 size-80 -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand/25 blur-3xl" />
+      <div className="relative flex max-w-sm flex-col items-center">
+        <div className="relative flex size-40 items-center justify-center">
+          <div className="absolute inset-2 animate-ping rounded-full border border-[#f8c5a9]/40" />
+          <div className="absolute bottom-1 h-4 w-24 animate-pulse rounded-[100%] bg-black/30 blur-sm" />
+          <div className="relative animate-[bounce_1.1s_ease-in-out_infinite] text-7xl drop-shadow-[0_12px_12px_rgba(0,0,0,.35)]" role="img" aria-label="Capi, a capivara exploradora">🦫</div>
+          <Rocket size={28} className="absolute right-1 top-5 rotate-45 animate-[pulse_1s_ease-in-out_infinite] text-[#f8c5a9]" />
+          <Sparkles size={19} className="absolute left-2 top-8 animate-[pulse_1.3s_ease-in-out_infinite] text-[#ffd166]" />
+        </div>
+        <p className="mt-7 text-xs font-black uppercase tracking-[.2em] text-[#f8c5a9]">Capi está explorando</p>
+        <h2 className="mt-3 font-display text-3xl font-extrabold">Preparando a próxima rota…</h2>
+        <p className="mt-3 text-sm leading-relaxed text-white/70">Você chegou longe! A Capi está montando desafios de nível <b className="text-white">{nextLevel}</b> para a próxima etapa.</p>
+        <div className="mt-7 h-2 w-56 overflow-hidden rounded-full bg-white/10"><div className="h-full w-1/2 animate-pulse rounded-full bg-gradient-to-r from-brand to-[#f8c5a9]" /></div>
+        <p className="mt-3 text-xs text-white/50">Isso pode levar alguns segundos.</p>
+      </div>
     </section>;
   }
 

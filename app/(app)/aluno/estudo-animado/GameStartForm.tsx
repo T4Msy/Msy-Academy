@@ -24,6 +24,20 @@ export function GameStartForm({ suggestions }: { suggestions: string[] }) {
     });
   }
 
+  if (pending) {
+    return <section className="relative flex min-h-[520px] items-center justify-center overflow-hidden rounded-[28px] border border-brand-border bg-[#20110c] p-8 text-center text-white shadow-elevated">
+      <div className="pointer-events-none absolute inset-0 opacity-45 [background-image:radial-gradient(#f8c5a9_1px,transparent_1px)] [background-size:22px_22px]" />
+      <div className="pointer-events-none absolute left-1/2 top-1/2 size-80 -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand/25 blur-3xl" />
+      <div className="relative flex max-w-sm flex-col items-center">
+        <div className="relative flex size-40 items-center justify-center"><div className="absolute inset-2 animate-ping rounded-full border border-[#f8c5a9]/40" /><div className="absolute bottom-1 h-4 w-24 animate-pulse rounded-[100%] bg-black/30 blur-sm" /><div className="relative animate-[bounce_1.1s_ease-in-out_infinite] text-7xl drop-shadow-[0_12px_12px_rgba(0,0,0,.35)]" role="img" aria-label="Capi, a capivara exploradora">🦫</div><Sparkles size={19} className="absolute left-2 top-8 animate-pulse text-[#ffd166]" /><ArrowRight size={25} className="absolute right-1 top-5 animate-pulse text-[#f8c5a9]" /></div>
+        <p className="mt-7 text-xs font-black uppercase tracking-[.2em] text-[#f8c5a9]">Capi está preparando sua missão</p>
+        <h2 className="mt-3 font-display text-3xl font-extrabold">Montando sua primeira rota…</h2>
+        <p className="mt-3 text-sm leading-relaxed text-white/70">Estamos criando desafios para <b className="text-white">{subject}</b>{topic ? ` sobre ${topic}` : ""}. Isso pode levar alguns segundos.</p>
+        <div className="mt-7 h-2 w-56 overflow-hidden rounded-full bg-white/10"><div className="h-full w-1/2 animate-pulse rounded-full bg-gradient-to-r from-brand to-[#f8c5a9]" /></div>
+      </div>
+    </section>;
+  }
+
   return (
     <section className="relative overflow-hidden rounded-[28px] border border-brand-border bg-[#20110c] p-5 text-white shadow-elevated sm:p-8">
       <div className="pointer-events-none absolute inset-0 opacity-35 [background-image:radial-gradient(#f8c5a9_1px,transparent_1px)] [background-size:22px_22px]" />
