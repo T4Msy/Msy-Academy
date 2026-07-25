@@ -13,6 +13,7 @@ import {
   IconPlanoDeEstudos,
   IconFlashcards,
   IconEstudoAnimado,
+  IconBiblioteca,
   IconDashboard,
   IconConfiguracoes,
   IconPerfil,
@@ -29,6 +30,7 @@ const NAV: SidebarSection[] = [
     items: [
       { href: "/aluno/tutor-ia", label: "Tutor IA", icon: <IconTutorIA />, mobilePrimary: true },
       { href: "/aluno/tarefas", label: "Tarefas", icon: <IconAtividade />, mobilePrimary: true },
+      { href: "/aluno/materiais", label: "Materiais", icon: <IconBiblioteca /> },
       { href: "/aluno/turmas", label: "Minhas Turmas", icon: <IconTurma /> },
       { href: "/aluno/simulados", label: "Simulados", icon: <IconSimulados /> },
     ],
