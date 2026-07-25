@@ -25,12 +25,14 @@ export function MaterialItem({
   refId,
   storagePath,
   title,
+  isOwner = true,
 }: {
   id: string;
   kind: string;
   refId: string | null;
   storagePath: string | null;
   title: string;
+  isOwner?: boolean;
 }) {
   const [pending, startTransition] = useTransition();
   const [confirming, setConfirming] = useState(false);
@@ -71,13 +73,13 @@ export function MaterialItem({
         )}
 
         <div className="flex shrink-0 items-center gap-2 self-end sm:self-auto">
-          <InlineDeleteConfirm
-            confirming={confirming}
-            pending={pending}
-            onRequestConfirm={() => setConfirming(true)}
-            onCancel={() => setConfirming(false)}
-            onConfirm={onDelete}
-          />
+          {isOwner && <InlineDeleteConfirm
+              confirming={confirming}
+              pending={pending}
+              onRequestConfirm={() => setConfirming(true)}
+              onCancel={() => setConfirming(false)}
+              onConfirm={onDelete}
+            />}
         </div>
       </div>
     </div>
