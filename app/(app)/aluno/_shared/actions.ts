@@ -68,7 +68,9 @@ export async function submitAnswers(
   const { error: submitErr } = await supabase.rpc("submit_submission", { p_submission_id: submission.id });
   if (submitErr) throw new Error(`Não foi possível enviar: ${submitErr.message}`);
 
-  if ("assignmentId" in parent) revalidatePath(`/aluno/tarefas/${parent.assignmentId}`);
-  else revalidatePath(`/aluno/simulados/${parent.simuladoId}`);
+  if ("assignmentId" in parent) {
+    revalidatePath(`/aluno/tarefas/${parent.assignmentId}`);
+    revalidatePath("/aluno/tarefas");
+  } else revalidatePath(`/aluno/simulados/${parent.simuladoId}`);
   return submission.id;
 }

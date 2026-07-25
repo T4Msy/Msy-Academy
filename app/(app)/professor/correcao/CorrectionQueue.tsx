@@ -10,6 +10,7 @@ export interface CorrectionQueueItem {
   studentName: string;
   assignmentTitle: string;
   eligible: boolean;
+  statusLabel?: string;
 }
 
 export function CorrectionQueue({ items }: { items: CorrectionQueueItem[] }) {
@@ -94,12 +95,12 @@ export function CorrectionQueue({ items }: { items: CorrectionQueueItem[] }) {
       {error && <div role="alert" className="rounded-md border border-danger-border bg-danger-dim px-4 py-3 text-sm text-danger-text">{error}</div>}
       {items.map((item) => (
         <div key={item.id} className={`flex items-center gap-3 overflow-hidden rounded-lg border border-border bg-card p-5.5 shadow-elevated ${selected.has(item.id) ? "border-brand-border bg-brand-dim" : ""}`}>
-          <input type="checkbox" checked={selected.has(item.id)} disabled={!item.eligible || pending} onChange={() => setSelected((current) => toggleSubmissionSelection(current, item.id))} aria-label={`Selecionar entrega de ${item.studentName}`} className="size-4.5 shrink-0 accent-brand" />
+          {item.eligible && <input type="checkbox" checked={selected.has(item.id)} disabled={pending} onChange={() => setSelected((current) => toggleSubmissionSelection(current, item.id))} aria-label={`Selecionar entrega de ${item.studentName}`} className="size-4.5 shrink-0 accent-brand" />}
           <Link href={`/professor/correcao/${item.id}`} className="min-w-0 flex-1 rounded-sm outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow">
             <div className="font-display text-base font-bold text-foreground">{item.studentName}</div>
             <div className="mt-1 text-xs text-muted-foreground">{item.assignmentTitle}</div>
           </Link>
-          <span className="rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground">Pendente</span>
+          <span className="rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground">{item.statusLabel ?? "Pendente"}</span>
         </div>
       ))}
       {selected.size > 0 && (

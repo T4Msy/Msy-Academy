@@ -64,6 +64,8 @@ export async function answerStudyGameQuestion(runId: string, questionIndex: numb
   const { data: key } = await admin.from("study_game_answer_keys").select("correct_answer, explanation").eq("run_id", runId).eq("question_index", questionIndex).single();
   if (!key) throw new Error("Não foi possível validar a resposta.");
   const isCorrect = answer === key.correct_answer;
+  const correctOption = questions[questionIndex].options.find((option) => option.id === key.correct_answer);
+  const explanation = key.explanation ?? (correctOption ? `A resposta correta é: ${correctOption.text}.` : "Confira a alternativa correta destacada antes de seguir.");
   const nextCombo = isCorrect ? run.combo + 1 : 0;
   const earned = isCorrect ? 100 * Math.min(2, 1 + Math.floor(run.combo / 3)) : 0;
   const nextScore = run.score + earned;
@@ -89,5 +91,5 @@ export async function answerStudyGameQuestion(runId: string, questionIndex: numb
     }, { onConflict: "student_id" });
     revalidatePath("/aluno/estudo-animado");
   }
-  return { isCorrect, explanation: key.explanation, score: nextScore, combo: nextCombo, livesRemaining: nextLives, status, nextQuestionIndex: nextIndex, newRecord };
+  return { isCorrect, correctAnswer: key.correct_answer, explanation, score: nextScore, combo: nextCombo, livesRemaining: nextLives, status, nextQuestionIndex: nextIndex, newRecord };
 }

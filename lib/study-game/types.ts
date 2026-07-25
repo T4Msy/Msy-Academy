@@ -20,6 +20,7 @@ export type StudyGameRun = {
 
 export type StudyGameAnswerResult = {
   isCorrect: boolean;
+  correctAnswer: string;
   explanation: string | null;
   score: number;
   combo: number;
