@@ -10,6 +10,16 @@ import type { GeneratedActivity } from "@/lib/ai/types";
 import type { StudyGameAnswerResult, StudyGameQuestion } from "@/lib/study-game/types";
 
 const startSchema = z.object({ subject: z.string().trim().min(2, "Informe uma matéria.").max(80), topic: z.string().trim().max(140).optional() });
+const GAME_BATCH_SIZE = 10;
+
+function difficultyForQuestion(index: number) {
+  if (index < 10) return { generatorDifficulty: "facil", label: "Iniciante", instruction: "Priorize fundamentos e raciocínio direto." };
+  if (index < 20) return { generatorDifficulty: "medio", label: "Intermediário", instruction: "Exija aplicação dos conceitos em situações variadas." };
+  if (index < 40) return { generatorDifficulty: "dificil", label: "Avançado", instruction: "Exija raciocínio em múltiplas etapas e evite pistas óbvias." };
+  if (index < 60) return { generatorDifficulty: "dificil", label: "Elite", instruction: "Crie desafios complexos, com distratores plausíveis e integração de conceitos." };
+  if (index < 100) return { generatorDifficulty: "dificil", label: "Extremo", instruction: "Crie questões de nível extremo: alto rigor, múltiplas etapas e casos menos usuais." };
+  return { generatorDifficulty: "dificil", label: "Lendário", instruction: "Crie questões de nível lendário/extremo, progressivamente mais exigentes, mas sempre solucionáveis pelo conteúdo do tema." };
+}
 
 async function requireStudent() {
   const supabase = await createClient();
@@ -23,25 +33,30 @@ async function requireStudent() {
   return { user, tenantId: profile.tenant_id };
 }
 
-function normalizeGeneratedQuestions(activity: GeneratedActivity) {
-  const playable = activity.questions.filter((q) => q.type !== "DISCURSIVA" && Array.isArray(q.options) && q.options.length >= 2).slice(0, 10);
+function normalizeGeneratedQuestions(activity: GeneratedActivity, startIndex = 0) {
+  const playable = activity.questions.filter((q) => q.type !== "DISCURSIVA" && Array.isArray(q.options) && q.options.length >= 2).slice(0, GAME_BATCH_SIZE);
   if (playable.length < 5) throw new Error("A IA não gerou desafios suficientes. Tente outro tema.");
   return {
     publicQuestions: playable.map((q) => ({ id: crypto.randomUUID(), type: q.type === "VF" ? "VF" : "MULTIPLA", statement: q.statement, options: q.options! })),
-    answerKeys: playable.map((q, question_index) => ({ question_index, correct_answer: Array.isArray(q.correctAnswer) ? q.correctAnswer[0] : q.correctAnswer, explanation: q.explanation ?? null })),
+    answerKeys: playable.map((q, question_index) => ({ question_index: startIndex + question_index, correct_answer: Array.isArray(q.correctAnswer) ? q.correctAnswer[0] : q.correctAnswer, explanation: q.explanation ?? null })),
   };
+}
+
+async function generateGameBatch(input: { subject: string; topic: string; tenantId: string; userId: string; startIndex: number }) {
+  const difficulty = difficultyForQuestion(input.startIndex);
+  const activity = await generateStructured<GeneratedActivity>({
+    task: "ACTIVITY_GEN", schema: ACTIVITY_GENERATION_SCHEMA_V1,
+    input: { tituloprova: `Missão do Saber: ${input.subject}`, materia: input.subject, assunto: `${input.topic}. ${difficulty.instruction}`, tipo: "multipla", quantidade: GAME_BATCH_SIZE, nivel: difficulty.generatorDifficulty },
+    tenantId: input.tenantId, userId: input.userId,
+  });
+  return normalizeGeneratedQuestions(activity, input.startIndex);
 }
 
 export async function startStudyGame(raw: unknown): Promise<string> {
   const parsed = startSchema.parse(raw);
   const { user, tenantId } = await requireStudent();
   const topic = parsed.topic || `Fundamentos de ${parsed.subject}`;
-  const activity = await generateStructured<GeneratedActivity>({
-    task: "ACTIVITY_GEN", schema: ACTIVITY_GENERATION_SCHEMA_V1,
-    input: { tituloprova: `Missão do Saber: ${parsed.subject}`, materia: parsed.subject, assunto: topic, tipo: "multipla", quantidade: 10, nivel: "medio" },
-    tenantId, userId: user.id,
-  });
-  const { publicQuestions, answerKeys } = normalizeGeneratedQuestions(activity);
+  const { publicQuestions, answerKeys } = await generateGameBatch({ subject: parsed.subject, topic, tenantId, userId: user.id, startIndex: 0 });
   const admin = createAdminClient();
   const { data: run, error } = await admin.from("study_game_runs").insert({ tenant_id: tenantId, student_id: user.id, subject: parsed.subject, topic, questions: publicQuestions }).select("id").single();
   if (error || !run) throw new Error("Não foi possível iniciar sua missão.");
@@ -55,7 +70,7 @@ export async function answerStudyGameQuestion(runId: string, questionIndex: numb
   const { user, tenantId } = await requireStudent();
   const admin = createAdminClient();
   const { data: run, error: runError } = await admin.from("study_game_runs")
-    .select("id, subject, questions, status, current_question_index, score, combo, lives_remaining, correct_count")
+    .select("id, subject, topic, questions, status, current_question_index, score, combo, lives_remaining, correct_count")
     .eq("id", runId).eq("student_id", user.id).eq("tenant_id", tenantId).single();
   if (runError || !run || run.status !== "ACTIVE") throw new Error("Esta missão já foi encerrada.");
   if (run.current_question_index !== questionIndex) throw new Error("Essa pergunta já foi respondida.");
@@ -71,9 +86,18 @@ export async function answerStudyGameQuestion(runId: string, questionIndex: numb
   const nextScore = run.score + earned;
   const nextLives = isCorrect ? run.lives_remaining : run.lives_remaining - 1;
   const nextIndex = questionIndex + 1;
-  const status = nextLives === 0 ? "LOST" : nextIndex >= questions.length ? "WON" : "ACTIVE";
+  let appendedQuestions: StudyGameQuestion[] = [];
+  let allQuestions = questions;
+  if (nextLives > 0 && nextIndex >= questions.length) {
+    const batch = await generateGameBatch({ subject: run.subject, topic: run.topic, tenantId, userId: user.id, startIndex: questions.length });
+    appendedQuestions = batch.publicQuestions as StudyGameQuestion[];
+    allQuestions = [...questions, ...appendedQuestions];
+    const { error: keysError } = await admin.from("study_game_answer_keys").upsert(batch.answerKeys.map((key) => ({ ...key, run_id: runId })), { onConflict: "run_id,question_index", ignoreDuplicates: true });
+    if (keysError) throw new Error("Não foi possível preparar a próxima fase.");
+  }
+  const status = nextLives === 0 ? "LOST" : "ACTIVE";
   const completed = status !== "ACTIVE";
-  const { error: updateError } = await admin.from("study_game_runs").update({ current_question_index: nextIndex, score: nextScore, combo: nextCombo, lives_remaining: nextLives, correct_count: run.correct_count + (isCorrect ? 1 : 0), status, finished_at: completed ? new Date().toISOString() : null }).eq("id", runId).eq("current_question_index", questionIndex);
+  const { error: updateError } = await admin.from("study_game_runs").update({ questions: allQuestions, current_question_index: nextIndex, score: nextScore, combo: nextCombo, lives_remaining: nextLives, correct_count: run.correct_count + (isCorrect ? 1 : 0), status, finished_at: completed ? new Date().toISOString() : null }).eq("id", runId).eq("current_question_index", questionIndex);
   if (updateError) throw new Error("Não foi possível salvar sua resposta.");
   let newRecord = false;
   if (completed) {
@@ -91,5 +115,5 @@ export async function answerStudyGameQuestion(runId: string, questionIndex: numb
     }, { onConflict: "student_id" });
     revalidatePath("/aluno/estudo-animado");
   }
-  return { isCorrect, correctAnswer: key.correct_answer, explanation, score: nextScore, combo: nextCombo, livesRemaining: nextLives, status, nextQuestionIndex: nextIndex, newRecord };
+  return { isCorrect, correctAnswer: key.correct_answer, explanation, score: nextScore, combo: nextCombo, livesRemaining: nextLives, status, nextQuestionIndex: nextIndex, appendedQuestions, newRecord };
 }

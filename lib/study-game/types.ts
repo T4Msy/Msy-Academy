@@ -27,5 +27,6 @@ export type StudyGameAnswerResult = {
   livesRemaining: number;
   status: StudyGameRun["status"];
   nextQuestionIndex: number;
+  appendedQuestions: StudyGameQuestion[];
   newRecord: boolean;
 };
