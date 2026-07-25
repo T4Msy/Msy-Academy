@@ -2,83 +2,35 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { EmptyState } from "@/components/EmptyState";
-import { ExamCardActions } from "./ExamCardActions";
+import { loadTeacherAssignmentGroups, assignmentStatus } from "@/lib/assignments/teacherResourceList";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Minhas Provas" };
 
-function formatDate(iso: string): string {
-  try {
-    return new Date(iso).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
-  } catch {
-    return iso;
-  }
+function formatDate(iso: string | null) {
+  if (!iso) return "Sem prazo";
+  return new Date(iso).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
 }
 
 export default async function ProvasPage() {
   const supabase = await createClient();
+  const groups = await loadTeacherAssignmentGroups(supabase, "EXAM");
+  const ids = groups.flatMap((group) => group.assignments.map((assignment) => assignment.content_id));
+  const { data: exams } = ids.length
+    ? await supabase.from("exams").select("id, title, course, style, version, include_answer_key, created_at").in("id", [...new Set(ids)])
+    : { data: [] as { id: string; title: string | null; course: string | null; style: string | null; version: number; include_answer_key: boolean; created_at: string }[] };
+  const examById = new Map((exams ?? []).map((exam) => [exam.id, exam]));
 
-  const { data: exams } = await supabase
-    .from("exams")
-    .select("id, title, course, style, version, ai_provider, include_answer_key, created_at")
-    .order("created_at", { ascending: false });
-
-  const list = exams ?? [];
-
-  return (
-    <>
-      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="font-display text-3xl font-extrabold tracking-[-0.6px] text-foreground">Minhas Provas</h1>
-          <p className="mt-1 text-[13.5px] text-muted-foreground">
-            {list.length > 0
-              ? `${list.length} prova${list.length > 1 ? "s" : ""} salva${list.length > 1 ? "s" : ""}`
-              : "Suas provas geradas ficam salvas aqui."}
-          </p>
-        </div>
-        <Link href="/professor/provas/nova" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 bg-primary font-bold text-primary-foreground shadow-[0_4px_14px_rgba(217,119,87,0.16)] hover:-translate-y-px hover:opacity-90 px-4 py-2.5">
-          <svg fill="none" width="16" height="16" viewBox="0 0 24 24">
-            <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-          </svg>
-          Nova Prova
-        </Link>
-      </div>
-
-      {list.length === 0 ? (
-        <EmptyState
-          variant="biblioteca"
-          title="Nenhuma prova ainda"
-          text="Gere sua primeira prova com IA. As questões ficam salvas e editáveis, prontas para exportar e reutilizar."
-          action={
-            <Link href="/professor/provas/nova" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 bg-primary font-bold text-primary-foreground shadow-[0_4px_14px_rgba(217,119,87,0.16)] hover:-translate-y-px hover:opacity-90 px-4 py-2.5">
-              Gerar primeira prova
-            </Link>
-          }
-        />
-      ) : (
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-3.5">
-          {list.map((exam) => (
-            <div key={exam.id} className="flex flex-col gap-2.5 rounded-md border border-border bg-card p-4.5 transition-all hover:-translate-y-0.5 hover:border-border-hover hover:bg-card-2">
-              <Link href={`/professor/provas/${exam.id}`} className="flex flex-1 flex-col gap-2.5">
-              <div className="font-display text-base font-bold tracking-[-0.2px] text-foreground">{exam.title || "Prova sem título"}</div>
-              <div className="mt-0.5 flex flex-wrap gap-1.5">
-                {exam.course && <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">{exam.course}</span>}
-                {exam.style && <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">{exam.style}</span>}
-                {exam.version > 1 && <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">Versão {exam.version}</span>}
-                {exam.include_answer_key && <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">Com gabarito</span>}
-              </div>
-              </Link>
-              <div className="mt-auto flex items-center justify-between gap-2.5 pt-2 text-xs text-subtle">
-                <span>{exam.ai_provider ?? "IA"}</span>
-                <div className="flex items-center gap-2">
-                  <span>{formatDate(exam.created_at)}</span>
-                  <ExamCardActions examId={exam.id} examTitle={exam.title || "Prova sem título"} />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </>
-  );
+  return <>
+    <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+      <div><h1 className="font-display text-3xl font-extrabold tracking-[-0.6px] text-foreground">Minhas Provas</h1><p className="mt-1 text-[13.5px] text-muted-foreground">Conteúdos organizados pela turma que os recebeu.</p></div>
+      <Link href="/professor/provas/nova" className="rounded-sm bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground">Nova prova</Link>
+    </div>
+    {groups.length === 0 ? <EmptyState variant="biblioteca" title="Nenhuma prova enviada" text="As provas aparecem aqui depois que você escolhe uma turma e confirma o envio." action={<Link href="/professor/provas/nova" className="rounded-sm bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground">Criar primeira prova</Link>} /> : <div className="space-y-6">
+      {groups.map((group) => <section key={group.classId} aria-labelledby={`class-${group.classId}`}>
+        <div className="mb-3 flex items-end justify-between gap-3"><div><h2 id={`class-${group.classId}`} className="font-display text-xl font-bold text-foreground">{group.className}</h2><p className="text-sm text-muted-foreground">{group.assignments.length} atribuição{group.assignments.length === 1 ? "" : "ões"} · {group.activeStudents} alunos ativos</p></div><Link href={`/professor/turmas/${group.classId}`} className="text-sm font-semibold text-brand-text">Abrir turma</Link></div>
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-3.5">{group.assignments.map((assignment) => { const exam = examById.get(assignment.content_id); if (!exam) return null; const recipientCount = group.recipientsByAssignment.get(assignment.id) ?? 0; const submissions = group.submissionsByAssignment.get(assignment.id) ?? 0; return <article key={assignment.id} className="flex flex-col gap-2.5 rounded-md border border-border bg-card p-4.5 transition-all hover:border-border-hover hover:bg-card-2"><Link href={`/professor/provas/${exam.id}`} className="flex flex-1 flex-col gap-2.5"><h3 className="font-display text-base font-bold text-foreground">{exam.title || "Prova sem título"}</h3><div className="flex flex-wrap gap-1.5">{exam.course && <span className="rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground">{exam.course}</span>}<span className="rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground">{assignment.audience_type === "class" ? "Toda a turma" : `${recipientCount} aluno${recipientCount === 1 ? "" : "s"} selecionado${recipientCount === 1 ? "" : "s"}`}</span><span className="rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground">{assignmentStatus(assignment.due_at)}</span></div></Link><div className="flex items-center justify-between text-xs text-subtle"><span>{submissions} resposta{submissions === 1 ? "" : "s"}</span><span>Prazo: {formatDate(assignment.due_at)}</span></div></article>; })}</div>
+      </section>)}
+    </div>}
+  </>;
 }

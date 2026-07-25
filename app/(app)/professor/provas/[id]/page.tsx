@@ -17,6 +17,8 @@ import { ExamExportActions } from "./ExamExportActions";
 import { AiBadge } from "@/components/AiBadge";
 import { ExamVariationDialog } from "./ExamVariationDialog";
 import { SendExamToClass } from "./SendExamToClass";
+import { CreationDisposition } from "@/components/assignments/CreationDisposition";
+import { deleteExam } from "../actions";
 
 export const dynamic = "force-dynamic";
 
@@ -83,6 +85,7 @@ export default async function ExamPage({ params }: { params: Promise<{ id: strin
 
   return (
     <>
+      {(!existingAssignments || existingAssignments.length === 0) && <CreationDisposition kind="prova" discard={deleteExam.bind(null, exam.id)} />}
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
           <Link

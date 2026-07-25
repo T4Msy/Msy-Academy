@@ -42,12 +42,15 @@ export function SendExamToClass({ examId, examTitle, questionCount, classes, stu
       try {
         await assignContent({ classId, contentType: "EXAM", contentId: examId, audienceType, studentIds: audienceType === "students" ? selectedStudents : [], dueAt: dueAt ? new Date(dueAt).toISOString() : null });
         setOpen(false); setClassId(""); setSelectedStudents([]); setSearch(""); setDueAt(""); router.refresh();
-      } catch (err) { setError(err instanceof Error ? err.message : "Não foi possível enviar a prova para a turma."); }
+      } catch (err) {
+        if (process.env.NODE_ENV === "development") console.error("[assignment/exam] falha ao enviar", err);
+        setError("Não foi possível concluir o envio no momento.");
+      }
     });
   }
 
   if (questionCount === 0 || classes.length === 0) return null;
-  if (!open) return <button type="button" onClick={() => setOpen(true)} className="inline-flex items-center justify-center gap-2 rounded-sm bg-primary px-3 py-[7px] text-sm font-bold text-primary-foreground outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow">Enviar para turma</button>;
+  if (!open) return <button id="send-content" type="button" onClick={() => setOpen(true)} className="inline-flex items-center justify-center gap-2 rounded-sm bg-primary px-3 py-[7px] text-sm font-bold text-primary-foreground outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow">Enviar para turma</button>;
 
   const recipientText = audienceType === "class" ? `todos os ${students.length} alunos` : `${selectedStudents.length} aluno${selectedStudents.length === 1 ? "" : "s"}`;
   return <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget && !pending) setOpen(false); }}>
@@ -62,7 +65,7 @@ export function SendExamToClass({ examId, examTitle, questionCount, classes, stu
       </div>
       <p className="mt-4 rounded-md bg-card-2 px-3 py-2 text-sm text-muted-foreground">Esta prova será enviada para {recipientText} da turma {selectedClass?.name ?? "selecionada"}.</p>
       {error && <p role="alert" aria-live="assertive" className="mt-3 rounded-md border border-danger-border bg-danger-dim px-3 py-2 text-sm text-danger-text">{error}</p>}
-      <div className="mt-5 flex justify-end gap-2"><button type="button" onClick={() => setOpen(false)} disabled={pending} className="min-h-11 rounded-sm border border-border px-3 py-2 text-sm font-semibold text-foreground">Cancelar</button><button type="submit" disabled={pending || !classId || (audienceType === "students" && selectedStudents.length === 0)} className="min-h-11 rounded-sm bg-primary px-3 py-2 text-sm font-bold text-primary-foreground">{pending ? "Enviando…" : "Confirmar envio"}</button></div>
+      <div className="mt-5 flex justify-end gap-2"><button type="button" onClick={() => setOpen(false)} disabled={pending} className="min-h-11 rounded-sm border border-border px-3 py-2 text-sm font-semibold text-foreground">Cancelar</button><button type="submit" disabled={pending || !classId || (audienceType === "students" && selectedStudents.length === 0)} className="min-h-11 rounded-sm bg-primary px-3 py-2 text-sm font-bold text-primary-foreground">{pending ? "Enviando…" : "Enviar prova"}</button></div>
     </form>
   </div>;
 }

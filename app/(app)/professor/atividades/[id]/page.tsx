@@ -5,6 +5,7 @@ import { RenameDeleteMenu } from "@/components/shell/RenameDeleteMenu";
 import { AiBadge } from "@/components/AiBadge";
 import { ActivityActions } from "./ActivityActions";
 import { SendActivityToClass } from "./SendActivityToClass";
+import { CreationDisposition } from "@/components/assignments/CreationDisposition";
 import { ExamExportActions } from "../../provas/[id]/ExamExportActions";
 import { QuestionsEditor, type QuestionsEditorActions } from "@/components/questions/QuestionsEditor";
 import type { QuestionData } from "@/lib/questions/types";
@@ -70,6 +71,7 @@ export default async function AtividadePage({ params }: { params: Promise<{ id: 
 
   return (
     <>
+      {(!assignments || assignments.length === 0) && <CreationDisposition kind="atividade" discard={deleteActivity.bind(null, id)} />}
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
           <Link href="/professor/atividades" className="inline-flex items-center gap-2 pb-2 text-sm text-muted-foreground transition-colors hover:text-foreground">
