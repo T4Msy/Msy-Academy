@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { getSession } from "@/lib/auth/session";
 import { generateStructured } from "@/lib/ai/orchestrator";
 import { GRADING_SCHEMA_V1 } from "@/lib/ai/prompts/grading.v1";
@@ -94,10 +94,28 @@ export async function saveGrade(
 /** Applies objective-question answer keys only after the owning teacher asks for it. */
 export async function gradeByAnswerKey(submissionId: string): Promise<number> {
   const { supabase } = await requireUser();
-  const { data, error } = await supabase.rpc("grade_submission_by_answer_key", { p_submission_id: submissionId });
-  if (error) throw new Error(`Não foi possível corrigir pelo gabarito: ${error.message}`);
+  // RLS confirms that the current professor owns the assignment before the
+  // administrative client writes the calculated objective scores.
+  const { data: submission } = await supabase.from("submissions").select("id").eq("id", submissionId).eq("status", "SUBMITTED").maybeSingle();
+  if (!submission) throw new Error("Entrega não encontrada, já corrigida ou sem permissão.");
+
+  type Answer = { id: string; answer: unknown; questions: { type: string; correct_answer: unknown } | null };
+  const admin = createAdminClient();
+  const { data: answers, error: answersError } = await admin
+    .from("submission_answers")
+    .select("id, answer, questions(type, correct_answer)")
+    .eq("submission_id", submissionId);
+  if (answersError) throw new Error("Não foi possível carregar as respostas da entrega.");
+
+  const objectiveAnswers = (answers ?? []) as unknown as Answer[];
+  await Promise.all(objectiveAnswers.filter((answer) => answer.questions?.type === "MULTIPLA" || answer.questions?.type === "VF").map(async (answer) => {
+    const correct = JSON.stringify(answer.answer) === JSON.stringify(answer.questions!.correct_answer);
+    const { error } = await admin.from("submission_answers").update({ is_correct: correct, score: correct ? 1 : 0 }).eq("id", answer.id);
+    if (error) throw error;
+  }));
+  const data = objectiveAnswers.filter((answer) => answer.questions?.type === "MULTIPLA" || answer.questions?.type === "VF").reduce((total, answer) => total + (JSON.stringify(answer.answer) === JSON.stringify(answer.questions!.correct_answer) ? 1 : 0), 0);
   revalidatePath(`/professor/correcao/${submissionId}`);
-  return Number(data ?? 0);
+  return data;
 }
 
 const batchInputSchema = z.object({ submissionIds: z.array(z.string().uuid()).min(1).max(25) });

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient, createClient } from "@/lib/supabase/server";
 
 async function requireUser() {
   const supabase = await createClient();
@@ -65,8 +65,18 @@ export async function submitAnswers(
     if (insertErr) throw new Error(`Não foi possível salvar as respostas: ${insertErr.message}`);
   }
 
-  const { error: submitErr } = await supabase.rpc("submit_submission", { p_submission_id: submission.id });
-  if (submitErr) throw new Error(`Não foi possível enviar: ${submitErr.message}`);
+  // A transição é feita server-side para que a entrega aguarde a correção do
+  // professor; não chamamos a RPC legada que atribui nota automaticamente.
+  const admin = createAdminClient();
+  const { data: submitted, error: submitErr } = await admin
+    .from("submissions")
+    .update({ status: "SUBMITTED", submitted_at: new Date().toISOString() })
+    .eq("id", submission.id)
+    .eq("student_id", user.id)
+    .eq("status", "PENDING")
+    .select("id")
+    .maybeSingle();
+  if (submitErr || !submitted) throw new Error(`Não foi possível enviar: ${submitErr?.message ?? "a entrega já foi alterada"}`);
 
   if ("assignmentId" in parent) {
     revalidatePath(`/aluno/tarefas/${parent.assignmentId}`);
