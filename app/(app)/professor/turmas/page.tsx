@@ -12,7 +12,9 @@ export const metadata: Metadata = { title: "Turmas" };
 export default async function TurmasPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  const { data: classes } = await supabase.from("classes").select("id, name, invite_code, owner_id, created_at").order("created_at", { ascending: false });
+  const { data: classes } = user
+    ? await supabase.from("classes").select("id, name, invite_code, owner_id, created_at").eq("owner_id", user.id).order("created_at", { ascending: false })
+    : { data: [] as { id: string; name: string; invite_code: string; owner_id: string; created_at: string }[] };
   const list = classes ?? [];
   return <>
     <div className="mb-6 flex flex-wrap items-end justify-between gap-4"><div><h1 className="font-display text-3xl font-extrabold tracking-[-0.6px] text-foreground">Turmas</h1><p className="mt-1 text-[13.5px] text-muted-foreground">{list.length > 0 ? `${list.length} turma${list.length > 1 ? "s" : ""}` : "Crie uma turma e convide seus alunos por código."}</p></div><CreateClassForm /></div>
