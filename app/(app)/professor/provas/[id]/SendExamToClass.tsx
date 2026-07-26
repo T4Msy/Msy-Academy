@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { assignContent } from "../../turmas/actions";
 import { AudienceSelector, ClassSelect, StudentMultiSelect, type AssignmentStudentOption } from "@/components/assignments/AssignmentAudienceFields";
 import { Input } from "@/components/ui/input";
@@ -51,25 +50,7 @@ export function SendExamToClass({ examId, examTitle, questionCount, classes, stu
   }
 
   if (questionCount === 0) return null;
-  if (classes.length === 0) {
-    return (
-      <div className="flex max-w-72 flex-col items-end gap-1.5">
-        <button
-          id="send-content"
-          type="button"
-          disabled
-          title="Crie ou transfira uma turma para enviar esta prova."
-          className="inline-flex cursor-not-allowed items-center justify-center gap-2 rounded-sm bg-primary px-3 py-[7px] text-sm font-bold text-primary-foreground opacity-50"
-        >
-          Enviar para turma
-        </button>
-        <p role="alert" className="text-right text-xs leading-snug text-danger-text">
-          Nenhuma turma desta conta é proprietária. Crie ou transfira uma em{" "}
-          <Link href="/professor/turmas" className="font-semibold underline hover:text-brand-text">Turmas</Link>.
-        </p>
-      </div>
-    );
-  }
+  if (classes.length === 0) return null;
   if (!open) return <button id="send-content" type="button" onClick={() => setOpen(true)} className="inline-flex items-center justify-center gap-2 rounded-sm bg-primary px-3 py-[7px] text-sm font-bold text-primary-foreground outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow">Enviar para turma</button>;
 
   const recipientText = audienceType === "class" ? `todos os ${students.length} alunos` : `${selectedStudents.length} aluno${selectedStudents.length === 1 ? "" : "s"}`;

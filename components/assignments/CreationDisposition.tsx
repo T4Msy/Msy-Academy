@@ -1,12 +1,13 @@
 "use client";
 
 import { Trash2 } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
-export function CreationDisposition({ kind, discard, sendTargetId = "send-content" }: { kind: "prova" | "atividade"; discard: () => Promise<void>; sendTargetId?: string }) {
+export function CreationDisposition({ kind, discard, sendTargetId = "send-content", assignmentAvailable = true }: { kind: "prova" | "atividade"; discard: () => Promise<void>; sendTargetId?: string; assignmentAvailable?: boolean }) {
   const router = useRouter();
   const [confirming, setConfirming] = useState(false);
   const [discardError, setDiscardError] = useState<string | null>(null);
@@ -24,7 +25,13 @@ export function CreationDisposition({ kind, discard, sendTargetId = "send-conten
     <section className="mb-5 rounded-lg border border-brand-border bg-brand-dim px-4 py-3.5 sm:px-5" aria-labelledby="creation-disposition-title">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0"><h2 id="creation-disposition-title" className="font-display text-base font-bold text-foreground">{label[0].toUpperCase() + label.slice(1)} pronta para envio</h2><p className="mt-1 max-w-2xl text-sm text-muted-foreground">Envie para uma turma ou descarte este conteúdo. Ele só aparecerá na organização por turmas depois do envio.</p></div>
-        <div className="flex shrink-0 flex-col gap-2 sm:flex-row sm:items-center"><Button type="button" onClick={openAssignmentDialog}>{sendLabel}</Button><Button type="button" variant="ghost" size="sm" onClick={() => setConfirming(true)}><Trash2 aria-hidden />Descartar</Button></div>
+        <div className="flex shrink-0 flex-col items-end gap-1.5">
+          <div className="flex gap-2 sm:items-center">
+            <Button type="button" onClick={openAssignmentDialog} disabled={!assignmentAvailable} title={assignmentAvailable ? undefined : "Crie ou transfira uma turma para enviar este conteúdo."}>{sendLabel}</Button>
+            <Button type="button" variant="ghost" size="sm" onClick={() => setConfirming(true)}><Trash2 aria-hidden />Descartar</Button>
+          </div>
+          {!assignmentAvailable && <p role="alert" className="max-w-64 text-right text-xs leading-snug text-danger-text">Nenhuma turma desta conta é proprietária. Crie ou transfira uma em <Link href="/professor/turmas" className="font-semibold underline hover:text-brand-text">Turmas</Link>.</p>}
+        </div>
       </div>
     </section>
     <Dialog open={confirming} onOpenChange={(open) => { setConfirming(open); if (!open) setDiscardError(null); }}>

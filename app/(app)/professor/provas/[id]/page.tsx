@@ -87,7 +87,7 @@ export default async function ExamPage({ params }: { params: Promise<{ id: strin
 
   return (
     <>
-      {(!existingAssignments || existingAssignments.length === 0) && <CreationDisposition kind="prova" discard={deleteExam.bind(null, exam.id)} />}
+      {(!existingAssignments || existingAssignments.length === 0) && <CreationDisposition kind="prova" discard={deleteExam.bind(null, exam.id)} assignmentAvailable={(classes ?? []).length > 0} />}
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
           <Link
