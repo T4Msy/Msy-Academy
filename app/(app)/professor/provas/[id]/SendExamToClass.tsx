@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { assignContent } from "../../turmas/actions";
 import { AudienceSelector, ClassSelect, StudentMultiSelect, type AssignmentStudentOption } from "@/components/assignments/AssignmentAudienceFields";
 import { Input } from "@/components/ui/input";
@@ -49,7 +50,15 @@ export function SendExamToClass({ examId, examTitle, questionCount, classes, stu
     });
   }
 
-  if (questionCount === 0 || classes.length === 0) return null;
+  if (questionCount === 0) return null;
+  if (classes.length === 0) {
+    return (
+      <div role="status" className="max-w-64 rounded-sm border border-border bg-card-2 px-3 py-2 text-xs leading-snug text-muted-foreground">
+        Não há turma registrada nesta conta como proprietária. Crie uma turma ou solicite a transferência de uma turma existente em{" "}
+        <Link href="/professor/turmas" className="font-semibold text-brand-text hover:underline">Turmas</Link>.
+      </div>
+    );
+  }
   if (!open) return <button id="send-content" type="button" onClick={() => setOpen(true)} className="inline-flex items-center justify-center gap-2 rounded-sm bg-primary px-3 py-[7px] text-sm font-bold text-primary-foreground outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow">Enviar para turma</button>;
 
   const recipientText = audienceType === "class" ? `todos os ${students.length} alunos` : `${selectedStudents.length} aluno${selectedStudents.length === 1 ? "" : "s"}`;
