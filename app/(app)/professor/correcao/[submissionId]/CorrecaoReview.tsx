@@ -16,10 +16,12 @@ export function CorrecaoReview({
   submissionId,
   objectiveScoreSum,
   discursivas,
+  returnHref = "/professor/correcao",
 }: {
   submissionId: string;
   objectiveScoreSum: number;
   discursivas: DiscursivaItem[];
+  returnHref?: string;
 }) {
   const [scores, setScores] = useState<Record<string, { score: number; feedback: string }>>({});
   const [pending, startTransition] = useTransition();
@@ -35,7 +37,7 @@ export function CorrecaoReview({
     startTransition(async () => {
       try {
         await saveGrade(submissionId, totalScore, feedback, "TEACHER");
-        router.push("/professor/correcao");
+        router.push(returnHref);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Não conseguimos salvar a correção. Tente novamente.");
       }

@@ -2,60 +2,38 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { EmptyState } from "@/components/EmptyState";
-import { CorrectionQueue } from "./CorrectionQueue";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Correção" };
 
-type SubmissionRow = {
-  id: string;
-  student_id: string;
-  assignments: { content_type: "EXAM" | "ACTIVITY"; content_id: string } | null;
-};
-
-export default async function CorrecaoPage({ searchParams }: { searchParams: Promise<{ view?: string }> }) {
-  const { view } = await searchParams;
-  const historyView = view === "history";
+export default async function CorrecaoPage() {
   const supabase = await createClient();
-  const { data: submissions } = await supabase
-    .from("submissions")
-    .select("id, student_id, submitted_at, assignment_id, assignments(content_type, content_id)")
-    .eq("status", historyView ? "GRADED" : "SUBMITTED")
-    .order("submitted_at", { ascending: !historyView });
-  const list = submissions ?? [];
-
-  const { data: scans } = !historyView
-    ? await supabase.from("answer_sheet_scans").select("id, assignment_id, status, created_at").in("status", ["NEEDS_REVIEW", "FAILED"]).order("created_at", { ascending: true })
-    : { data: [] as { id: string; assignment_id: string; status: "NEEDS_REVIEW" | "FAILED"; created_at: string }[] };
-  const scanList = scans ?? [];
-  const scanAssignmentIds = [...new Set(scanList.map((scan) => scan.assignment_id))];
-  const { data: scanAssignments } = scanAssignmentIds.length ? await supabase.from("assignments").select("id, content_id").in("id", scanAssignmentIds) : { data: [] as { id: string; content_id: string }[] };
-  const scanExamIds = [...new Set((scanAssignments ?? []).map((assignment) => assignment.content_id))];
-  const { data: scanExams } = scanExamIds.length ? await supabase.from("exams").select("id, title").in("id", scanExamIds) : { data: [] as { id: string; title: string }[] };
-  const examIdByAssignmentId = new Map((scanAssignments ?? []).map((assignment) => [assignment.id, assignment.content_id]));
-  const examTitleByExamId = new Map((scanExams ?? []).map((exam) => [exam.id, exam.title]));
-
-  const submissionIds = list.map((submission) => submission.id);
-  const { data: grades } = submissionIds.length ? await supabase.from("grades").select("submission_id, total_score").in("submission_id", submissionIds) : { data: [] as { submission_id: string; total_score: number }[] };
-  const gradeBySubmission = new Map((grades ?? []).map((grade) => [grade.submission_id, grade.total_score]));
-  const studentIds = [...new Set(list.map((submission) => submission.student_id))];
-  const { data: profiles } = studentIds.length ? await supabase.from("profiles").select("id, full_name").in("id", studentIds) : { data: [] as { id: string; full_name: string | null }[] };
-  const nameById = new Map((profiles ?? []).map((profile) => [profile.id, profile.full_name]));
-
-  const rows = list as unknown as SubmissionRow[];
-  const examIds = rows.filter((submission) => submission.assignments?.content_type === "EXAM").map((submission) => submission.assignments!.content_id);
-  const activityIds = rows.filter((submission) => submission.assignments?.content_type === "ACTIVITY").map((submission) => submission.assignments!.content_id);
-  const [{ data: exams }, { data: activities }] = await Promise.all([
-    examIds.length ? supabase.from("exams").select("id, title").in("id", examIds) : Promise.resolve({ data: [] }),
-    activityIds.length ? supabase.from("activities").select("id, title").in("id", activityIds) : Promise.resolve({ data: [] }),
+  const { data: classes } = await supabase.from("classes").select("id, name").order("created_at", { ascending: false });
+  const classList = classes ?? [];
+  const classIds = classList.map((classroom) => classroom.id);
+  const { data: assignments } = classIds.length ? await supabase.from("assignments").select("id, class_id").in("class_id", classIds) : { data: [] as { id: string; class_id: string }[] };
+  const assignmentList = assignments ?? [];
+  const assignmentIds = assignmentList.map((assignment) => assignment.id);
+  const [{ data: submissions }, { data: scans }] = await Promise.all([
+    assignmentIds.length ? supabase.from("submissions").select("assignment_id, status").in("assignment_id", assignmentIds) : Promise.resolve({ data: [] }),
+    assignmentIds.length ? supabase.from("answer_sheet_scans").select("assignment_id, status").in("assignment_id", assignmentIds).in("status", ["NEEDS_REVIEW", "FAILED"]) : Promise.resolve({ data: [] }),
   ]);
-  const examTitleById = new Map((exams ?? []).map((exam: { id: string; title: string }) => [exam.id, exam.title]));
-  const activityTitleById = new Map((activities ?? []).map((activity: { id: string; title: string }) => [activity.id, activity.title]));
+  const classByAssignment = new Map(assignmentList.map((assignment) => [assignment.id, assignment.class_id]));
+  const totals = new Map(classIds.map((classId) => [classId, { pending: 0, graded: 0, scans: 0 }]));
+  for (const submission of submissions ?? []) {
+    const classId = submission.assignment_id ? classByAssignment.get(submission.assignment_id) : undefined;
+    if (!classId) continue;
+    const total = totals.get(classId)!;
+    if (submission.status === "SUBMITTED") total.pending += 1;
+    if (submission.status === "GRADED") total.graded += 1;
+  }
+  for (const scan of scans ?? []) {
+    const classId = classByAssignment.get(scan.assignment_id);
+    if (classId) totals.get(classId)!.scans += 1;
+  }
 
   return <>
-    <div className="mb-6 flex flex-wrap items-end justify-between gap-4"><div><h1 className="font-display text-3xl font-extrabold tracking-[-0.6px] text-foreground">Correção</h1><p className="mt-1 text-[13.5px] text-muted-foreground">{historyView ? `${list.length} envio${list.length !== 1 ? "s" : ""} corrigido${list.length !== 1 ? "s" : ""}` : `${list.length} envio${list.length !== 1 ? "s" : ""} aguardando correção`}</p></div></div>
-    <nav aria-label="Filtro de correção" className="mb-5 flex gap-2 border-b border-border"><Link href="/professor/correcao" className={`border-b-2 px-3 py-2 text-sm font-semibold ${!historyView ? "border-brand text-brand-text" : "border-transparent text-muted-foreground hover:text-foreground"}`}>Pendentes</Link><Link href="/professor/correcao?view=history" className={`border-b-2 px-3 py-2 text-sm font-semibold ${historyView ? "border-brand text-brand-text" : "border-transparent text-muted-foreground hover:text-foreground"}`}>Histórico</Link></nav>
-    {scanList.length > 0 && <div className="questions-stack mb-md">{scanList.map((scan) => { const examId = examIdByAssignmentId.get(scan.assignment_id); return <Link key={scan.id} href={`/professor/correcao/gabarito/${scan.id}`} className="block overflow-hidden rounded-lg border border-border bg-card shadow-elevated transition-colors"><div className="flex flex-row items-center justify-between gap-3 p-5.5"><div><div className="font-display text-base font-bold tracking-[-0.2px] text-foreground">Cartão-resposta escaneado</div><div className="mt-1 text-xs leading-snug text-muted-foreground">{examId ? examTitleByExamId.get(examId) : "Prova"}</div></div><span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">{scan.status === "FAILED" ? "Falhou" : "Revisar"}</span></div></Link>; })}</div>}
-    {list.length === 0 && scanList.length === 0 ? <EmptyState variant="notificacao" title={historyView ? "Histórico vazio" : "Fila vazia"} text={historyView ? "Entregas corrigidas aparecerão aqui para consulta." : "Envios com questões discursivas aparecem aqui para correção."} /> : <CorrectionQueue key={rows.map((submission) => submission.id).join(",")} items={rows.map((submission) => ({ id: submission.id, studentName: nameById.get(submission.student_id) || "Aluno", assignmentTitle: submission.assignments?.content_type === "EXAM" ? examTitleById.get(submission.assignments.content_id) ?? "Prova" : activityTitleById.get(submission.assignments?.content_id ?? "") ?? "Tarefa", eligible: !historyView, statusLabel: historyView ? `Corrigida${gradeBySubmission.has(submission.id) ? ` · Nota ${gradeBySubmission.get(submission.id)}` : ""}` : "Pendente" }))} />}
+    <div className="mb-6"><h1 className="font-display text-3xl font-extrabold tracking-[-0.6px] text-foreground">Correção</h1><p className="mt-1 text-[13.5px] text-muted-foreground">Escolha a turma para ver entregas, aplicar gabaritos e acompanhar as correções.</p></div>
+    {classList.length === 0 ? <EmptyState variant="notificacao" title="Nenhuma turma criada" text="Crie uma turma para receber e corrigir atividades dos alunos." /> : <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{classList.map((classroom) => { const total = totals.get(classroom.id)!; const initial = classroom.name.trim().charAt(0).toUpperCase() || "T"; return <article key={classroom.id} className="group relative overflow-hidden rounded-2xl border border-border bg-card p-5 shadow-elevated transition duration-300 hover:-translate-y-1 hover:border-brand-border hover:shadow-[0_16px_40px_rgba(217,119,87,.16)]"><div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-br from-brand/20 via-brand/5 to-transparent" /><div className="relative flex items-start justify-between gap-3"><span className="flex size-12 shrink-0 items-center justify-center rounded-2xl border border-brand-border bg-brand-dim font-display text-xl font-extrabold text-brand-text shadow-[0_8px_20px_rgba(217,119,87,.16)]">{initial}</span><span className={`rounded-full px-2.5 py-1 text-xs font-bold ${total.pending > 0 ? "bg-brand-dim text-brand-text" : "bg-card-2 text-muted-foreground"}`}>{total.pending > 0 ? `${total.pending} aguardando` : "Em dia"}</span></div><div className="relative mt-5"><h2 className="truncate font-display text-xl font-extrabold tracking-[-0.2px] text-foreground">{classroom.name}</h2><p className="mt-1 text-sm text-muted-foreground">Central de correção da turma</p></div><div className="relative mt-5 grid grid-cols-3 divide-x divide-border rounded-xl border border-border bg-card-2"><div className="px-3 py-3 text-center"><b className="block text-lg text-brand-text">{total.pending}</b><span className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Pendentes</span></div><div className="px-3 py-3 text-center"><b className="block text-lg text-foreground">{total.graded}</b><span className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Corrigidas</span></div><div className="px-3 py-3 text-center"><b className="block text-lg text-warning">{total.scans}</b><span className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Scans</span></div></div><div className="relative mt-5 flex gap-2"><Link href={`/professor/correcao/turma/${classroom.id}`} className="inline-flex flex-1 items-center justify-center rounded-xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground transition group-hover:shadow-[0_6px_18px_rgba(217,119,87,.25)]">Abrir correção</Link><Link href={`/professor/correcao/turma/${classroom.id}?view=scan`} className="inline-flex items-center justify-center rounded-xl border border-border px-4 text-sm font-bold text-foreground transition hover:border-brand-border hover:bg-brand-dim">Scan</Link></div></article>; })}</div>}
   </>;
 }

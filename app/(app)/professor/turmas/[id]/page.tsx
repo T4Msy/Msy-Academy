@@ -246,7 +246,7 @@ export default async function TurmaPage({ params }: { params: Promise<{ id: stri
                             Baixar gabarito
                           </a>
                           <Link
-                            href={`/professor/correcao/escanear/${a.id}`}
+                            href={`/professor/correcao/turma/${id}?view=scan`}
                             className="inline-flex items-center justify-center gap-2 rounded-sm border border-border bg-[rgba(var(--overlay-rgb),0.06)] px-3 py-[7px] text-md text-sm font-semibold whitespace-nowrap text-foreground transition-all outline-none hover:border-border-hover hover:bg-[rgba(var(--overlay-rgb),0.10)] focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50"
                           >
                             Escanear

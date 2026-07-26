@@ -46,10 +46,18 @@ async function generateGameBatch(input: { subject: string; topic: string; tenant
   const difficulty = difficultyForQuestion(input.startIndex);
   const activity = await generateStructured<GeneratedActivity>({
     task: "ACTIVITY_GEN", schema: ACTIVITY_GENERATION_SCHEMA_V1,
-    input: { tituloprova: `Missão do Saber: ${input.subject}`, materia: input.subject, assunto: `${input.topic}. ${difficulty.instruction}`, tipo: "multipla", quantidade: GAME_BATCH_SIZE, nivel: difficulty.generatorDifficulty },
+    input: { tituloprova: `Missão do Saber: ${input.subject}`, materia: input.subject, assunto: `${input.topic}. ${difficulty.instruction} Em cada explicação, mostre de forma breve o raciocínio que leva à resposta correta e diferencie-a dos erros mais prováveis nas alternativas.`, tipo: "multipla", quantidade: GAME_BATCH_SIZE, nivel: difficulty.generatorDifficulty },
     tenantId: input.tenantId, userId: input.userId,
   });
   return normalizeGeneratedQuestions(activity, input.startIndex);
+}
+
+function buildWrongAnswerExplanation(question: StudyGameQuestion, selectedAnswer: string, correctAnswer: string, baseExplanation: string) {
+  const selectedOption = question.options.find((option) => option.id === selectedAnswer);
+  const correctOption = question.options.find((option) => option.id === correctAnswer);
+  const selectedText = selectedOption ? `${selectedOption.id}: ${selectedOption.text}` : selectedAnswer;
+  const correctText = correctOption ? `${correctOption.id}: ${correctOption.text}` : correctAnswer;
+  return `Você marcou “${selectedText}”, mas essa alternativa não atende ao que o enunciado pede. A resposta correta é “${correctText}”. O raciocínio para chegar nela é: ${baseExplanation} Isso mostra o caminho que resolve a questão e por que a alternativa escolhida não é a conclusão correta.`;
 }
 
 export async function startStudyGame(raw: unknown): Promise<string> {
@@ -80,7 +88,10 @@ export async function answerStudyGameQuestion(runId: string, questionIndex: numb
   if (!key) throw new Error("Não foi possível validar a resposta.");
   const isCorrect = answer === key.correct_answer;
   const correctOption = questions[questionIndex].options.find((option) => option.id === key.correct_answer);
-  const explanation = key.explanation ?? (correctOption ? `A resposta correta é: ${correctOption.text}.` : "Confira a alternativa correta destacada antes de seguir.");
+  const baseExplanation = key.explanation ?? (correctOption ? `a resposta correta é ${correctOption.text}` : "confira a alternativa correta destacada antes de seguir");
+  const explanation = isCorrect
+    ? baseExplanation
+    : buildWrongAnswerExplanation(questions[questionIndex], answer, key.correct_answer, baseExplanation);
   const nextCombo = isCorrect ? run.combo + 1 : 0;
   const earned = isCorrect ? 100 * Math.min(2, 1 + Math.floor(run.combo / 3)) : 0;
   const nextScore = run.score + earned;

@@ -13,6 +13,7 @@ const interBody = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
   display: "swap",
+  preload: false,
 });
 
 const interDisplay = Inter_Tight({
@@ -20,6 +21,7 @@ const interDisplay = Inter_Tight({
   variable: "--font-inter-tight",
   weight: ["500", "600", "700", "800"],
   display: "swap",
+  preload: false,
 });
 
 const description =
