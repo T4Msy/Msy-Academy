@@ -47,7 +47,9 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: blob: https:",
               "font-src 'self' data:",
-              "connect-src 'self' https:",
+              // The PDF renderer loads its WebAssembly payload from a
+              // data: URL; keep this exception scoped to outbound connects.
+              "connect-src 'self' https: data:",
               "object-src 'none'",
               "base-uri 'self'",
               "frame-ancestors 'none'",
