@@ -53,9 +53,20 @@ export function SendExamToClass({ examId, examTitle, questionCount, classes, stu
   if (questionCount === 0) return null;
   if (classes.length === 0) {
     return (
-      <div role="status" className="max-w-64 rounded-sm border border-border bg-card-2 px-3 py-2 text-xs leading-snug text-muted-foreground">
-        Não há turma registrada nesta conta como proprietária. Crie uma turma ou solicite a transferência de uma turma existente em{" "}
-        <Link href="/professor/turmas" className="font-semibold text-brand-text hover:underline">Turmas</Link>.
+      <div className="flex max-w-72 flex-col items-end gap-1.5">
+        <button
+          id="send-content"
+          type="button"
+          disabled
+          title="Crie ou transfira uma turma para enviar esta prova."
+          className="inline-flex cursor-not-allowed items-center justify-center gap-2 rounded-sm bg-primary px-3 py-[7px] text-sm font-bold text-primary-foreground opacity-50"
+        >
+          Enviar para turma
+        </button>
+        <p role="alert" className="text-right text-xs leading-snug text-danger-text">
+          Nenhuma turma desta conta é proprietária. Crie ou transfira uma em{" "}
+          <Link href="/professor/turmas" className="font-semibold underline hover:text-brand-text">Turmas</Link>.
+        </p>
       </div>
     );
   }
