@@ -44,7 +44,9 @@ export default async function ExamPage({ params }: { params: Promise<{ id: strin
       )
       .eq("exam_id", id)
       .order("position"),
-    supabase.from("classes").select("id, name").order("name"),
+    user
+      ? supabase.from("classes").select("id, name").eq("owner_id", user.id).order("name")
+      : Promise.resolve({ data: [] as { id: string; name: string }[] }),
   ]);
 
   if (!exam) notFound();

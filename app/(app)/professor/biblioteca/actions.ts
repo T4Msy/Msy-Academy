@@ -3,7 +3,6 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { ingestMaterial } from "@/lib/ai/rag/ingest";
 import { checkQuota } from "@/lib/billing/quota";
 import { checkRateLimit } from "@/lib/ratelimit";
 
@@ -87,6 +86,10 @@ export async function uploadMaterialFile(formData: FormData): Promise<void> {
       await checkQuota(profile.tenant_id);
       const rateLimit = await checkRateLimit("ai", user.id);
       if (!rateLimit.success) throw new Error("Rate limit excedido.");
+      // pdf-parse/pdfjs is a native-heavy optional feature. Load it only
+      // when ingestion is requested so a runtime issue there can never make
+      // the core Biblioteca upload fail before this try/catch is reached.
+      const { ingestMaterial } = await import("@/lib/ai/rag/ingest");
       await ingestMaterial(material.id, user.id);
     } catch {
       // Upload + Biblioteca entry already succeeded; ingestion failing (e.g.
