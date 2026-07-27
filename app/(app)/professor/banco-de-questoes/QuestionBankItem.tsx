@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { deleteQuestion } from "./actions";
 import { InlineDeleteConfirm } from "@/components/InlineDeleteConfirm";
+import type { QuestionOrigin } from "@/lib/questions/queries";
 
 const DIFFICULTY_LABEL: Record<string, string> = { FACIL: "Fácil", MEDIO: "Médio", DIFICIL: "Difícil" };
 const TYPE_LABEL: Record<string, string> = { MULTIPLA: "Múltipla escolha", VF: "Verdadeiro/Falso", DISCURSIVA: "Discursiva" };
@@ -15,6 +16,9 @@ export function QuestionBankItem({
   difficulty,
   tags,
   bnccCodes,
+  createdAt,
+  authorName,
+  origins,
   selected,
   onToggleSelect,
 }: {
@@ -24,6 +28,9 @@ export function QuestionBankItem({
   difficulty: string;
   tags: string[];
   bnccCodes: string[];
+  createdAt: string;
+  authorName: string | null;
+  origins: QuestionOrigin[];
   selected: boolean;
   onToggleSelect: (id: string) => void;
 }) {
@@ -37,6 +44,8 @@ export function QuestionBankItem({
       router.refresh();
     });
   }
+
+  const formatDate = (value: string | null) => value ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium" }).format(new Date(value)) : null;
 
   return (
     <div className={`overflow-hidden rounded-lg border border-border bg-card shadow-elevated transition-colors ${selected ? "border-brand-border bg-brand-dim" : ""}`}>
@@ -59,6 +68,27 @@ export function QuestionBankItem({
             {bnccCodes.length > 0 && <span className="text-xs text-muted-foreground">BNCC: {bnccCodes.join(", ")}</span>}
           </div>
           <p className="mb-2 text-[14.5px] leading-relaxed text-foreground">{statement}</p>
+          <section className="mb-3 rounded-md border border-border bg-[rgba(var(--overlay-rgb),0.025)] px-3 py-2.5" aria-label="Origem da questão">
+            <p className="mb-1.5 text-xs font-bold uppercase tracking-wide text-muted-foreground">Origem</p>
+            {origins.length > 0 ? (
+              <div className="flex flex-col gap-2">
+                {origins.map((origin, index) => (
+                  <div key={`${origin.sourceType}-${origin.sourceTitle}-${origin.className ?? "sem-turma"}-${index}`} className="text-xs leading-relaxed text-muted-foreground">
+                    <span className="font-semibold text-foreground">{origin.sourceType}: {origin.sourceTitle}</span>
+                    <span className="ml-1">· {[
+                      formatDate(origin.date) ? `Data: ${formatDate(origin.date)}` : null,
+                      origin.className ? `Turma: ${origin.className}` : null,
+                      origin.teacherName ? `Professor: ${origin.teacherName}` : null,
+                      origin.subject ? `Matéria: ${origin.subject}` : null,
+                      origin.content ? `Conteúdo: ${origin.content}` : null,
+                    ].filter(Boolean).join(" · ")}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs leading-relaxed text-muted-foreground">Criada diretamente no banco{authorName ? ` por ${authorName}` : ""} em {formatDate(createdAt)}.</p>
+            )}
+          </section>
           <div className="flex flex-wrap justify-start gap-2">
             <InlineDeleteConfirm
               confirming={confirming}

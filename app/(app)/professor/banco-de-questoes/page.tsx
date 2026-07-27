@@ -25,19 +25,23 @@ export const metadata: Metadata = { title: "Banco de Questões" };
 export default async function BancoDeQuestoesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tipo?: string; dificuldade?: string; busca?: string; bncc?: string; tags?: string }>;
+  searchParams: Promise<{ tipo?: string; dificuldade?: string; busca?: string; bncc?: string; tags?: string; professor?: string; materia?: string; conteudo?: string }>;
 }) {
-  const { tipo, dificuldade, busca, bncc, tags } = await searchParams;
+  const { tipo, dificuldade, busca, bncc, tags, professor, materia, conteudo } = await searchParams;
   const supabase = await createClient();
 
-  const [questions, { data: exams }] = await Promise.all([
+  const [questions, allQuestions, { data: exams }] = await Promise.all([
     listQuestionBank(supabase, {
       type: parseQuestionType(tipo),
       difficulty: parseDifficulty(dificuldade),
       search: busca,
       bnccCodes: parseBnccCodesParam(bncc),
       tags: parseTagsParam(tags),
+      authorId: professor,
+      subjectId: materia,
+      content: conteudo,
     }),
+    listQuestionBank(supabase, {}),
     supabase
       .from("exams")
       .select("id, title")
@@ -47,6 +51,20 @@ export default async function BancoDeQuestoesPage({
       .limit(50),
   ]);
   const list = questions;
+  const teachers = new Map<string, string>();
+  const subjects = new Map<string, string>();
+  const contents = new Set<string>();
+  for (const question of allQuestions) {
+    if (question.author_name) teachers.set(question.author_id, question.author_name);
+    for (const origin of question.origins) {
+      if (origin.teacherId && origin.teacherName) teachers.set(origin.teacherId, origin.teacherName);
+      if (origin.subjectId && origin.subject) subjects.set(origin.subjectId, origin.subject);
+      if (origin.content) contents.add(origin.content);
+    }
+  }
+  const teacherOptions = [...teachers.entries()].sort(([, a], [, b]) => a.localeCompare(b, "pt-BR"));
+  const subjectOptions = [...subjects.entries()].sort(([, a], [, b]) => a.localeCompare(b, "pt-BR"));
+  const contentOptions = [...contents].sort((a, b) => a.localeCompare(b, "pt-BR"));
 
   return (
     <>
@@ -89,6 +107,27 @@ export default async function BancoDeQuestoesPage({
               <option value="DIFICIL">Difícil</option>
             </select>
           </div>
+          <div className="flex min-w-40 flex-col gap-1.5">
+            <label className="block text-sm font-semibold text-foreground" htmlFor="professor">Professor</label>
+            <select className="w-full appearance-none rounded-sm border border-border bg-[rgba(var(--overlay-rgb),0.04)] px-3 py-2.5 text-md text-foreground outline-none transition-colors focus:border-brand-border focus:ring-[3px] focus:ring-brand-glow" id="professor" name="professor" defaultValue={professor ?? ""}>
+              <option value="">Todos</option>
+              {teacherOptions.map(([id, name]) => <option key={id} value={id}>{name}</option>)}
+            </select>
+          </div>
+          <div className="flex min-w-40 flex-col gap-1.5">
+            <label className="block text-sm font-semibold text-foreground" htmlFor="materia">Matéria</label>
+            <select className="w-full appearance-none rounded-sm border border-border bg-[rgba(var(--overlay-rgb),0.04)] px-3 py-2.5 text-md text-foreground outline-none transition-colors focus:border-brand-border focus:ring-[3px] focus:ring-brand-glow" id="materia" name="materia" defaultValue={materia ?? ""}>
+              <option value="">Todas</option>
+              {subjectOptions.map(([id, name]) => <option key={id} value={id}>{name}</option>)}
+            </select>
+          </div>
+          <div className="flex min-w-40 flex-col gap-1.5">
+            <label className="block text-sm font-semibold text-foreground" htmlFor="conteudo">Conteúdo</label>
+            <select className="w-full appearance-none rounded-sm border border-border bg-[rgba(var(--overlay-rgb),0.04)] px-3 py-2.5 text-md text-foreground outline-none transition-colors focus:border-brand-border focus:ring-[3px] focus:ring-brand-glow" id="conteudo" name="conteudo" defaultValue={conteudo ?? ""}>
+              <option value="">Todos</option>
+              {contentOptions.map((content) => <option key={content} value={content}>{content}</option>)}
+            </select>
+          </div>
           <button type="submit" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 bg-primary font-bold text-primary-foreground shadow-[0_4px_14px_rgba(217,119,87,0.16)] hover:-translate-y-px hover:opacity-90 px-3 py-[7px] text-sm">Filtrar</button>
         </div>
       </form>
@@ -108,6 +147,9 @@ export default async function BancoDeQuestoesPage({
             difficulty: q.difficulty,
             tags: q.tags ?? [],
             bnccCodes: q.bncc_codes,
+            createdAt: q.created_at,
+            authorName: q.author_name,
+            origins: q.origins ?? [],
           }))}
           exams={exams ?? []}
         />

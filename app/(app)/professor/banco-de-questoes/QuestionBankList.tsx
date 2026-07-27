@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { QuestionBankItem } from "./QuestionBankItem";
 import { addQuestionsToExam } from "./actions";
+import type { QuestionOrigin } from "@/lib/questions/queries";
 
 interface Question {
   id: string;
@@ -12,6 +13,9 @@ interface Question {
   difficulty: string;
   tags: string[];
   bnccCodes: string[];
+  createdAt: string;
+  authorName: string | null;
+  origins: QuestionOrigin[];
 }
 
 /** US-2.8 — select bank questions and attach them to an existing exam via exam_questions. */
@@ -59,6 +63,9 @@ export function QuestionBankList({ questions, exams }: { questions: Question[]; 
             difficulty={q.difficulty}
             tags={q.tags}
             bnccCodes={q.bnccCodes}
+            createdAt={q.createdAt}
+            authorName={q.authorName}
+            origins={q.origins}
             selected={selected.has(q.id)}
             onToggleSelect={toggle}
           />
