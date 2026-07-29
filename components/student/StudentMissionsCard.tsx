@@ -18,6 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { STUDENT_MISSIONS, type StudentMissionId } from "@/lib/dashboard/studentMissions";
 
 const VISIBLE_PENDING_MISSIONS = 3;
+const COMPACT_PROGRESS_THRESHOLD = 0.7;
 
 const ICONS: Record<StudentMissionId, typeof Users> = {
   classes: Users,
@@ -44,10 +45,43 @@ export function StudentMissionsCard({ initialCompletedIds }: { initialCompletedI
     ? STUDENT_MISSIONS
     : pendingMissions.slice(0, VISIBLE_PENDING_MISSIONS);
   const progress = Math.round((completedCount / STUDENT_MISSIONS.length) * 100);
+  const isCompact = completedCount / STUDENT_MISSIONS.length >= COMPACT_PROGRESS_THRESHOLD;
+  const isComplete = pendingMissions.length === 0;
 
   function markVisited(id: StudentMissionId) {
     setStarted(true);
     setCompletedIds((current) => new Set(current).add(id));
+  }
+
+  if (isComplete) {
+    return (
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-md border border-border bg-card-2 px-4 py-3 text-sm">
+        <div>
+          <p className="font-display font-bold text-foreground">Guia inicial concluído</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">As missões ficam disponíveis para consulta quando você precisar.</p>
+        </div>
+        <Link href="/aluno/missoes" className="rounded-sm border border-border px-3.5 py-2 text-xs font-bold text-foreground transition-colors hover:border-border-hover hover:bg-card focus-visible:ring-2 focus-visible:ring-ring">
+          Revisar missões
+        </Link>
+      </div>
+    );
+  }
+
+  if (isCompact) {
+    return (
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-md border border-border bg-card-2 px-4 py-3 text-sm">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="font-display font-bold text-foreground">Guia inicial</p>
+            <span className="rounded-full border border-border bg-card px-2 py-0.5 text-[11px] font-semibold text-muted-foreground">{progress}% concluído</span>
+          </div>
+          <p className="mt-0.5 text-xs text-muted-foreground">Você já conhece o essencial. Restam {pendingMissions.length} {pendingMissions.length === 1 ? "missão" : "missões"} opcionais.</p>
+        </div>
+        <Link href="/aluno/missoes" className="rounded-sm border border-border px-3.5 py-2 text-xs font-bold text-foreground transition-colors hover:border-border-hover hover:bg-card focus-visible:ring-2 focus-visible:ring-ring">
+          Revisar missões
+        </Link>
+      </div>
+    );
   }
 
   return (

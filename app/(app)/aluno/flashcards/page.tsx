@@ -13,20 +13,21 @@ import { NewDeckForm } from "./NewDeckForm";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Flashcards" };
 
-export default async function FlashcardsPage({ searchParams }: { searchParams: Promise<{ q?: string; filter?: string }> }) {
+export default async function FlashcardsPage({ searchParams }: { searchParams: Promise<{ q?: string; filter?: string; materialIds?: string }> }) {
   const params = await searchParams;
   const query = params.q?.trim().toLocaleLowerCase("pt-BR") ?? "";
   const filter = params.filter === "due" ? "due" : "all";
+  const contextMaterialIds = new Set((params.materialIds ?? "").split(",").filter(Boolean));
   const supabase = await createClient();
   const [{ data: decks }, { data: materials }] = await Promise.all([
-    supabase.from("flashcard_decks").select("id, title, created_at").order("created_at", { ascending: false }),
+    supabase.from("flashcard_decks").select("id, title, created_at, source_material_id").order("created_at", { ascending: false }),
     supabase.from("materials").select("id, title").eq("kind", "FILE").order("title"),
   ]);
   const list = decks ?? [];
   const { data: cards } = list.length ? await supabase.from("flashcards").select("id, deck_id, srs_state").in("deck_id", list.map((deck) => deck.id)) : { data: [] as { id: string; deck_id: string; srs_state: SrsState | null }[] };
   const cardsByDeck = new Map<string, { total: number; due: number }>();
   for (const card of cards ?? []) { const current = cardsByDeck.get(card.deck_id) ?? { total: 0, due: 0 }; current.total += 1; if (isDue((card.srs_state as SrsState) ?? DEFAULT_SRS_STATE, new Date())) current.due += 1; cardsByDeck.set(card.deck_id, current); }
-  const visible = list.filter((deck) => (!query || deck.title.toLocaleLowerCase("pt-BR").includes(query)) && (filter !== "due" || (cardsByDeck.get(deck.id)?.due ?? 0) > 0));
+  const visible = list.filter((deck) => (!contextMaterialIds.size || contextMaterialIds.has(deck.source_material_id ?? "")) && (!query || deck.title.toLocaleLowerCase("pt-BR").includes(query)) && (filter !== "due" || (cardsByDeck.get(deck.id)?.due ?? 0) > 0));
 
   return <>
     <PageHeader title="Flashcards" subtitle={list.length > 0 ? `${list.length} deck${list.length > 1 ? "s" : ""} para revisar.` : "Crie um deck para começar suas revisões."} />

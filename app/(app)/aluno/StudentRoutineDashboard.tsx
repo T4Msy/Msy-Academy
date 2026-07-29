@@ -314,6 +314,7 @@ function ClassCard({
   };
 }) {
   return (
+    <Link href={`/aluno/turmas/${classroom.id}`} className="group block rounded-xl outline-none transition hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-ring">
     <Card className="gap-0 border-border bg-card py-0 shadow-elevated">
       <CardContent className="flex h-full flex-col px-5.5 py-5">
         <div>
@@ -342,14 +343,10 @@ function ClassCard({
             icon={BookOpen}
           />
         </div>
-        <Link
-          href={`/aluno/turmas/${classroom.id}`}
-          className="mt-5 inline-flex justify-center rounded-sm border border-border px-3 py-2 text-sm font-semibold text-foreground transition-colors hover:border-border-hover hover:bg-card-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-        >
-          Acessar turma
-        </Link>
+        <span className="mt-5 inline-flex justify-center rounded-sm border border-border px-3 py-2 text-sm font-semibold text-foreground transition-colors group-hover:border-border-hover group-hover:bg-card-2">Abrir turma</span>
       </CardContent>
     </Card>
+    </Link>
   );
 }
 

@@ -13,8 +13,8 @@ export type StudentMaterial = { id: string; title: string; kind: string; classId
 function typeLabel(kind: string) { return kind === "FILE" ? "Arquivo" : kind === "IMAGE" ? "Imagem" : kind === "LINK" ? "Link" : "Material"; }
 function TypeIcon({ kind }: { kind: string }) { const Icon = kind === "IMAGE" ? Image : kind === "LINK" ? Link2 : FileText; return <Icon className="h-5 w-5" aria-hidden="true" />; }
 
-export function StudentMaterialsClient({ materials }: { materials: StudentMaterial[] }) {
-  const [classId, setClassId] = useState("all");
+export function StudentMaterialsClient({ materials, initialClassId = "all" }: { materials: StudentMaterial[]; initialClassId?: string }) {
+  const [classId, setClassId] = useState(initialClassId);
   const [kind, setKind] = useState("all");
   const [sort, setSort] = useState("recent");
   const [query, setQuery] = useState("");
