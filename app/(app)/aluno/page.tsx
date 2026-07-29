@@ -14,6 +14,8 @@ import { getQueryClient } from "@/lib/query/client";
 import { getStudentDashboardStats } from "@/lib/dashboard/studentStats";
 import { studentDashboardStatsQueryKey } from "@/lib/dashboard/queryKeys";
 import { StudentRoutineDashboard } from "./StudentRoutineDashboard";
+import { StudentMissionsCard } from "@/components/student/StudentMissionsCard";
+import { getDerivedStudentMissionIds } from "@/lib/dashboard/studentMissions";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Início" };
@@ -59,6 +61,15 @@ export default async function AlunoHomePage() {
     queryKey: studentDashboardStatsQueryKey,
     queryFn: getStudentDashboardStats,
   });
+  const stats = queryClient.getQueryData<Awaited<ReturnType<typeof getStudentDashboardStats>>>(studentDashboardStatsQueryKey);
+  const initialCompletedIds = stats
+    ? getDerivedStudentMissionIds({
+        hasClasses: stats.routine.classes.length > 0,
+        hasTasks: stats.routine.assignmentProgress.total > 0,
+        hasMaterials: stats.routine.classes.some((classroom) => classroom.materialsCount > 0),
+        hasFlashcards: stats.flashcardDecks > 0,
+      })
+    : [];
 
   return (
     <>
@@ -70,6 +81,8 @@ export default async function AlunoHomePage() {
           <p className="mt-1 text-sm text-muted-foreground">O que você quer fazer hoje?</p>
         </div>
       </div>
+
+      <StudentMissionsCard initialCompletedIds={initialCompletedIds} />
 
       <HydrationBoundary state={dehydrate(queryClient)}>
         <StudentRoutineDashboard />
