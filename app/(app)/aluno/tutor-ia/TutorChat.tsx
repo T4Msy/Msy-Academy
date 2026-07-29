@@ -7,6 +7,15 @@ import { AiThinking } from "@/components/AiThinking";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 
+const QUICK_PROMPTS = [
+  "Explique um conteúdo",
+  "Faça um resumo",
+  "Crie exercícios",
+  "Monte uma revisão",
+  "Tire uma dúvida",
+  "Prepare perguntas para uma prova",
+];
+
 export interface ChatMessage {
   role: "user" | "assistant";
   content: string;
@@ -110,6 +119,21 @@ export function TutorChat({
               Pergunte sobre o material das suas turmas. Confirme informações importantes com seu
               professor.
             </p>
+            <p className="mt-3 rounded-full border border-border bg-card-2 px-3 py-1.5 text-xs text-muted-foreground">
+              O tutor usa materiais das suas turmas quando encontra contexto relevante.
+            </p>
+            <div className="mt-6 flex flex-wrap justify-center gap-2" aria-label="Sugestões rápidas">
+              {QUICK_PROMPTS.map((prompt) => (
+                <button
+                  key={prompt}
+                  type="button"
+                  className="rounded-full border border-border bg-card px-3 py-2 text-xs font-semibold text-foreground transition-colors hover:border-brand-border hover:bg-brand-dim hover:text-brand-text focus-visible:ring-2 focus-visible:ring-ring"
+                  onClick={() => setInput(prompt)}
+                >
+                  {prompt}
+                </button>
+              ))}
+            </div>
           </div>
         ) : (
           messages.map((message, index) => (

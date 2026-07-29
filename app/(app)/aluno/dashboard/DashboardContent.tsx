@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { StatRing } from "@/components/charts/StatRing";
 import { useStudentDashboardStats } from "@/hooks/useStudentDashboardStats";
 import { StudyStreakCard } from "@/components/ui/study-streak-card";
@@ -7,30 +8,16 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export function DashboardContent() {
   const { data, isError } = useStudentDashboardStats();
-
-  if (isError) return <p className="mt-1 text-xs leading-snug text-muted-foreground">Não foi possível carregar seu progresso.</p>;
+  if (isError) return <div role="alert" className="rounded-lg border border-danger-border bg-danger-dim p-4 text-sm text-danger-text">Não foi possível carregar seu progresso. Atualize a página para tentar novamente.</div>;
   if (!data) return <div className="rounded-lg border border-border bg-card p-5.5" aria-label="Carregando progresso de estudos"><Skeleton className="h-6 w-48" /><Skeleton className="mt-4 h-16 w-full" /></div>;
 
-  return (
-    <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-3.5">
-      <StudyStreakCard {...data.studyStreak} className="col-span-full" />
-      <MetricCard label="Tarefas concluídas" value={data.completedAssignments} />
-      <div className="overflow-hidden rounded-lg border border-border bg-card shadow-elevated transition-colors">
-        <div className="flex flex-col gap-4.5 p-5.5"><StatRing value={data.accuracyPct} label="Acerto em objetivas" size={72} strokeWidth={7} /></div>
-      </div>
-      <MetricCard label="Itens de estudo concluídos" value={`${data.completedStudyItems}/${data.totalStudyItems}`} />
-      <MetricCard label="Decks de flashcards" value={data.flashcardDecks} />
-    </div>
-  );
+  return <div className="space-y-5">
+    <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-3.5"><StudyStreakCard {...data.studyStreak} className="col-span-full" /><Link href="/aluno/tarefas?filter=completed"><MetricCard label="Tarefas concluídas" value={data.completedAssignments} /></Link><div className="overflow-hidden rounded-lg border border-border bg-card shadow-elevated transition-colors"><div className="flex flex-col gap-4.5 p-5.5"><StatRing value={data.accuracyPct} label="Acerto em objetivas" size={72} strokeWidth={7} /></div></div><Link href="/aluno/plano-de-estudos"><MetricCard label="Itens de estudo concluídos" value={`${data.completedStudyItems}/${data.totalStudyItems}`} /></Link><Link href="/aluno/flashcards"><MetricCard label="Decks de flashcards" value={data.flashcardDecks} /></Link></div>
+    <section className="grid gap-3.5 lg:grid-cols-3" aria-label="Resumo do período"><SummaryCard title="Tempo estudado" subtitle="Acompanhe sua rotina real de estudos."><div className="grid grid-cols-3 gap-2 text-center"><TimeValue label="Hoje" seconds={data.routine.studyTime.todaySeconds} /><TimeValue label="7 dias" seconds={data.routine.studyTime.weekSeconds} /><TimeValue label="Mês" seconds={data.routine.studyTime.monthSeconds} /></div>{!data.routine.studyTime.hasRecords && <p className="mt-4 text-xs text-muted-foreground">Inicie uma tarefa, revisão ou missão para começar a registrar seu tempo.</p>}</SummaryCard><SummaryCard title="Notas recentes" subtitle="Resultados publicados nas suas atividades.">{data.routine.recentGrades.length === 0 ? <p className="text-sm text-muted-foreground">Suas notas aparecerão aqui quando uma atividade for corrigida.</p> : <ul className="space-y-2">{data.routine.recentGrades.slice(0, 3).map((grade) => <li key={grade.id} className="flex items-center justify-between gap-3 rounded-md border border-border bg-card-2 px-3 py-2"><span className="min-w-0 truncate text-sm font-semibold text-foreground">{grade.title}</span><span className="shrink-0 font-bold text-brand-text">{grade.score}</span></li>)}</ul>}</SummaryCard><SummaryCard title="Por onde continuar" subtitle="Retome o próximo passo da sua rotina.">{data.routine.continueItem ? <Link href={data.routine.continueItem.href} className="group block rounded-md border border-brand-border bg-brand-dim p-3"><p className="font-semibold text-foreground">{data.routine.continueItem.title}</p><p className="mt-1 text-xs text-muted-foreground">{data.routine.continueItem.detail}</p><span className="mt-3 block text-xs font-bold text-brand-text">Continuar →</span></Link> : <p className="text-sm text-muted-foreground">Conclua tarefas, revise flashcards e siga seu plano para acompanhar sua evolução.</p>}</SummaryCard></section>
+    {data.routine.classes.length > 0 && <section className="rounded-lg border border-border bg-card p-5.5"><div className="mb-3 flex items-center justify-between gap-3"><div><h2 className="font-display text-lg font-bold text-foreground">Desempenho por turma</h2><p className="mt-1 text-sm text-muted-foreground">Conteúdos pendentes e materiais disponíveis.</p></div><Link href="/aluno/turmas" className="text-sm font-bold text-brand-text">Ver turmas</Link></div><div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">{data.routine.classes.map((classroom) => <Link key={classroom.id} href={`/aluno/turmas/${classroom.id}`} className="rounded-md border border-border bg-card-2 p-3 transition hover:border-brand-border"><p className="truncate font-semibold text-foreground">{classroom.name}</p><div className="mt-2 flex gap-3 text-xs text-muted-foreground"><span>{classroom.pendingAssignments} pendentes</span><span>{classroom.materialsCount} materiais</span></div></Link>)}</div></section>}
+  </div>;
 }
 
-function MetricCard({ label, value }: { label: string; value: string | number }) {
-  return (
-    <div className="overflow-hidden rounded-lg border border-border bg-card shadow-elevated transition-colors">
-      <div className="flex flex-col gap-4.5 p-5.5">
-        <div className="flex items-center gap-2.5 font-display text-lg font-bold tracking-[-0.2px] text-foreground">{label}</div>
-        <p className="mt-2 font-display text-[28px] font-extrabold">{value}</p>
-      </div>
-    </div>
-  );
-}
+function SummaryCard({ title, subtitle, children }: { title: string; subtitle: string; children: React.ReactNode }) { return <section className="rounded-lg border border-border bg-card p-5.5"><h2 className="font-display text-lg font-bold text-foreground">{title}</h2><p className="mt-1 text-xs text-muted-foreground">{subtitle}</p><div className="mt-4">{children}</div></section>; }
+function TimeValue({ label, seconds }: { label: string; seconds: number }) { const minutes = Math.round(seconds / 60); return <div><b className="block text-lg font-extrabold text-foreground">{minutes >= 60 ? `${Math.floor(minutes / 60)}h ${minutes % 60}m` : `${minutes}m`}</b><span className="text-[11px] text-muted-foreground">{label}</span></div>; }
+function MetricCard({ label, value }: { label: string; value: string | number }) { return <div className="overflow-hidden rounded-lg border border-border bg-card shadow-elevated transition-colors hover:border-brand-border"><div className="flex flex-col gap-4.5 p-5.5"><div className="font-display text-lg font-bold tracking-[-0.2px] text-foreground">{label}</div><p className="mt-2 font-display text-[28px] font-extrabold text-foreground">{value}</p></div></div>; }

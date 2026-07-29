@@ -42,7 +42,7 @@ export function GlobalSearch({ environment }: { environment: "PROFESSOR" | "ALUN
   });
   const results = debounced.length >= 2 ? (data ?? null) : null;
 
-  const classesHref = environment === "PROFESSOR" ? "/professor/turmas" : null;
+  const classesHref = environment === "PROFESSOR" ? "/professor/turmas" : "/aluno/turmas";
   const hasResults = results && (results.materials.length > 0 || results.classes.length > 0);
 
   function onContainerBlur(e: React.FocusEvent<HTMLDivElement>) {
@@ -72,7 +72,7 @@ export function GlobalSearch({ environment }: { environment: "PROFESSOR" | "ALUN
           ) : (
             <>
               {results.materials.map((m) => {
-                const href = m.kind === "FILE" || !m.ref_id ? null : MATERIAL_HREF[m.kind]?.(environment, m.ref_id);
+                const href = m.kind === "FILE" && environment === "ALUNO" ? `/aluno/materiais/${m.id}` : m.kind === "FILE" || !m.ref_id ? null : MATERIAL_HREF[m.kind]?.(environment, m.ref_id);
                 return href ? (
                   <Link key={m.id} href={href} className="popover-item">
                     <span className="chip mr-xs">Material</span>
