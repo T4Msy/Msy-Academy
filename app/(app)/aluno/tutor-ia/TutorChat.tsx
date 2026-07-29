@@ -1,8 +1,11 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
+import { Bot, SendHorizontal, UserRound } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { AiThinking } from "@/components/AiThinking";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 
 export interface ChatMessage {
   role: "user" | "assistant";
@@ -21,88 +24,174 @@ export function TutorChat({
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const convIdRef = useRef(conversationId);
+  const bottomRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ block: "end", behavior: pending ? "auto" : "smooth" });
+  }, [messages, pending]);
+
+  function onSubmit() {
     const text = input.trim();
-    if (!text) return;
+    if (!text || pending) return;
     setError(null);
     setInput("");
-    setMessages((prev) => [...prev, { role: "user", content: text }, { role: "assistant", content: "" }]);
+    setMessages((previous) => [
+      ...previous,
+      { role: "user", content: text },
+      { role: "assistant", content: "" },
+    ]);
 
     startTransition(async () => {
       try {
-        const res = await fetch("/api/ai/tutor/chat", {
+        const response = await fetch("/api/ai/tutor/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ conversationId: convIdRef.current, message: text }),
         });
 
-        if (!res.ok || !res.body) {
-          const data = await res.json().catch(() => ({}));
+        if (!response.ok || !response.body) {
+          const data = await response.json().catch(() => ({}));
           throw new Error(data?.error ?? "O tutor não conseguiu responder agora. Tente novamente.");
         }
 
-        const newConvId = res.headers.get("X-Conversation-Id");
-        if (newConvId && newConvId !== convIdRef.current) {
-          convIdRef.current = newConvId;
-          router.replace(`/aluno/tutor-ia?c=${newConvId}`, { scroll: false });
+        const newConversationId = response.headers.get("X-Conversation-Id");
+        const createdConversation = Boolean(
+          newConversationId && newConversationId !== convIdRef.current,
+        );
+        if (newConversationId) {
+          convIdRef.current = newConversationId;
         }
 
-        const reader = res.body.getReader();
+        const reader = response.body.getReader();
         const decoder = new TextDecoder();
         let accumulated = "";
         for (;;) {
           const { done, value } = await reader.read();
           if (done) break;
           accumulated += decoder.decode(value, { stream: true });
-          setMessages((prev) => {
-            const next = [...prev];
+          setMessages((previous) => {
+            const next = [...previous];
             next[next.length - 1] = { role: "assistant", content: accumulated };
             return next;
           });
         }
-        router.refresh();
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "O tutor não conseguiu responder agora. Tente novamente.");
-        setMessages((prev) => prev.slice(0, -1));
+        if (createdConversation && newConversationId) {
+          router.replace(`/aluno/tutor-ia?c=${newConversationId}`, { scroll: false });
+        } else router.refresh();
+      } catch (reason) {
+        setError(
+          reason instanceof Error
+            ? reason.message
+            : "O tutor não conseguiu responder agora. Tente novamente.",
+        );
+        setMessages((previous) => previous.slice(0, -1));
       }
     });
   }
 
   return (
-    <div className="tutor-chat">
-      <div className="tutor-messages" role="log" aria-live="polite" aria-label="Conversa com o tutor">
-        {messages.length === 0 && (
-          <p className="mt-0 text-xs leading-snug text-muted-foreground">
-            Pergunte algo sobre o material das suas turmas. As respostas são geradas por IA e podem
-            conter erros — confirme informações importantes com seu professor.
-          </p>
-        )}
-        {messages.map((m, i) => (
-          <div key={i} className={`tutor-bubble tutor-bubble--${m.role}`}>
-            {m.content || (pending && i === messages.length - 1 ? <AiThinking /> : "")}
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div
+        className="min-h-0 flex-1 space-y-5 overflow-y-auto px-5 py-6 sm:px-7"
+        role="log"
+        aria-live="polite"
+        aria-label="Conversa com o tutor"
+      >
+        {messages.length === 0 ? (
+          <div className="mx-auto flex max-w-md flex-col items-center px-3 py-12 text-center">
+            <span className="flex size-12 items-center justify-center rounded-full bg-brand-dim text-brand-text">
+              <Bot className="size-6" aria-hidden />
+            </span>
+            <h2 className="mt-4 font-display text-xl font-bold text-foreground">
+              Em que posso ajudar?
+            </h2>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+              Pergunte sobre o material das suas turmas. Confirme informações importantes com seu
+              professor.
+            </p>
           </div>
-        ))}
+        ) : (
+          messages.map((message, index) => (
+            <MessageBubble
+              key={`${message.role}-${index}`}
+              message={message}
+              isThinking={pending && index === messages.length - 1 && !message.content}
+            />
+          ))
+        )}
+        <div ref={bottomRef} />
       </div>
 
-      {error && <div className="mt-3.5 rounded-md border border-danger-border bg-danger-dim px-4.5 py-3.5 text-[13.5px] leading-normal text-danger-text">{error}</div>}
+      {error && (
+        <div className="mx-5 mb-3 rounded-md border border-danger-border bg-danger-dim px-4 py-3 text-sm leading-snug text-danger-text sm:mx-7">
+          {error}
+        </div>
+      )}
 
-      <form onSubmit={onSubmit} className="tutor-input-row">
-        <label htmlFor="tutor-chat-input" className="visually-hidden">Sua pergunta para o tutor</label>
-        <input
-          id="tutor-chat-input"
-          className="w-full appearance-none rounded-sm border border-border bg-[rgba(var(--overlay-rgb),0.04)] px-3 py-2.5 text-md text-foreground outline-none transition-colors focus:border-brand-border focus:ring-[3px] focus:ring-brand-glow"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Digite sua pergunta…"
-          disabled={pending}
-        />
-        <button type="submit" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 bg-primary font-bold text-primary-foreground shadow-[0_4px_14px_rgba(217,119,87,0.16)] hover:-translate-y-px hover:opacity-90 px-4 py-2.5" disabled={pending || !input.trim()}>
-          {pending ? <AiThinking label="Enviando" /> : "Enviar"}
-        </button>
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          onSubmit();
+        }}
+        className="border-t border-border bg-card-2/40 px-5 py-4 sm:px-7"
+      >
+        <label htmlFor="tutor-chat-input" className="sr-only">
+          Sua pergunta para o tutor
+        </label>
+        <div className="flex items-end gap-2">
+          <Textarea
+            id="tutor-chat-input"
+            value={input}
+            onChange={(event) => setInput(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" && !event.shiftKey) {
+                event.preventDefault();
+                onSubmit();
+              }
+            }}
+            placeholder="Escreva sua dúvida sobre a matéria…"
+            disabled={pending}
+            rows={1}
+            className="max-h-32 min-h-11 resize-y bg-card px-3 py-2.5 text-sm"
+          />
+          <Button
+            type="submit"
+            size="icon"
+            disabled={pending || !input.trim()}
+            aria-label="Enviar mensagem"
+          >
+            {pending ? <AiThinking /> : <SendHorizontal aria-hidden />}
+          </Button>
+        </div>
+        <p className="mt-2 text-xs text-muted-foreground">
+          Enter envia · Shift + Enter quebra linha
+        </p>
       </form>
+    </div>
+  );
+}
+
+function MessageBubble({ message, isThinking }: { message: ChatMessage; isThinking: boolean }) {
+  const isStudent = message.role === "user";
+  return (
+    <div
+      className={`flex max-w-[85%] gap-2.5 ${isStudent ? "ml-auto flex-row-reverse" : "mr-auto"}`}
+    >
+      <span
+        className={`mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full ${isStudent ? "bg-brand text-primary-foreground" : "bg-brand-dim text-brand-text"}`}
+      >
+        {isStudent ? (
+          <UserRound className="size-3.5" aria-hidden />
+        ) : (
+          <Bot className="size-3.5" aria-hidden />
+        )}
+      </span>
+      <div
+        className={`min-w-0 rounded-lg px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap ${isStudent ? "rounded-tr-sm bg-brand text-primary-foreground" : "rounded-tl-sm border border-border bg-card-2 text-foreground"}`}
+      >
+        {message.content || (isThinking ? <AiThinking label="Pensando" /> : null)}
+      </div>
     </div>
   );
 }

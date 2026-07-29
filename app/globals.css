@@ -1479,42 +1479,6 @@ select.input option { background-color: var(--bg-card); color: var(--fg); }
 .activation-step.is-done { opacity: 0.6; }
 .activation-step.is-done .activation-step-label { text-decoration: line-through; }
 
-/* ── Tutor IA (chat) ──────────────────────────────────────────── */
-.tutor-layout { display: flex; gap: 16px; align-items: flex-start; }
-.tutor-sidebar {
-  width: 220px;
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.tutor-chat { display: flex; flex-direction: column; gap: 12px; min-height: 420px; }
-.tutor-messages {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  overflow-y: auto;
-  max-height: 60vh;
-  padding-right: 4px;
-}
-.tutor-bubble {
-  max-width: 80%;
-  padding: 10px 14px;
-  border-radius: var(--radius);
-  font-size: 13.5px;
-  line-height: 1.55;
-  white-space: pre-wrap;
-}
-
-.tutor-input-row { display: flex; gap: 8px; }
-.tutor-input-row .input { flex: 1; }
-
-@media (max-width: 860px) {
-  .tutor-layout { flex-direction: column; }
-  .tutor-sidebar { width: 100%; flex-direction: row; overflow-x: auto; }
-}
-
 /* ── Landing (public marketing page) ─────────────────────────── */
 .landing-header-actions { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
 
