@@ -82,7 +82,7 @@ export function StudyPlanWizard() {
                 className="h-11 min-w-40 rounded-full font-display tracking-[-0.2px]"
                 disabled={loading}
               >
-                {loading ? <AiThinking label="Gerando" /> : "Gerar cronograma"}
+                {loading ? <AiThinking label="Preparando" /> : "Planejar"}
               </Button>
             </div>
           </CardContent>

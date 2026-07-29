@@ -10,7 +10,7 @@ import { StudyPlanWizard } from "./StudyPlanWizard";
 import { BlankStudyPlanForm } from "./BlankStudyPlanForm";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "Plano de Estudos" };
+export const metadata: Metadata = { title: "Planejar estudos" };
 
 function formatDate(iso: string): string { try { return new Date(iso).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" }); } catch { return iso; } }
 

@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { ResolveForm, type ResolveQuestion } from "../../_shared/ResolveForm";
 import { ResultsView, type ResultQuestion, type AnswerRecord } from "../../_shared/ResultsView";
 import { CategoricalBar } from "@/components/charts/CategoricalBar";
+import { LearningNextStep } from "@/components/student/LearningNextStep";
 
 export const dynamic = "force-dynamic";
 
@@ -104,6 +105,7 @@ export default async function SimuladoPage({ params }: { params: Promise<{ id: s
             </section>
           )}
           <ResultsView status={submission!.status as "SUBMITTED" | "GRADED"} grade={grade} questions={questions} answersById={answersById} />
+          <LearningNextStep stage="simulado" events={[{ label: "Simulado concluído", status: "done" }, { label: "Próximo: revisar erros", status: "current" }]} />
         </>
       )}
     </>

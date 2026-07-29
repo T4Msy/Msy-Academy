@@ -8,9 +8,9 @@ import { IconHome, IconTutorIA, IconAtividade, IconTurma, IconSimulados, IconPla
 
 const NAV: SidebarSection[] = [
   { items: [{ href: "/aluno", label: "Início", icon: <IconHome />, exact: true, mobilePrimary: true }] },
-  { title: "Meu espaço de estudos", items: [{ href: "/aluno/turmas", label: "Minhas Turmas", icon: <IconTurma />, mobilePrimary: true }, { href: "/aluno/tarefas", label: "Atividades", icon: <IconAtividade />, mobilePrimary: true }, { href: "/aluno/materiais", label: "Materiais", icon: <IconBiblioteca /> }] },
-  { title: "Explorar", items: [{ href: "/aluno/tutor-ia", label: "Tutor IA", icon: <IconTutorIA /> }, { href: "/aluno/simulados", label: "Simulados", icon: <IconSimulados /> }, { href: "/aluno/flashcards", label: "Flashcards", icon: <IconFlashcards /> }] },
-  { title: "Organizar", items: [{ href: "/aluno/plano-de-estudos", label: "Plano de Estudos", icon: <IconPlanoDeEstudos /> }, { href: "/aluno/estudo-animado", label: "Estudo Animado", icon: <IconEstudoAnimado /> }] },
+  { title: "Meu espaço de estudos", items: [{ href: "/aluno/turmas", label: "Minhas Turmas", icon: <IconTurma />, mobilePrimary: true }, { href: "/aluno/tarefas", label: "Resolver", icon: <IconAtividade />, mobilePrimary: true }, { href: "/aluno/materiais", label: "Conteúdos", icon: <IconBiblioteca /> }] },
+  { title: "Continuar aprendendo", items: [{ href: "/aluno/tutor-ia", label: "Perguntar", icon: <IconTutorIA /> }, { href: "/aluno/simulados", label: "Simulado", icon: <IconSimulados /> }, { href: "/aluno/flashcards", label: "Revisar", icon: <IconFlashcards /> }] },
+  { title: "Organizar", items: [{ href: "/aluno/plano-de-estudos", label: "Planejar", icon: <IconPlanoDeEstudos /> }, { href: "/aluno/estudo-animado", label: "Treinar", icon: <IconEstudoAnimado /> }] },
   { title: "Acompanhar", items: [{ href: "/aluno/dashboard", label: "Meu Progresso", mobileLabel: "Progresso", icon: <IconDashboard />, mobilePrimary: true }] },
   { title: "Conta", items: [{ href: "/aluno/perfil", label: "Perfil", icon: <IconPerfil /> }, { href: "/aluno/configuracoes", label: "Configurações", icon: <IconConfiguracoes /> }] },
 ];

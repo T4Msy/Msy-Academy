@@ -15,7 +15,7 @@ import {
 } from "@/lib/assignments/studentPriority";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "Tarefas" };
+export const metadata: Metadata = { title: "Resolver pendências" };
 
 type Assignment = { id: string; content_type: "EXAM" | "ACTIVITY"; content_id: string; due_at: string | null; class_id: string };
 type StudentTask = Assignment & { title: string; state: StudentAssignmentState; submissionStatus: string | null; submittedAt: string | null; grade?: number; className: string };

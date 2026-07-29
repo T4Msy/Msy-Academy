@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { RenameDeleteMenu } from "@/components/shell/RenameDeleteMenu";
 import { StudyItemsList, type StudyItem } from "./StudyItemsList";
 import { renameStudyPlan, deleteStudyPlan } from "../actions";
+import { LearningNextStep } from "@/components/student/LearningNextStep";
 
 export const dynamic = "force-dynamic";
 
@@ -42,6 +43,7 @@ export default async function StudyPlanDetailPage({ params }: { params: Promise<
       </div>
 
       <StudyItemsList planId={id} items={list} />
+      <LearningNextStep stage="plan" events={[{ label: "Plano aberto", status: "done" }, { label: "Próximo: iniciar estudo", status: "current" }]} />
     </>
   );
 }

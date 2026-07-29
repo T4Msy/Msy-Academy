@@ -9,7 +9,7 @@ import { TutorConversationHistory, type TutorConversation } from "./TutorConvers
 import { TutorWorkspace } from "./TutorWorkspace";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "Tutor IA" };
+export const metadata: Metadata = { title: "Tirar uma dúvida" };
 
 export default async function TutorIaPage({
   searchParams,
@@ -42,12 +42,12 @@ export default async function TutorIaPage({
   return (
     <>
       <PageHeader
-        title="Tutor IA"
+        title="Tirar uma dúvida"
         subtitle="Converse sobre os materiais e conteúdos das suas turmas."
         actions={
           <Button asChild size="sm">
             <Link href="/aluno/tutor-ia">
-              <MessageCirclePlus aria-hidden /> Nova conversa
+              <MessageCirclePlus aria-hidden /> Perguntar
             </Link>
           </Button>
         }

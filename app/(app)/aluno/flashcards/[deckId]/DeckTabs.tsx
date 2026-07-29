@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { DeckReview, type ReviewCard } from "./DeckReview";
 import { CardsManager } from "./CardsManager";
+import { LearningNextStep } from "@/components/student/LearningNextStep";
 
 interface CardData {
   id: string;
@@ -41,7 +42,7 @@ export function DeckTabs({
           Gerenciar cartões
         </button>
       </div>
-      {view === "review" ? <DeckReview deckId={deckId} dueCards={dueCards} /> : <CardsManager deckId={deckId} cards={allCards} />}
+      {view === "review" ? <><DeckReview deckId={deckId} dueCards={dueCards} /><LearningNextStep stage="flashcards" deckId={deckId} events={[{ label: "Deck aberto", status: "done" }, { label: "Próximo: simulado", status: "current" }]} /></> : <CardsManager deckId={deckId} cards={allCards} />}
     </>
   );
 }

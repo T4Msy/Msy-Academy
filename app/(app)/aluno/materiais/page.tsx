@@ -4,7 +4,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { StudentMaterialsClient, type StudentMaterial } from "./StudentMaterialsClient";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "Materiais" };
+export const metadata: Metadata = { title: "Conteúdos" };
 
 export default async function MateriaisPage({ searchParams }: { searchParams: Promise<{ classId?: string }> }) {
   const { classId } = await searchParams;

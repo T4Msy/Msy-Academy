@@ -11,7 +11,7 @@ import { GenerateDeckForm } from "./GenerateDeckForm";
 import { NewDeckForm } from "./NewDeckForm";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "Flashcards" };
+export const metadata: Metadata = { title: "Revisar conteúdos" };
 
 export default async function FlashcardsPage({ searchParams }: { searchParams: Promise<{ q?: string; filter?: string; materialIds?: string }> }) {
   const params = await searchParams;

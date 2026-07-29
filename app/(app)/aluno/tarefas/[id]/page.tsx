@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { ResolveForm, type ResolveQuestion } from "../../_shared/ResolveForm";
 import { ResultsView, type ResultQuestion, type AnswerRecord } from "../../_shared/ResultsView";
 import { isAssessmentExpired } from "@/lib/assessments/deadline";
+import { LearningNextStep } from "@/components/student/LearningNextStep";
 
 export const dynamic = "force-dynamic";
 
@@ -82,7 +83,10 @@ export default async function TarefaPage({ params }: { params: Promise<{ id: str
 
       {!isDone && <ResolveForm parent={{ assignmentId: id }} questions={questions as ResolveQuestion[]} />}
       {isDone && (
-        <ResultsView status={submission!.status as "SUBMITTED" | "GRADED"} grade={grade} questions={questions} answersById={answersById} />
+        <>
+          <ResultsView status={submission!.status as "SUBMITTED" | "GRADED"} grade={grade} questions={questions} answersById={answersById} />
+          <LearningNextStep stage="task" events={[{ label: "Atividade concluída", status: "done" }, { label: "Próximo: revisão", status: "current" }]} />
+        </>
       )}
     </>
   );

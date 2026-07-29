@@ -91,7 +91,7 @@ export function GenerateDeckForm({ materials }: { materials: { id: string; title
                 className="h-11 min-w-40 rounded-full font-display tracking-[-0.2px]"
                 disabled={loading}
               >
-                {loading ? <AiThinking label="Criando cartões" /> : "Criar cartões"}
+                {loading ? <AiThinking label="Preparando revisão" /> : "Revisar"}
               </Button>
             </div>
           </CardContent>

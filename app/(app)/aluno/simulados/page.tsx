@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { SimuladoWizard } from "./SimuladoWizard";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "Simulados" };
+export const metadata: Metadata = { title: "Testar conhecimentos" };
 
 type SimuladoFilter = "available" | "in-progress" | "completed" | "all";
 function validFilter(value: string | undefined): SimuladoFilter { return value === "available" || value === "in-progress" || value === "completed" || value === "all" ? value : "available"; }

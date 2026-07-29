@@ -29,7 +29,7 @@ export function ResultsView({
 }) {
   const revealCorrection = status === "GRADED";
   return (
-    <>
+    <div id="resultado">
       {status === "GRADED" && grade && (
         <section className="card card--highlight mb-md" data-testid="submission-graded">
           <div className="flex flex-col gap-4.5 p-5.5">
@@ -86,6 +86,6 @@ export function ResultsView({
           );
         })}
       </div>
-    </>
+    </div>
   );
 }
