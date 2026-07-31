@@ -1,7 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Bell, BookOpen, CalendarClock, CheckCircle2, Clock3, FileCheck2, NotebookTabs, PlayCircle, Users, Waypoints } from "lucide-react";
+import {
+  ArrowRight,
+  Bell,
+  BookOpen,
+  CalendarClock,
+  CheckCircle2,
+  Clock3,
+  FileCheck2,
+  NotebookTabs,
+  PlayCircle,
+  Users,
+  Waypoints,
+} from "lucide-react";
 import { useStudentDashboardStats } from "@/hooks/useStudentDashboardStats";
 import type { StudentRoutine } from "@/lib/dashboard/studentStats";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,43 +21,473 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export function StudentPriorityDashboard() {
   const { data, isError } = useStudentDashboardStats();
-  if (isError) return <p role="alert" className="text-sm text-danger-text">Não foi possível carregar suas prioridades. Atualize a página para tentar novamente.</p>;
-  if (!data) return <div className="space-y-3.5" aria-label="Carregando prioridades"><Skeleton className="h-24" /><Skeleton className="h-40" /><Skeleton className="h-64" /></div>;
+  if (isError)
+    return (
+      <p role="alert" className="text-sm text-danger-text">
+        Não foi possível carregar suas prioridades. Atualize a página para tentar novamente.
+      </p>
+    );
+  if (!data)
+    return (
+      <div className="space-y-3.5" aria-label="Carregando prioridades">
+        <Skeleton className="h-24" />
+        <Skeleton className="h-40" />
+        <Skeleton className="h-64" />
+      </div>
+    );
   const { routine } = data;
-  const progress = routine.assignmentProgress.total ? Math.round((routine.assignmentProgress.completed / routine.assignmentProgress.total) * 100) : 0;
+  const progress = routine.assignmentProgress.total
+    ? Math.round((routine.assignmentProgress.completed / routine.assignmentProgress.total) * 100)
+    : 0;
   const classesWithPriority = routine.classes.filter((item) => item.nextActivity || item.nextExam);
   const classCountWithMaterials = routine.classes.filter((item) => item.materialsCount > 0);
 
-  return <div className="space-y-6">
-    {routine.continueItem && <Card className="gap-0 border-brand-border bg-brand-dim py-0 shadow-elevated"><CardContent className="flex flex-wrap items-center justify-between gap-4 px-5.5 py-4.5"><div className="flex min-w-0 items-center gap-3"><span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-card text-brand-text"><PlayCircle className="size-5" aria-hidden /></span><div className="min-w-0"><p className="text-xs font-semibold tracking-wide text-brand-text uppercase">Continue de onde parou</p><p className="truncate font-display text-base font-bold text-foreground">{routine.continueItem.title}</p><p className="mt-0.5 text-xs text-muted-foreground">{routine.continueItem.detail}</p></div></div><Link href={routine.continueItem.href} className="rounded-sm bg-brand px-3.5 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-brand-hover focus-visible:ring-2 focus-visible:ring-ring">Continuar</Link></CardContent></Card>}
-    <PrioritySection classes={classesWithPriority} />
-    <ClassesSection classes={routine.classes} />
-    <MaterialsSection classes={classCountWithMaterials} />
-    <div className="grid gap-3.5 xl:grid-cols-2"><AnnouncementsCard announcements={routine.announcements} /><GradesCard grades={routine.recentGrades} /></div>
-    <StudyToolsSection />
-    <div className="grid gap-3.5 xl:grid-cols-3"><ProgressCard progress={progress} completed={routine.assignmentProgress.completed} total={routine.assignmentProgress.total} /><StudyTimeCard {...routine.studyTime} /></div>
-  </div>;
+  return (
+    <div className="space-y-6">
+      {routine.continueItem && (
+        <Card className="gap-0 border-brand-border bg-brand-dim py-0 shadow-elevated">
+          <CardContent className="flex flex-wrap items-center justify-between gap-4 px-5.5 py-4.5">
+            <div className="flex min-w-0 items-center gap-3">
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-card text-brand-text">
+                <PlayCircle className="size-5" aria-hidden />
+              </span>
+              <div className="min-w-0">
+                <p className="text-xs font-semibold tracking-wide text-brand-text uppercase">
+                  Continue de onde parou
+                </p>
+                <p className="truncate font-display text-base font-bold text-foreground">
+                  {routine.continueItem.title}
+                </p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  {routine.continueItem.detail}
+                </p>
+              </div>
+            </div>
+            <Link
+              href={routine.continueItem.href}
+              className="hover:bg-brand-hover rounded-sm bg-brand px-3.5 py-2 text-sm font-semibold text-primary-foreground transition-colors focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              Continuar
+            </Link>
+          </CardContent>
+        </Card>
+      )}
+      <PrioritySection classes={classesWithPriority} />
+      <ClassesSection classes={routine.classes} />
+      <MaterialsSection classes={classCountWithMaterials} />
+      <div className="grid gap-3.5 xl:grid-cols-2">
+        <AnnouncementsCard announcements={routine.announcements} />
+        <GradesCard grades={routine.recentGrades} />
+      </div>
+      <StudyToolsSection />
+      <ProgressSection
+        progress={progress}
+        completed={routine.assignmentProgress.completed}
+        total={routine.assignmentProgress.total}
+        studyTime={routine.studyTime}
+      />
+    </div>
+  );
 }
 
 function PrioritySection({ classes }: { classes: StudentRoutine["classes"] }) {
-  return <section aria-labelledby="student-priorities-title"><div className="mb-3"><h2 id="student-priorities-title" className="font-display text-xl font-bold text-foreground">Próximos passos</h2><p className="mt-1 text-sm text-muted-foreground">O que merece sua atenção primeiro.</p></div>{classes.length === 0 ? <Card className="border-dashed p-5"><p className="text-sm text-muted-foreground">Você está em dia. As próximas atividades e provas aparecerão aqui.</p></Card> : <div className="grid gap-3 sm:grid-cols-2">{classes.slice(0, 4).map((item) => <Link key={item.id} href={`/aluno/turmas/${item.id}`} className="group rounded-lg border border-border bg-card p-4 transition hover:-translate-y-0.5 hover:border-brand-border hover:bg-card-2"><p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">{item.name}</p>{item.nextActivity && <div className="mt-3 flex items-start gap-2"><CheckCircle2 className="mt-0.5 size-4 shrink-0 text-brand-text" aria-hidden /><span className="min-w-0 flex-1 text-sm font-semibold text-foreground">{item.nextActivity}</span></div>}{item.nextExam && <div className="mt-2 flex items-start gap-2"><CalendarClock className="mt-0.5 size-4 shrink-0 text-brand-text" aria-hidden /><span className="min-w-0 flex-1 text-sm font-semibold text-foreground">{item.nextExam}</span></div>}<span className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-brand-text">Abrir turma <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" aria-hidden /></span></Link>)}</div>}</section>;
+  return (
+    <section aria-labelledby="student-priorities-title">
+      <div className="mb-3">
+        <h2
+          id="student-priorities-title"
+          className="font-display text-xl font-bold text-foreground"
+        >
+          Próximos passos
+        </h2>
+        <p className="mt-1 text-sm text-muted-foreground">O que merece sua atenção primeiro.</p>
+      </div>
+      {classes.length === 0 ? (
+        <Card className="border-dashed p-5">
+          <p className="text-sm text-muted-foreground">
+            Você está em dia. As próximas atividades e provas aparecerão aqui.
+          </p>
+        </Card>
+      ) : (
+        <div className="grid gap-3 sm:grid-cols-2">
+          {classes.slice(0, 4).map((item) => (
+            <Link
+              key={item.id}
+              href={`/aluno/turmas/${item.id}`}
+              className="group rounded-lg border border-border bg-card p-4 transition hover:-translate-y-0.5 hover:border-brand-border hover:bg-card-2"
+            >
+              <p className="text-xs font-bold tracking-wide text-muted-foreground uppercase">
+                {item.name}
+              </p>
+              {item.nextActivity && (
+                <div className="mt-3 flex items-start gap-2">
+                  <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-brand-text" aria-hidden />
+                  <span className="min-w-0 flex-1 text-sm font-semibold text-foreground">
+                    {item.nextActivity}
+                  </span>
+                </div>
+              )}
+              {item.nextExam && (
+                <div className="mt-2 flex items-start gap-2">
+                  <CalendarClock className="mt-0.5 size-4 shrink-0 text-brand-text" aria-hidden />
+                  <span className="min-w-0 flex-1 text-sm font-semibold text-foreground">
+                    {item.nextExam}
+                  </span>
+                </div>
+              )}
+              <span className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-brand-text">
+                Abrir turma{" "}
+                <ArrowRight
+                  className="size-3.5 transition-transform group-hover:translate-x-0.5"
+                  aria-hidden
+                />
+              </span>
+            </Link>
+          ))}
+        </div>
+      )}
+    </section>
+  );
 }
 
 function ClassesSection({ classes }: { classes: StudentRoutine["classes"] }) {
-  return <section aria-labelledby="student-classes-title"><div className="mb-3 flex items-end justify-between gap-3"><div><h2 id="student-classes-title" className="font-display text-xl font-bold text-foreground">Minhas turmas</h2><p className="mt-1 text-sm text-muted-foreground">Entre no ambiente da disciplina para continuar estudando.</p></div><Link href="/aluno/turmas" className="text-sm font-semibold text-brand-text">Ver todas</Link></div>{classes.length === 0 ? <Card className="items-center gap-2 border-dashed py-8 text-center"><Users className="size-6 text-brand-text" aria-hidden /><p className="text-sm text-muted-foreground">Entre em uma turma para começar.</p><Link href="/aluno/turmas" className="text-sm font-semibold text-brand-text">Ver turmas</Link></Card> : <div className="grid gap-3.5 md:grid-cols-2 xl:grid-cols-3">{classes.map((item) => <Link key={item.id} href={`/aluno/turmas/${item.id}`} className="group rounded-lg border border-border bg-card p-4.5 transition hover:-translate-y-0.5 hover:border-brand-border hover:bg-card-2"><h3 className="font-display text-lg font-bold text-foreground">{item.name}</h3>{(item.subject || item.teacherName) && <p className="mt-1 truncate text-xs text-muted-foreground">{[item.subject, item.teacherName].filter(Boolean).join(" · ")}</p>}<div className="mt-4 grid grid-cols-2 gap-2 border-y border-border py-3 text-xs"><span><b className="text-foreground">{item.pendingAssignments}</b> pendentes</span><span><b className="text-foreground">{item.materialsCount}</b> materiais</span></div><span className="mt-3 inline-flex items-center gap-1 text-sm font-bold text-brand-text">Entrar <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" aria-hidden /></span></Link>)}</div>}</section>;
+  return (
+    <section aria-labelledby="student-classes-title">
+      <div className="mb-3 flex items-end justify-between gap-3">
+        <div>
+          <h2 id="student-classes-title" className="font-display text-xl font-bold text-foreground">
+            Minhas turmas
+          </h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Entre no ambiente da disciplina para continuar estudando.
+          </p>
+        </div>
+        <Link href="/aluno/turmas" className="text-sm font-semibold text-brand-text">
+          Ver todas
+        </Link>
+      </div>
+      {classes.length === 0 ? (
+        <Card className="items-center gap-2 border-dashed py-8 text-center">
+          <Users className="size-6 text-brand-text" aria-hidden />
+          <p className="text-sm text-muted-foreground">Entre em uma turma para começar.</p>
+          <Link href="/aluno/turmas" className="text-sm font-semibold text-brand-text">
+            Ver turmas
+          </Link>
+        </Card>
+      ) : (
+        <div className="grid gap-3.5 md:grid-cols-2 xl:grid-cols-3">
+          {classes.map((item) => (
+            <Link
+              key={item.id}
+              href={`/aluno/turmas/${item.id}`}
+              className="group rounded-lg border border-border bg-card p-4.5 transition hover:-translate-y-0.5 hover:border-brand-border hover:bg-card-2"
+            >
+              <h3 className="font-display text-lg font-bold text-foreground">{item.name}</h3>
+              {(item.subject || item.teacherName) && (
+                <p className="mt-1 truncate text-xs text-muted-foreground">
+                  {[item.subject, item.teacherName].filter(Boolean).join(" · ")}
+                </p>
+              )}
+              <div className="mt-4 grid grid-cols-2 gap-2 border-y border-border py-3 text-xs">
+                <span>
+                  <b className="text-foreground">{item.pendingAssignments}</b> pendentes
+                </span>
+                <span>
+                  <b className="text-foreground">{item.materialsCount}</b> materiais
+                </span>
+              </div>
+              <span className="mt-3 inline-flex items-center gap-1 text-sm font-bold text-brand-text">
+                Entrar{" "}
+                <ArrowRight
+                  className="size-3.5 transition-transform group-hover:translate-x-0.5"
+                  aria-hidden
+                />
+              </span>
+            </Link>
+          ))}
+        </div>
+      )}
+    </section>
+  );
 }
 
-function MaterialsSection({ classes }: { classes: StudentRoutine["classes"] }) { return <section aria-labelledby="student-materials-title"><div className="mb-3 flex items-end justify-between gap-3"><div><h2 id="student-materials-title" className="font-display text-xl font-bold text-foreground">Materiais recentes</h2><p className="mt-1 text-sm text-muted-foreground">Veja quais turmas têm conteúdos disponíveis para revisão.</p></div><Link href="/aluno/materiais" className="text-sm font-semibold text-brand-text">Ver materiais</Link></div>{classes.length === 0 ? <Card className="border-dashed p-5"><p className="text-sm text-muted-foreground">Materiais compartilhados pelos professores aparecerão aqui.</p></Card> : <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">{classes.slice(0, 3).map((item) => <Link key={item.id} href={`/aluno/turmas/${item.id}?view=materials`} className="flex items-center justify-between gap-3 rounded-md border border-border bg-card p-3 transition hover:border-brand-border hover:bg-card-2"><span className="flex min-w-0 items-center gap-2"><BookOpen className="size-4 shrink-0 text-brand-text" aria-hidden /><span className="min-w-0 truncate text-sm font-semibold text-foreground">{item.name}</span></span><span className="shrink-0 text-xs text-muted-foreground">{item.materialsCount} disponível{item.materialsCount === 1 ? "" : "is"}</span></Link>)}</div>}</section>; }
+function MaterialsSection({ classes }: { classes: StudentRoutine["classes"] }) {
+  return (
+    <section aria-labelledby="student-materials-title">
+      <div className="mb-3 flex items-end justify-between gap-3">
+        <div>
+          <h2
+            id="student-materials-title"
+            className="font-display text-xl font-bold text-foreground"
+          >
+            Materiais recentes
+          </h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Veja quais turmas têm conteúdos disponíveis para revisão.
+          </p>
+        </div>
+        <Link href="/aluno/materiais" className="text-sm font-semibold text-brand-text">
+          Ver materiais
+        </Link>
+      </div>
+      {classes.length === 0 ? (
+        <Card className="border-dashed p-5">
+          <p className="text-sm text-muted-foreground">
+            Materiais compartilhados pelos professores aparecerão aqui.
+          </p>
+        </Card>
+      ) : (
+        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          {classes.slice(0, 3).map((item) => (
+            <Link
+              key={item.id}
+              href={`/aluno/turmas/${item.id}?view=materials`}
+              className="flex items-center justify-between gap-3 rounded-md border border-border bg-card p-3 transition hover:border-brand-border hover:bg-card-2"
+            >
+              <span className="flex min-w-0 items-center gap-2">
+                <BookOpen className="size-4 shrink-0 text-brand-text" aria-hidden />
+                <span className="min-w-0 truncate text-sm font-semibold text-foreground">
+                  {item.name}
+                </span>
+              </span>
+              <span className="shrink-0 text-xs text-muted-foreground">
+                {item.materialsCount} disponível{item.materialsCount === 1 ? "" : "is"}
+              </span>
+            </Link>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
 
-function AnnouncementsCard({ announcements }: { announcements: StudentRoutine["announcements"] }) { return <Card className="gap-0 border-border bg-card py-0"><CardHeader className="px-5.5 pt-5.5 pb-4"><CardTitle className="flex items-center gap-2 font-display text-lg font-bold text-foreground"><Bell className="size-4.5 text-brand-text" aria-hidden />Avisos importantes</CardTitle><CardDescription className="mt-1 text-xs">Recados publicados pelos professores.</CardDescription></CardHeader><CardContent className="border-t border-border px-5.5 py-0">{announcements.length === 0 ? <p className="py-5 text-sm text-muted-foreground">Nenhum aviso importante por enquanto.</p> : <ul className="divide-y divide-border">{announcements.slice(0, 3).map((item) => <li key={item.id} className="py-3.5"><p className="text-sm leading-snug text-foreground">{item.message}</p><p className="mt-1 text-xs text-muted-foreground">{[item.teacherName, item.className].filter(Boolean).join(" · ")}</p></li>)}</ul>}</CardContent></Card>; }
-function GradesCard({ grades }: { grades: StudentRoutine["recentGrades"] }) { return <Card className="gap-0 border-border bg-card py-0"><CardHeader className="px-5.5 pt-5.5 pb-4"><CardTitle className="font-display text-lg font-bold text-foreground">Últimas notas</CardTitle><CardDescription className="mt-1 text-xs">Resultados corrigidos recentemente.</CardDescription></CardHeader><CardContent className="border-t border-border px-5.5 py-0">{grades.length === 0 ? <p className="py-5 text-sm text-muted-foreground">Suas notas aparecerão aqui após a correção.</p> : <ul className="divide-y divide-border">{grades.slice(0, 3).map((grade) => <li key={grade.id} className="flex items-center justify-between gap-3 py-3.5"><span className="truncate text-sm font-semibold text-foreground">{grade.title}</span><span className="font-display text-lg font-extrabold text-brand-text">{grade.score}</span></li>)}</ul>}</CardContent></Card>; }
-function ProgressCard({ progress, completed, total }: { progress: number; completed: number; total: number }) { return <Card className="gap-0 border-border bg-card py-0"><CardHeader className="px-5.5 pt-5.5 pb-4"><div className="flex items-start justify-between gap-3"><CardTitle className="font-display text-lg font-bold text-foreground">Progresso geral</CardTitle><span className="font-display text-2xl font-extrabold text-brand-text">{progress}%</span></div></CardHeader><CardContent className="border-t border-border px-5.5 py-4.5"><div className="h-2 overflow-hidden rounded-full bg-card-2" role="progressbar" aria-label="Progresso de atividades" aria-valuemin={0} aria-valuemax={total} aria-valuenow={completed}><div className="h-full rounded-full bg-brand" style={{ width: `${progress}%` }} /></div><p className="mt-2 text-xs text-muted-foreground">{completed} de {total} atividades concluídas</p></CardContent></Card>; }
-function StudyTimeCard({ hasRecords, todaySeconds, weekSeconds, monthSeconds }: StudentRoutine["studyTime"]) { const format = (seconds: number) => { const minutes = Math.floor(seconds / 60); return minutes < 60 ? `${minutes} min` : `${Math.floor(minutes / 60)}h ${minutes % 60}min`; }; return <Card className="gap-0 border-border bg-card py-0"><CardHeader className="px-5.5 pt-5.5 pb-4"><CardTitle className="flex items-center gap-2 font-display text-lg font-bold text-foreground"><Clock3 className="size-4.5 text-brand-text" aria-hidden />Tempo estudado</CardTitle></CardHeader><CardContent className="px-5.5 pb-5.5">{hasRecords ? <div className="grid grid-cols-3 gap-2 text-center"><span><b className="block text-base text-foreground">{format(todaySeconds)}</b><small className="text-xs text-muted-foreground">Hoje</small></span><span><b className="block text-base text-foreground">{format(weekSeconds)}</b><small className="text-xs text-muted-foreground">Semana</small></span><span><b className="block text-base text-foreground">{format(monthSeconds)}</b><small className="text-xs text-muted-foreground">Mês</small></span></div> : <p className="text-sm text-muted-foreground">O tempo aparecerá conforme suas sessões forem registradas.</p>}</CardContent></Card>; }
+function AnnouncementsCard({ announcements }: { announcements: StudentRoutine["announcements"] }) {
+  return (
+    <Card className="gap-0 border-border bg-card py-0">
+      <CardHeader className="px-5.5 pt-5.5 pb-4">
+        <CardTitle className="flex items-center gap-2 font-display text-lg font-bold text-foreground">
+          <Bell className="size-4.5 text-brand-text" aria-hidden />
+          Avisos importantes
+        </CardTitle>
+        <CardDescription className="mt-1 text-xs">
+          Recados publicados pelos professores.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="border-t border-border px-5.5 py-0">
+        {announcements.length === 0 ? (
+          <p className="py-5 text-sm text-muted-foreground">
+            Nenhum aviso importante por enquanto.
+          </p>
+        ) : (
+          <ul className="divide-y divide-border">
+            {announcements.slice(0, 3).map((item) => (
+              <li key={item.id} className="py-3.5">
+                <p className="text-sm leading-snug text-foreground">{item.message}</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {[item.teacherName, item.className].filter(Boolean).join(" · ")}
+                </p>
+              </li>
+            ))}
+          </ul>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+function GradesCard({ grades }: { grades: StudentRoutine["recentGrades"] }) {
+  return (
+    <Card className="gap-0 border-border bg-card py-0">
+      <CardHeader className="px-5.5 pt-5.5 pb-4">
+        <CardTitle className="font-display text-lg font-bold text-foreground">
+          Últimas notas
+        </CardTitle>
+        <CardDescription className="mt-1 text-xs">
+          Resultados corrigidos recentemente.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="border-t border-border px-5.5 py-0">
+        {grades.length === 0 ? (
+          <p className="py-5 text-sm text-muted-foreground">
+            Suas notas aparecerão aqui após a correção.
+          </p>
+        ) : (
+          <ul className="divide-y divide-border">
+            {grades.slice(0, 3).map((grade) => (
+              <li key={grade.id} className="flex items-center justify-between gap-3 py-3.5">
+                <span className="truncate text-sm font-semibold text-foreground">
+                  {grade.title}
+                </span>
+                <span className="font-display text-lg font-extrabold text-brand-text">
+                  {grade.score}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+function ProgressSection({
+  progress,
+  completed,
+  total,
+  studyTime,
+}: {
+  progress: number;
+  completed: number;
+  total: number;
+  studyTime: StudentRoutine["studyTime"];
+}) {
+  return (
+    <section aria-labelledby="student-progress-title">
+      <div className="mb-3">
+        <h2 id="student-progress-title" className="font-display text-xl font-bold text-foreground">
+          Progresso
+        </h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Acompanhe sua evolução e o tempo dedicado aos estudos.
+        </p>
+      </div>
+      <div className="grid gap-3.5 xl:grid-cols-3">
+        <ProgressCard progress={progress} completed={completed} total={total} />
+        <StudyTimeCard {...studyTime} />
+      </div>
+    </section>
+  );
+}
+function ProgressCard({
+  progress,
+  completed,
+  total,
+}: {
+  progress: number;
+  completed: number;
+  total: number;
+}) {
+  return (
+    <Card className="gap-0 border-border bg-card py-0">
+      <CardHeader className="px-5.5 pt-5.5 pb-4">
+        <div className="flex items-start justify-between gap-3">
+          <CardTitle className="font-display text-lg font-bold text-foreground">
+            Progresso geral
+          </CardTitle>
+          <span className="font-display text-2xl font-extrabold text-brand-text">{progress}%</span>
+        </div>
+      </CardHeader>
+      <CardContent className="border-t border-border px-5.5 py-4.5">
+        <div
+          className="h-2 overflow-hidden rounded-full bg-card-2"
+          role="progressbar"
+          aria-label="Progresso de atividades"
+          aria-valuemin={0}
+          aria-valuemax={total}
+          aria-valuenow={completed}
+        >
+          <div className="h-full rounded-full bg-brand" style={{ width: `${progress}%` }} />
+        </div>
+        <p className="mt-2 text-xs text-muted-foreground">
+          {completed} de {total} atividades concluídas
+        </p>
+      </CardContent>
+    </Card>
+  );
+}
+function StudyTimeCard({
+  hasRecords,
+  todaySeconds,
+  weekSeconds,
+  monthSeconds,
+}: StudentRoutine["studyTime"]) {
+  const format = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60);
+    return minutes < 60 ? `${minutes} min` : `${Math.floor(minutes / 60)}h ${minutes % 60}min`;
+  };
+  return (
+    <Card className="gap-0 border-border bg-card py-0">
+      <CardHeader className="px-5.5 pt-5.5 pb-4">
+        <CardTitle className="flex items-center gap-2 font-display text-lg font-bold text-foreground">
+          <Clock3 className="size-4.5 text-brand-text" aria-hidden />
+          Tempo estudado
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="px-5.5 pb-5.5">
+        {hasRecords ? (
+          <div className="grid grid-cols-3 gap-2 text-center">
+            <span>
+              <b className="block text-base text-foreground">{format(todaySeconds)}</b>
+              <small className="text-xs text-muted-foreground">Hoje</small>
+            </span>
+            <span>
+              <b className="block text-base text-foreground">{format(weekSeconds)}</b>
+              <small className="text-xs text-muted-foreground">Semana</small>
+            </span>
+            <span>
+              <b className="block text-base text-foreground">{format(monthSeconds)}</b>
+              <small className="text-xs text-muted-foreground">Mês</small>
+            </span>
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            O tempo aparecerá conforme suas sessões forem registradas.
+          </p>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
 function StudyToolsSection() {
   const tools = [
-    { href: "/aluno/plano-de-estudos", label: "Planejar", description: "Organize seus próximos passos.", Icon: NotebookTabs },
-    { href: "/aluno/flashcards", label: "Revisar", description: "Revise conteúdos já estudados.", Icon: Waypoints },
-    { href: "/aluno/simulados", label: "Simulado", description: "Confira o que você aprendeu.", Icon: FileCheck2 },
+    {
+      href: "/aluno/plano-de-estudos",
+      label: "Planejar",
+      description: "Organize seus próximos passos.",
+      Icon: NotebookTabs,
+    },
+    {
+      href: "/aluno/flashcards",
+      label: "Revisar",
+      description: "Revise conteúdos já estudados.",
+      Icon: Waypoints,
+    },
+    {
+      href: "/aluno/simulados",
+      label: "Simulado",
+      description: "Confira o que você aprendeu.",
+      Icon: FileCheck2,
+    },
   ];
-  return <section aria-labelledby="student-tools-title"><div className="mb-3"><h2 id="student-tools-title" className="font-display text-xl font-bold text-foreground">Como continuar</h2><p className="mt-1 text-sm text-muted-foreground">Escolha o objetivo para sua prÃ³xima sessÃ£o.</p></div><div className="grid gap-2 sm:grid-cols-3">{tools.map(({ href, label, description, Icon }) => <Link key={href} href={href} className="group flex items-center gap-3 rounded-md border border-border bg-card p-3 transition hover:border-brand-border hover:bg-card-2"><span className="flex size-9 shrink-0 items-center justify-center rounded-sm bg-brand-dim text-brand-text"><Icon className="size-4" aria-hidden /></span><span className="min-w-0"><span className="block text-sm font-semibold text-foreground">{label}</span><span className="mt-0.5 block text-xs text-muted-foreground">{description}</span></span><ArrowRight className="ml-auto size-4 shrink-0 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-brand-text" aria-hidden /></Link>)}</div></section>;
+  return (
+    <section aria-labelledby="student-tools-title">
+      <div className="mb-3">
+        <h2 id="student-tools-title" className="font-display text-xl font-bold text-foreground">
+          Como continuar
+        </h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Escolha o objetivo para sua prÃ³xima sessÃ£o.
+        </p>
+      </div>
+      <div className="grid gap-2 sm:grid-cols-3">
+        {tools.map(({ href, label, description, Icon }) => (
+          <Link
+            key={href}
+            href={href}
+            className="group flex items-center gap-3 rounded-md border border-border bg-card p-3 transition hover:border-brand-border hover:bg-card-2"
+          >
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-sm bg-brand-dim text-brand-text">
+              <Icon className="size-4" aria-hidden />
+            </span>
+            <span className="min-w-0">
+              <span className="block text-sm font-semibold text-foreground">{label}</span>
+              <span className="mt-0.5 block text-xs text-muted-foreground">{description}</span>
+            </span>
+            <ArrowRight
+              className="ml-auto size-4 shrink-0 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-brand-text"
+              aria-hidden
+            />
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
 }
