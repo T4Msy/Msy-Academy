@@ -464,7 +464,7 @@ function StudyToolsSection() {
           Como continuar
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Escolha o objetivo para sua prÃ³xima sessÃ£o.
+          Escolha o objetivo para sua próxima sessão.
         </p>
       </div>
       <div className="grid gap-2 sm:grid-cols-3">

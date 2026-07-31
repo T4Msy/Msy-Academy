@@ -10,9 +10,12 @@ export const dynamic = "force-dynamic";
 export default async function MaterialPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await createClient();
-  const { data: material } = await supabase.from("materials").select("id, kind, title, storage_path, created_at, classes(id, name)").eq("id", id).eq("kind", "FILE").maybeSingle();
-  if (!material || !material.storage_path) notFound();
-  const classroom = material.classes as unknown as { id: string; name: string } | null;
+  const [{ data: material }, { data: classRows }] = await Promise.all([
+    supabase.from("materials").select("id, kind, title, storage_path, class_id, created_at").eq("id", id).eq("kind", "FILE").maybeSingle(),
+    supabase.rpc("student_visible_classes"),
+  ]);
+  if (!material || !material.storage_path || !material.class_id) notFound();
+  const classroom = ((classRows ?? []) as { id: string; name: string }[]).find((item) => item.id === material.class_id) ?? null;
   if (!classroom) notFound();
   const fileUrl = `/aluno/materiais/${id}/arquivo`;
   const isImage = material.kind === "IMAGE";

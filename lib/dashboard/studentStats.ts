@@ -158,7 +158,7 @@ export async function getStudentDashboardStats(): Promise<StudentDashboardStats>
       ? supabase.from("activities").select("id, title").in("id", activityIds)
       : Promise.resolve({ data: [] as { id: string; title: string }[] }),
     classIds.length
-      ? supabase.from("classes").select("id, name, subject_id").in("id", classIds)
+      ? supabase.rpc("student_visible_classes")
       : Promise.resolve({ data: [] as { id: string; name: string; subject_id: string | null }[] }),
     supabase.from("subjects").select("id, name"),
     classIds.length
@@ -184,7 +184,8 @@ export async function getStudentDashboardStats(): Promise<StudentDashboardStats>
     classIds.length
       ? await supabase.rpc("student_class_teacher_names", { p_class_ids: classIds })
       : { data: [] as { class_id: string; teacher_name: string | null }[] };
-  const classList = (classRows ?? []) as { id: string; name: string; subject_id: string | null }[];
+  const classList = ((classRows ?? []) as { id: string; name: string; subject_id: string | null }[])
+    .filter((classroom) => classIds.includes(classroom.id));
   const subjectNameById = new Map((subjects ?? []).map((subject) => [subject.id, subject.name]));
   const teacherNameByClassId = new Map(
     (teacherNames.data ?? []).map((teacher) => [teacher.class_id, teacher.teacher_name]),

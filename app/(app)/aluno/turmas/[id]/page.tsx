@@ -5,7 +5,6 @@ import { createClient } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/EmptyState";
 import { isAssessmentExpired } from "@/lib/assessments/deadline";
-import { CopyClassCodeButton } from "../CopyClassCodeButton";
 import { ClassContextNav, type ClassContextView } from "../ClassContextNav";
 
 export const dynamic = "force-dynamic";
@@ -19,8 +18,11 @@ export default async function AlunoTurmaPage({ params, searchParams }: { params:
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) notFound();
-  const { data: enrollment } = await supabase.from("enrollments").select("class_id, created_at, classes(id, name, invite_code, created_at, subject_id)").eq("class_id", id).eq("student_id", user.id).eq("status", "ACTIVE").maybeSingle();
-  const classroom = enrollment?.classes as unknown as { id: string; name: string; invite_code: string; created_at: string; subject_id: string | null } | null;
+  const [{ data: enrollment }, { data: classRows }] = await Promise.all([
+    supabase.from("enrollments").select("class_id, created_at").eq("class_id", id).eq("student_id", user.id).eq("status", "ACTIVE").maybeSingle(),
+    supabase.rpc("student_visible_classes"),
+  ]);
+  const classroom = ((classRows ?? []) as { id: string; name: string; created_at: string; subject_id: string | null }[]).find((item) => item.id === id) ?? null;
   if (!classroom) notFound();
   const [{ data: assignments }, { data: materials }, { data: announcements }, { data: teacherNames }, { data: subject }] = await Promise.all([
     supabase.from("assignments").select("id, content_type, content_id, due_at, created_at").eq("class_id", id).is("deleted_at", null).order("created_at", { ascending: false }),
@@ -57,7 +59,7 @@ export default async function AlunoTurmaPage({ params, searchParams }: { params:
 
   return <>
     <Link href="/aluno/turmas" className="mb-5 inline-flex text-sm font-semibold text-muted-foreground hover:text-foreground">← Minhas turmas</Link>
-    <div className="mb-5 flex flex-wrap items-end justify-between gap-4"><div><h1 className="font-display text-3xl font-extrabold tracking-[-0.6px] text-foreground">{classroom.name}</h1><p className="mt-1 text-sm text-muted-foreground">{[subject?.name, teacherName].filter(Boolean).join(" · ") || "Ambiente de aprendizagem da turma"} · Entrada em {formatDate(enrollmentCreatedAt)}</p><div className="mt-3 flex flex-wrap items-center gap-2"><Badge variant="outline">Código: {classroom.invite_code}</Badge><CopyClassCodeButton code={classroom.invite_code} /></div></div><Badge variant="outline">Aluno</Badge></div>
+    <div className="mb-5 flex flex-wrap items-end justify-between gap-4"><div><h1 className="font-display text-3xl font-extrabold tracking-[-0.6px] text-foreground">{classroom.name}</h1><p className="mt-1 text-sm text-muted-foreground">{[subject?.name, teacherName].filter(Boolean).join(" · ") || "Ambiente de aprendizagem da turma"} · Entrada em {formatDate(enrollmentCreatedAt)}</p></div><Badge variant="outline">Aluno</Badge></div>
     <ClassContextNav classId={id} activeView={view} flashcardsHref={classDecks?.length ? `/aluno/flashcards?materialIds=${materialIds.join(",")}` : undefined} />
     {view === "overview" && <><div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3"><ContextCard icon={<ClipboardCheck aria-hidden />} label="Próxima atividade" value={upcoming.find((item) => item.content_type === "ACTIVITY") ? titleFor(upcoming.find((item) => item.content_type === "ACTIVITY")!) : "Nenhuma pendente"} detail={upcoming.find((item) => item.content_type === "ACTIVITY") ? formatDate(upcoming.find((item) => item.content_type === "ACTIVITY")!.due_at) : "Você está em dia"} href={upcoming.find((item) => item.content_type === "ACTIVITY") ? `/aluno/tarefas/${upcoming.find((item) => item.content_type === "ACTIVITY")!.id}` : undefined} /><ContextCard icon={<FileText aria-hidden />} label="Próxima prova" value={upcoming.find((item) => item.content_type === "EXAM") ? titleFor(upcoming.find((item) => item.content_type === "EXAM")!) : "Nenhuma próxima"} detail={upcoming.find((item) => item.content_type === "EXAM") ? formatDate(upcoming.find((item) => item.content_type === "EXAM")!.due_at) : "Sem prazo próximo"} href={upcoming.find((item) => item.content_type === "EXAM") ? `/aluno/tarefas/${upcoming.find((item) => item.content_type === "EXAM")!.id}` : undefined} /><ContextCard icon={<BookOpen aria-hidden />} label="Último material" value={recentMaterial?.title ?? "Nenhum material"} detail={recentMaterial ? formatDate(recentMaterial.created_at) : "Os materiais publicados aparecerão aqui"} href={recentMaterial ? `/aluno/materiais/${recentMaterial.id}` : undefined} /><ContextCard icon={<Megaphone aria-hidden />} label="Último aviso" value={announcements?.[0]?.message ?? "Nenhum aviso publicado"} detail={announcements?.[0] ? formatDate(announcements[0].created_at) : "Sem novidades por enquanto"} /><ContextCard icon={<Sparkles aria-hidden />} label="Última nota" value={latestGrade ? String(gradeBySubmission.get(latestGrade.id)) : "Ainda sem notas"} detail={latestGrade ? "Resultado mais recente" : "Notas corrigidas aparecerão aqui"} /><ContextCard icon={<Users aria-hidden />} label="Progresso" value={`${completedCount}/${rows.length} concluídas`} detail={rows.length ? `${Math.round((completedCount / rows.length) * 100)}% das atividades da turma` : "A turma ainda não possui atividades"} /></div><div className="grid gap-6 lg:grid-cols-2"><ContextList title="Próximos prazos" items={upcoming} titleFor={titleFor} empty="Você não possui prazos próximos nesta turma." /><ContextList title="Conteúdos recentes" items={recent} titleFor={titleFor} empty="Esta turma ainda não possui conteúdos publicados." /></div></>}
     {view === "activities" && <ContextActivities rows={rows} titleFor={titleFor} submissionByAssignment={submissionByAssignment} />}

@@ -34,14 +34,14 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 
   const { data: material, error: materialError } = await supabase
     .from("materials")
-    .select("id, kind, title, storage_path, class_id, classes(id, name)")
+    .select("id, kind, title, storage_path, class_id")
     .eq("id", id)
     .eq("kind", "FILE")
     .not("class_id", "is", null)
     .maybeSingle();
 
   // The authenticated client applies the existing enrollment policies.
-  if (materialError || !material?.storage_path || !material.class_id || !material.classes) {
+  if (materialError || !material?.storage_path || !material.class_id) {
     return NextResponse.json({ error: "Material não encontrado." }, { status: 404 });
   }
 
