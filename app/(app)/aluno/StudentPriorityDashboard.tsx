@@ -241,7 +241,7 @@ function MaterialsSection({ classes }: { classes: StudentRoutine["classes"] }) {
           {classes.slice(0, 3).map((item) => (
             <Link
               key={item.id}
-              href={`/aluno/turmas/${item.id}?view=materials`}
+              href={`/aluno/turmas/${item.id}/materiais`}
               className="flex items-center justify-between gap-3 rounded-md border border-border bg-card p-3 transition hover:border-brand-border hover:bg-card-2"
             >
               <span className="flex min-w-0 items-center gap-2">

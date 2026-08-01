@@ -53,8 +53,24 @@ export async function getSubscriptionForTenant(tenantId: string): Promise<Tenant
   return data as unknown as TenantSubscription;
 }
 
+/**
+ * Chamada pela home pública (RSC, sem sessão) só para exibir preços — nunca
+ * deve derrubar a landing page inteira para todo visitante só porque
+ * SUPABASE_SERVICE_ROLE_KEY não está configurada neste ambiente (dev local,
+ * preview etc). Degrada para lista vazia; a UI de preços já trata esse caso.
+ * Diferente de getActivePlanForTenant/getSubscriptionForTenant (não tocadas
+ * aqui): aquelas alimentam enforcement de cota/billing real e devem continuar
+ * falhando alto se o client admin não puder ser criado.
+ */
 export async function listPlans(): Promise<Plan[]> {
-  const admin = createAdminClient();
-  const { data } = await admin.from("plans").select("*").order("price_cents");
-  return (data ?? []) as Plan[];
+  try {
+    const admin = createAdminClient();
+    const { data } = await admin.from("plans").select("*").order("price_cents");
+    return (data ?? []) as Plan[];
+  } catch (error) {
+    if (process.env.NODE_ENV === "development") {
+      console.warn("[billing/plans] listPlans indisponível (SUPABASE_SERVICE_ROLE_KEY ausente?):", error);
+    }
+    return [];
+  }
 }

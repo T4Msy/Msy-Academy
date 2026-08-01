@@ -16,11 +16,17 @@ const NAV: SidebarSection[] = [
 ];
 
 export default async function AlunoLayout({ children }: { children: React.ReactNode }) {
-  const { supabase, user, fullName, displayName, avatarUrl, roles, accessError } = await getSession();
+  // getRecentNotifications() não depende do resultado de getSession() — roda
+  // em paralelo com ela em vez de encadeado depois (só a query de
+  // guardian_consents precisa de user.id, então essa continua depois).
+  const [{ supabase, user, fullName, displayName, avatarUrl, roles, accessError }, notifications] = await Promise.all([
+    getSession(),
+    getRecentNotifications(),
+  ]);
   if (!user || accessError) redirect("/acesso-indisponivel");
   const roleSet = new Set(roles);
   if (!roleSet.has("ALUNO")) redirect(homeForRoles(roles) ?? "/acesso-indisponivel");
-  const [notifications, { data: guardianConsent }] = await Promise.all([getRecentNotifications(), supabase.from("guardian_consents").select("status, token").eq("student_id", user.id).eq("status", "PENDING").maybeSingle()]);
+  const { data: guardianConsent } = await supabase.from("guardian_consents").select("status, token").eq("student_id", user.id).eq("status", "PENDING").maybeSingle();
   const name = displayName || fullName || user.email?.split("@")[0] || "Aluno";
   return <div className="app-shell"><Topbar name={name} email={user.email ?? ""} avatarUrl={avatarUrl} currentEnv="ALUNO" hasOtherEnv={roleSet.has("PROFESSOR")} settingsHref="/aluno/configuracoes" profileHref="/aluno/perfil" notifications={notifications} /><div className="app-body"><Sidebar sections={NAV} /><main className="app-main" role="main">{guardianConsent && <div className="mb-4 rounded-md border border-brand-border bg-brand-dim px-4.5 py-3.5 text-[13.5px] leading-normal text-brand-text">Aguardando confirmação de um responsável. Compartilhe este link com ele: <a href={`/consentimento/${guardianConsent.token}`}>{`/consentimento/${guardianConsent.token}`}</a></div>}{children}</main></div><MobileTabBar sections={NAV} /></div>;
 }

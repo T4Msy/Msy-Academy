@@ -2,18 +2,35 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { assignContent } from "../actions";
+import { assignContent } from "../../actions";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AudienceSelector, ClassSelect, StudentMultiSelect, type AssignmentStudentOption } from "@/components/assignments/AssignmentAudienceFields";
 
 type ContentOption = { id: string; title: string };
 type ClassOption = { id: string; name: string };
+type ModuleOption = { id: string; name: string };
 
-export function AssignContentForm({ classId, classes, studentsByClass, exams, activities }: { classId: string; classes: ClassOption[]; studentsByClass: Record<string, AssignmentStudentOption[]>; exams: ContentOption[]; activities: ContentOption[] }) {
+export function AssignContentForm({
+  classId,
+  classes,
+  studentsByClass,
+  exams,
+  activities,
+  modules,
+}: {
+  classId: string;
+  classes: ClassOption[];
+  studentsByClass: Record<string, AssignmentStudentOption[]>;
+  exams: ContentOption[];
+  activities: ContentOption[];
+  modules: ModuleOption[];
+}) {
   const [open, setOpen] = useState(false);
   const [contentType, setContentType] = useState<"EXAM" | "ACTIVITY">("EXAM");
   const [contentId, setContentId] = useState("");
+  const [contentCategory, setContentCategory] = useState<"avaliacao" | "exercicio">("avaliacao");
+  const [moduleId, setModuleId] = useState("");
   const [selectedClassId, setSelectedClassId] = useState(classId);
   const [audienceType, setAudienceType] = useState<"class" | "students">("class");
   const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
@@ -40,8 +57,19 @@ export function AssignContentForm({ classId, classes, studentsByClass, exams, ac
     setError(null);
     startTransition(async () => {
       try {
-        await assignContent({ classId: selectedClassId, contentType, contentId, audienceType, studentIds: audienceType === "students" ? selectedStudents : [], dueAt: dueAt ? new Date(dueAt).toISOString() : null, applicationType, instructions: instructions || null });
-        setOpen(false); setContentId(""); setDueAt(""); setSelectedStudents([]); setInstructions(""); router.refresh();
+        await assignContent({
+          classId: selectedClassId,
+          contentType,
+          contentId,
+          audienceType,
+          studentIds: audienceType === "students" ? selectedStudents : [],
+          dueAt: dueAt ? new Date(dueAt).toISOString() : null,
+          applicationType,
+          instructions: instructions || null,
+          moduleId: moduleId || null,
+          contentCategory,
+        });
+        setOpen(false); setContentId(""); setDueAt(""); setSelectedStudents([]); setInstructions(""); setModuleId(""); router.refresh();
       } catch (err) { setError(err instanceof Error ? err.message : "Não conseguimos atribuir este conteúdo."); }
     });
   }
@@ -51,6 +79,27 @@ export function AssignContentForm({ classId, classes, studentsByClass, exams, ac
   const recipientText = audienceType === "class" ? `todos os ${students.length} alunos` : `${selectedStudents.length} aluno${selectedStudents.length === 1 ? "" : "s"}`;
   return <form onSubmit={onSubmit} className="flex w-full max-w-[620px] flex-col gap-3 p-1" aria-label="Atribuir conteúdo">
     <div className="grid gap-3 sm:grid-cols-2"><label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">Tipo<Select value={contentType} onValueChange={(value) => { setContentType(value as "EXAM" | "ACTIVITY"); setContentId(""); }} disabled={pending}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="EXAM">Prova</SelectItem><SelectItem value="ACTIVITY">Atividade</SelectItem></SelectContent></Select></label><label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">Qual<Select value={contentId} onValueChange={setContentId} disabled={pending}><SelectTrigger><SelectValue placeholder="Selecione…" /></SelectTrigger><SelectContent>{options.map((item) => <SelectItem key={item.id} value={item.id}>{item.title}</SelectItem>)}</SelectContent></Select></label></div>
+    <div className="grid gap-3 sm:grid-cols-2">
+      <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
+        Categoria
+        <Select value={contentCategory} onValueChange={(value) => setContentCategory(value as "avaliacao" | "exercicio")} disabled={pending}>
+          <SelectTrigger><SelectValue /></SelectTrigger>
+          <SelectContent><SelectItem value="avaliacao">Avaliação</SelectItem><SelectItem value="exercicio">Exercício</SelectItem></SelectContent>
+        </Select>
+      </label>
+      {modules.length > 1 && (
+        <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
+          Módulo (opcional)
+          <Select value={moduleId || "none"} onValueChange={(value) => setModuleId(value === "none" ? "" : value)} disabled={pending}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">Sem módulo</SelectItem>
+              {modules.map((m) => <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </label>
+      )}
+    </div>
     <ClassSelect classes={classes} value={selectedClassId} onValueChange={changeClass} disabled={pending} />
     <AudienceSelector value={audienceType} onValueChange={(value) => { setAudienceType(value); if (value === "class") setSelectedStudents([]); }} disabled={pending} />
     {audienceType === "students" && <StudentMultiSelect students={students} selectedIds={selectedStudents} search={search} onSearchChange={setSearch} onSelectionChange={setSelectedStudents} disabled={pending} />}

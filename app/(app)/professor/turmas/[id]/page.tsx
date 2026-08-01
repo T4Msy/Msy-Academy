@@ -1,267 +1,77 @@
-import { notFound } from "next/navigation";
 import Link from "next/link";
+import { ArrowRight, ClipboardCheck, Sparkles, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { AssignContentForm } from "./AssignContentForm";
-import { UnassignButton } from "./UnassignButton";
-import { ConfirmActionButton } from "@/components/ConfirmActionButton";
-import { deleteClass, removeStudentFromClass } from "../actions";
 import { isAssessmentExpired } from "@/lib/assessments/deadline";
+import { formatDate } from "@/lib/classes/format";
 
 export const dynamic = "force-dynamic";
 
-function formatDueDate(iso: string | null): string {
-  if (!iso) return "Sem prazo";
-  try {
-    return new Date(iso).toLocaleString("pt-BR", {
-      day: "2-digit",
-      month: "short",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  } catch {
-    return iso;
-  }
-}
-
-export default async function TurmaPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function ProfessorTurmaOverviewPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
 
-  const [
-    { data: klass },
-    { data: enrollments },
-    { data: ownedClasses },
-    { data: exams },
-    { data: activities },
-    { data: assignments },
-  ] = await Promise.all([
-    supabase
-      .from("classes")
-      .select("id, name, invite_code, owner_id, created_at")
-      .eq("id", id)
-      .single(),
-    supabase
-      .from("enrollments")
-      .select("student_id, status, created_at")
-      .eq("class_id", id)
-      .order("created_at"),
-    supabase.from("classes").select("id, name").order("name"),
-    supabase.from("exams").select("id, title").order("created_at", { ascending: false }),
-    supabase.from("activities").select("id, title").order("created_at", { ascending: false }),
-    supabase
-      .from("assignments")
-      .select("id, content_type, content_id, due_at, created_at")
-      .eq("class_id", id)
-      .order("created_at", { ascending: false }),
+  const [{ data: assignments }, { count: studentCount }, { data: gradeRows }] = await Promise.all([
+    supabase.from("assignments").select("id, content_type, content_id, due_at").eq("class_id", id).is("deleted_at", null).order("due_at", { ascending: true, nullsFirst: false }),
+    supabase.from("enrollments").select("student_id", { count: "exact", head: true }).eq("class_id", id).eq("status", "ACTIVE"),
+    supabase.rpc("class_grade_report", { p_class_id: id }),
   ]);
-  if (!klass || user?.id !== klass.owner_id) notFound();
-  const isOwner = user?.id === klass.owner_id;
+  const rows = assignments ?? [];
+  const active = rows.filter((item) => !isAssessmentExpired(item.due_at));
+  const nextDue = active[0] ?? null;
 
-  const activeEnrollments = (enrollments ?? []).filter((e) => e.status === "ACTIVE");
+  const examIds = rows.filter((r) => r.content_type === "EXAM").map((r) => r.content_id);
+  const activityIds = rows.filter((r) => r.content_type === "ACTIVITY").map((r) => r.content_id);
+  const [{ data: exams }, { data: activities }] = await Promise.all([
+    examIds.length ? supabase.from("exams").select("id, title").in("id", examIds) : Promise.resolve({ data: [] as { id: string; title: string }[] }),
+    activityIds.length ? supabase.from("activities").select("id, title").in("id", activityIds) : Promise.resolve({ data: [] as { id: string; title: string }[] }),
+  ]);
+  const examTitleById = new Map((exams ?? []).map((item) => [item.id, item.title]));
+  const activityTitleById = new Map((activities ?? []).map((item) => [item.id, item.title]));
+  const titleFor = (item: { content_type: "EXAM" | "ACTIVITY"; content_id: string }) =>
+    item.content_type === "EXAM" ? examTitleById.get(item.content_id) ?? "Prova" : activityTitleById.get(item.content_id) ?? "Atividade";
 
-  // No direct FK between enrollments and profiles (both reference auth.users
-  // independently, not each other), so PostgREST can't auto-embed profiles
-  // here — fetch names in a second query and merge in JS.
-  const studentIds = activeEnrollments.map((e) => e.student_id);
-  const { data: studentProfiles } = studentIds.length
-    ? await supabase.from("profiles").select("id, full_name").in("id", studentIds)
-    : { data: [] as { id: string; full_name: string | null }[] };
-  const nameById = new Map((studentProfiles ?? []).map((p) => [p.id, p.full_name]));
-  const students = activeEnrollments.map((e) => ({
-    ...e,
-    full_name: nameById.get(e.student_id) ?? null,
-  }));
-
-  const allClassIds = (ownedClasses ?? []).map((c) => c.id);
-  const { data: allEnrollments } = allClassIds.length
-    ? await supabase.from("enrollments").select("class_id, student_id").in("class_id", allClassIds).eq("status", "ACTIVE")
-    : { data: [] as { class_id: string; student_id: string }[] };
-  const allStudentIds = [...new Set((allEnrollments ?? []).map((e) => e.student_id))];
-  const { data: allProfiles } = allStudentIds.length
-    ? await supabase.from("profiles").select("id, full_name").in("id", allStudentIds)
-    : { data: [] as { id: string; full_name: string | null }[] };
-  const allNameById = new Map((allProfiles ?? []).map((p) => [p.id, p.full_name]));
-  const studentsByClass = (allEnrollments ?? []).reduce<Record<string, { id: string; name: string | null }[]>>((map, enrollment) => {
-    (map[enrollment.class_id] ??= []).push({ id: enrollment.student_id, name: allNameById.get(enrollment.student_id) ?? null });
-    return map;
-  }, {});
-
-  const origin = process.env.NEXT_PUBLIC_SITE_URL ?? "";
-  const inviteUrl = `${origin}/entrar/${klass.invite_code}`;
-
-  const examTitleById = new Map((exams ?? []).map((e) => [e.id, e.title]));
-  const activityTitleById = new Map((activities ?? []).map((a) => [a.id, a.title]));
+  const graded = (gradeRows ?? []).filter((row: { total_score: number | null }) => row.total_score !== null);
+  const average = graded.length ? graded.reduce((sum: number, row: { total_score: number }) => sum + row.total_score, 0) / graded.length : null;
 
   return (
     <>
-      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <Link
-            href="/professor/turmas"
-            className="inline-flex items-center gap-2 pb-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
-          >
-            ← Turmas
-          </Link>
-          <h1 className="font-display text-3xl font-extrabold tracking-[-0.6px] text-foreground">
-            {klass.name}
-          </h1>
-        </div>
-        {isOwner && (
-          <ConfirmActionButton
-            triggerLabel="Excluir turma"
-            title="Excluir turma?"
-            description="Esta ação é irreversível. A turma, matrículas, atribuições e dados relacionados serão removidos."
-            confirmLabel="Excluir turma"
-            pendingLabel="Excluindo..."
-            successMessage="Turma excluída."
-            action={deleteClass.bind(null, klass.id)}
-            redirectTo="/professor/turmas"
-            variant="destructive-ghost"
-          />
-        )}
+      <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard icon={<Users aria-hidden />} label="Alunos matriculados" value={String(studentCount ?? 0)} />
+        <StatCard icon={<ClipboardCheck aria-hidden />} label="Atividades ativas" value={String(active.length)} />
+        <StatCard icon={<Sparkles aria-hidden />} label="Média geral" value={average !== null ? average.toFixed(1) : "—"} />
+        <StatCard icon={<ArrowRight aria-hidden />} label="Próximo prazo" value={nextDue ? titleFor(nextDue) : "Nenhum"} detail={nextDue ? formatDate(nextDue.due_at) : undefined} />
       </div>
 
-      <section className="mb-4 overflow-hidden rounded-lg border border-border bg-card shadow-elevated transition-colors">
-        <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border px-5.5 pt-5 pb-4">
-          <div className="flex flex-wrap items-center gap-2.5">
-            <h2 className="flex items-center gap-2.5 font-display text-lg font-bold tracking-[-0.2px] text-foreground">
-              Convidar alunos
-            </h2>
-          </div>
-        </div>
-        <div className="flex flex-col gap-4.5 p-5.5">
-          <p className="mt-0 text-xs leading-snug text-muted-foreground">
-            Compartilhe o código com a turma — cada aluno entra em <b>Entrar em turma</b> ou
-            acessando o link direto.
-          </p>
-          <div className="mt-0.5 flex flex-wrap gap-1.5">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 font-display text-base text-xs font-bold whitespace-nowrap text-muted-foreground">
-              {klass.invite_code}
-            </span>
-          </div>
-          {origin && <p className="mt-1 break-all text-xs leading-snug text-muted-foreground">{inviteUrl}</p>}
-        </div>
-      </section>
-
-      <section className="mb-4 overflow-hidden rounded-lg border border-border bg-card shadow-elevated transition-colors">
-        <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border px-5.5 pt-5 pb-4">
-          <div className="flex flex-wrap items-center gap-2.5">
-            <h2 className="flex items-center gap-2.5 font-display text-lg font-bold tracking-[-0.2px] text-foreground">
-              Alunos
-            </h2>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs whitespace-nowrap text-muted-foreground">
-              {students.length}
-            </span>
-          </div>
-        </div>
-        <div className="flex flex-col gap-4.5 p-5.5">
-          {students.length === 0 ? (
-            <p className="mt-0 text-xs leading-snug text-muted-foreground">
-              Nenhum aluno entrou ainda.
-            </p>
-          ) : (
-            <ul className="flex list-none flex-col gap-2">
-              {students.map((s) => (
-                <li
-                  key={s.student_id}
-                  className="flex flex-col gap-2 rounded-sm border border-border px-3 py-[9px] text-[13.5px] text-muted-foreground sm:flex-row sm:items-center sm:justify-between"
-                >
-                  <span>{s.full_name || "Aluno"}</span>
-                  {isOwner && (
-                    <ConfirmActionButton
-                      triggerLabel="Remover da turma"
-                      title="Remover aluno da turma?"
-                      description="A conta do aluno não será excluída. Apenas a matrícula nesta turma será removida."
-                      confirmLabel="Remover"
-                      pendingLabel="Removendo..."
-                      successMessage="Aluno removido da turma."
-                      action={removeStudentFromClass.bind(null, klass.id, s.student_id)}
-                    />
-                  )}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      </section>
-
-      <section className="overflow-hidden rounded-lg border border-border bg-card shadow-elevated transition-colors">
-        <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border px-5.5 pt-5 pb-4">
-          <div className="flex flex-wrap items-center gap-2.5">
-            <h2 className="flex items-center gap-2.5 font-display text-lg font-bold tracking-[-0.2px] text-foreground">
-              Atribuições
-            </h2>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs whitespace-nowrap text-muted-foreground">
-              {assignments?.length ?? 0}
-            </span>
-          </div>
-          <AssignContentForm
-            classId={id}
-            classes={(ownedClasses ?? []).map((c) => ({ id: c.id, name: c.name }))}
-            studentsByClass={studentsByClass}
-            exams={(exams ?? []).map((e) => ({ id: e.id, title: e.title }))}
-            activities={(activities ?? []).map((a) => ({ id: a.id, title: a.title }))}
-          />
-        </div>
-        <div className="flex flex-col gap-4.5 p-5.5">
-          {(assignments ?? []).length === 0 ? (
-            <p className="mt-0 text-xs leading-snug text-muted-foreground">
-              Nenhuma prova ou atividade atribuída ainda.
-            </p>
-          ) : (
-            <ul className="flex list-none flex-col gap-2">
-              {(assignments ?? []).map((a) => {
-                const title =
-                  a.content_type === "EXAM"
-                    ? examTitleById.get(a.content_id)
-                    : activityTitleById.get(a.content_id);
-                return (
-                  <li
-                    key={a.id}
-                  className="flex flex-col gap-2 rounded-sm border border-border px-3 py-[9px] text-[13.5px] text-muted-foreground sm:flex-row sm:items-center sm:justify-between"
-                  >
-                    <span className="min-w-0 break-words">
-                      <span className="mr-2 inline-flex items-center gap-1.5 rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs whitespace-nowrap text-muted-foreground">
-                        {a.content_type === "EXAM" ? "Prova" : "Atividade"}
-                      </span>
-                      {isAssessmentExpired(a.due_at) && (
-                        <span className="mr-2 inline-flex items-center gap-1.5 rounded-full border border-danger-border bg-danger-dim px-2.5 py-1 text-xs font-semibold whitespace-nowrap text-danger-text">
-                          Encerrada
-                        </span>
-                      )}
-                      {title ?? "(conteúdo removido)"} — {formatDueDate(a.due_at)}
-                    </span>
-                    <span className="flex flex-wrap items-center gap-2 sm:justify-end">
-                      {a.content_type === "EXAM" && (
-                        <>
-                          <a
-                            href={`/api/gabarito/${a.id}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center justify-center gap-2 rounded-sm border border-border bg-[rgba(var(--overlay-rgb),0.06)] px-3 py-[7px] text-md text-sm font-semibold whitespace-nowrap text-foreground transition-all outline-none hover:border-border-hover hover:bg-[rgba(var(--overlay-rgb),0.10)] focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50"
-                          >
-                            Baixar gabarito
-                          </a>
-                          <Link
-                            href={`/professor/correcao/turma/${id}?view=scan`}
-                            className="inline-flex items-center justify-center gap-2 rounded-sm border border-border bg-[rgba(var(--overlay-rgb),0.06)] px-3 py-[7px] text-md text-sm font-semibold whitespace-nowrap text-foreground transition-all outline-none hover:border-border-hover hover:bg-[rgba(var(--overlay-rgb),0.10)] focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50"
-                          >
-                            Escanear
-                          </Link>
-                        </>
-                      )}
-                      <UnassignButton classId={id} assignmentId={a.id} />
-                    </span>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </div>
+      <section className="rounded-lg border border-border bg-card p-5">
+        <h2 className="mb-3 font-display text-lg font-bold text-foreground">Próximas atribuições</h2>
+        {active.length === 0 ? (
+          <p className="text-sm text-muted-foreground">Esta turma não possui atribuições ativas no momento.</p>
+        ) : (
+          <ul className="space-y-2">
+            {active.slice(0, 6).map((item) => (
+              <li key={item.id}>
+                <Link href={`/professor/turmas/${id}/atividades`} className="flex items-center justify-between gap-3 rounded-md border border-border p-3 transition hover:bg-card-2">
+                  <span className="min-w-0 truncate text-sm font-semibold text-foreground">{titleFor(item)}</span>
+                  <span className="shrink-0 text-xs text-muted-foreground">{formatDate(item.due_at)}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
     </>
+  );
+}
+
+function StatCard({ icon, label, value, detail }: { icon: React.ReactNode; label: string; value: string; detail?: string }) {
+  return (
+    <div className="rounded-lg border border-border bg-card p-4.5">
+      <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">
+        <span className="text-brand-text">{icon}</span>
+        {label}
+      </div>
+      <p className="mt-3 line-clamp-2 font-display text-base font-bold text-foreground">{value}</p>
+      {detail && <p className="mt-1 text-xs text-muted-foreground">{detail}</p>}
+    </div>
   );
 }

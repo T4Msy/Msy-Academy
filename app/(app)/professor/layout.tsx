@@ -68,13 +68,18 @@ const NAV: SidebarSection[] = [
 ];
 
 export default async function ProfessorLayout({ children }: { children: React.ReactNode }) {
-  const { user, fullName, displayName, avatarUrl, roles, accessError } = await getSession();
+  // getRecentNotifications() não depende do resultado de getSession() (RLS já
+  // escopa pelo cookie de sessão) — roda em paralelo em vez de encadeado
+  // depois, sobrepondo o round-trip em vez de somá-lo. Como isso corre em
+  // TODA navegação autenticada (layout raiz), é o ponto de maior efeito.
+  const [{ user, fullName, displayName, avatarUrl, roles, accessError }, notifications] = await Promise.all([
+    getSession(),
+    getRecentNotifications(),
+  ]);
   if (!user || accessError) redirect("/acesso-indisponivel");
 
   const roleSet = new Set(roles);
   if (!roleSet.has("PROFESSOR")) redirect(homeForRoles(roles) ?? "/acesso-indisponivel");
-
-  const notifications = await getRecentNotifications();
 
   const name = displayName || fullName || user.email?.split("@")[0] || "Professor";
 

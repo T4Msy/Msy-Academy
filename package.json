@@ -4,7 +4,7 @@
   "private": true,
   "description": "MSY Academy — plataforma educacional IA-first. Fatia 1: MVP de Fundação (auth + gerador de provas migrado + persistência).",
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --turbo",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",

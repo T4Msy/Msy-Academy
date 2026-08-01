@@ -75,19 +75,6 @@ export async function deleteClass(classId: string): Promise<void> {
   revalidatePath("/professor/turmas");
 }
 
-/** Removes only the enrollment row. The student user/account is never touched. */
-export async function removeStudentFromClass(classId: string, studentId: string): Promise<void> {
-  const { supabase, user } = await requireUser();
-  await requireClassOwner(supabase, user.id, classId);
-  const { error } = await supabase.rpc("remove_student_from_class", {
-    p_class_id: classId,
-    p_student_id: studentId,
-  });
-  if (error) throw new Error(`Não foi possível remover o aluno: ${error.message}`);
-
-  revalidatePath(`/professor/turmas/${classId}`);
-}
-
 /** Assigns an exam or activity to a class with an optional due date (RF-P21). */
 export async function assignContent(
   input: {
@@ -100,6 +87,10 @@ export async function assignContent(
     startsAt?: string | null;
     applicationType?: string;
     instructions?: string | null;
+    /** Módulo (bimestre/unidade) opcional dentro da turma. */
+    moduleId?: string | null;
+    /** "Exercícios" é só um agrupamento visual sobre a mesma entidade — sem tabela própria. */
+    contentCategory?: "avaliacao" | "exercicio";
   },
 ): Promise<void> {
   const { supabase, user } = await requireUser();
@@ -126,9 +117,12 @@ export async function assignContent(
     p_starts_at: input.startsAt || null,
     p_application_type: input.applicationType || "regular",
     p_instructions: input.instructions || null,
+    p_module_id: input.moduleId || null,
+    p_content_category: input.contentCategory || "avaliacao",
   });
   if (error) throw new Error(`Não foi possível atribuir: ${error.message}`);
 
+  revalidatePath(`/professor/turmas/${input.classId}/atividades`);
   revalidatePath(`/professor/turmas/${input.classId}`);
 }
 
@@ -137,5 +131,6 @@ export async function unassignContent(classId: string, assignmentId: string): Pr
   const { supabase } = await requireUser();
   const { error } = await supabase.rpc("soft_delete_assignment", { p_assignment_id: assignmentId });
   if (error) throw new Error(`Não foi possível remover a atribuição: ${error.message}`);
+  revalidatePath(`/professor/turmas/${classId}/atividades`);
   revalidatePath(`/professor/turmas/${classId}`);
 }

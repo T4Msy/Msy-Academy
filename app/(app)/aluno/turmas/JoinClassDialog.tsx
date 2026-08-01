@@ -29,10 +29,14 @@ export function JoinClassDialog() {
     setError(null);
     startTransition(async () => {
       try {
-        const { className } = await joinClass(code);
+        const { className, status } = await joinClass(code);
         setCode("");
         setOpen(false);
-        toast.success(`Você entrou em ${className}.`);
+        if (status === "PENDING") {
+          toast.success(`Solicitação enviada para ${className}. Aguarde a aprovação do professor.`);
+        } else {
+          toast.success(`Você entrou em ${className}.`);
+        }
         router.refresh();
       } catch (err) {
         const message = err instanceof Error ? err.message : "Não foi possível entrar na turma.";

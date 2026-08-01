@@ -2,7 +2,7 @@
 
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { unassignContent } from "../actions";
+import { unassignContent } from "../../actions";
 
 export function UnassignButton({ classId, assignmentId }: { classId: string; assignmentId: string }) {
   const [pending, startTransition] = useTransition();

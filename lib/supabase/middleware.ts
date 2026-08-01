@@ -108,12 +108,27 @@ export async function updateSession(request: NextRequest) {
   // Backstop for Google sign-ins (RF-G01), which skip /cadastro's checkbox
   // entirely — see app/consentimento-conta/.
   const isConsentGate = pathname === "/consentimento-conta";
-  if (!isConsentGate && !isAuthCallback && !isLegal && !isRecovery) {
-    const { data: profile, error: profileError } = await supabase
-      .from("profiles")
-      .select("terms_accepted_at")
-      .eq("id", user.id)
-      .maybeSingle();
+  const shouldCheckConsent = !isConsentGate && !isAuthCallback && !isLegal && !isRecovery;
+  const needsRoleCheckEarly =
+    isPublicAuthRoute ||
+    isLanding ||
+    (!isOnboarding && !isConsentGate && !isAuthCallback && !isLegal && !isRecovery);
+
+  // As duas consultas abaixo rodam em TODA navegação autenticada da
+  // plataforma (este middleware intercepta cada requisição). Encadeadas,
+  // cada uma soma seu round-trip completo; disparadas juntas, o tempo de
+  // espera é o da mais lenta das duas, não a soma — dispara ambas de uma vez
+  // quando as duas se aplicam, e só então aplica a lógica de redirect na
+  // mesma ordem de prioridade de antes (consentimento primeiro).
+  const [consentResult, rolesResultEarly] = await Promise.all([
+    shouldCheckConsent
+      ? supabase.from("profiles").select("terms_accepted_at").eq("id", user.id).maybeSingle()
+      : Promise.resolve(null),
+    needsRoleCheckEarly ? supabase.from("user_roles").select("role").eq("user_id", user.id) : Promise.resolve(null),
+  ]);
+
+  if (shouldCheckConsent) {
+    const { data: profile, error: profileError } = consentResult!;
     if (profileError || !profile) {
       console.error("[auth/middleware] perfil/consentimento não pôde ser confirmado", {
         code: profileError?.code,
@@ -137,12 +152,8 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
-  const needsRoleCheck =
-    isPublicAuthRoute ||
-    isLanding ||
-    (!isOnboarding && !isConsentGate && !isAuthCallback && !isLegal && !isRecovery);
-  if (needsRoleCheck) {
-    const { data: roles, error: rolesError } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
+  if (needsRoleCheckEarly) {
+    const { data: roles, error: rolesError } = rolesResultEarly!;
     if (rolesError) {
       console.error("[auth/middleware] consulta de papéis falhou", {
         code: rolesError.code,

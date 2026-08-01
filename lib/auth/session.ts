@@ -18,21 +18,28 @@ export const getSession = cache(async () => {
     return { supabase, user: null, fullName: null as string | null, displayName: null as string | null, avatarUrl: null as string | null, profile: null, suspendedAt: null as string | null, roles: [] as string[], accessError: false };
   }
 
-  // Keep the authentication-critical query limited to columns that existed in
-  // the original schema. Optional profile fields may be unavailable until the
-  // profile migration is applied and must never lock the whole application.
-  const [{ data: baseProfile, error: profileError }, { data: roleRows, error: rolesError }] = await Promise.all([
-    supabase.from("profiles").select("full_name, suspended_at").eq("id", user.id).maybeSingle(),
+  // Uma única query com todas as colunas (críticas + opcionais) em vez de
+  // duas sequenciais — cada round-trip a mais aqui é pago em TODA navegação
+  // autenticada da plataforma (este hook roda no layout raiz de /professor e
+  // /aluno), então vale a pena não separar "crítico" de "opcional" em duas
+  // idas ao banco. Colunas opcionais continuam nunca bloqueando o acesso:
+  // se a query falhar por qualquer motivo, cai no fallback abaixo.
+  const [{ data: profileRow, error: profileError }, { data: roleRows, error: rolesError }] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("full_name, suspended_at, display_name, bio, institution, discipline, grade_interest, study_goal, avatar_path, show_avatar")
+      .eq("id", user.id)
+      .maybeSingle(),
     supabase.from("user_roles").select("role").eq("user_id", user.id),
   ]);
 
   if (profileError) {
-    console.error("[auth/session] consulta do perfil base falhou", {
+    console.error("[auth/session] consulta do perfil falhou", {
       code: profileError.code,
       message: profileError.message,
       userId: user.id.slice(0, 8),
       table: "profiles",
-      stage: "base-profile",
+      stage: "profile",
     });
   }
   if (rolesError) {
@@ -44,38 +51,6 @@ export const getSession = cache(async () => {
       stage: "roles",
     });
   }
-
-  let optionalProfile: {
-    display_name: string | null;
-    bio: string | null;
-    institution: string | null;
-    discipline: string | null;
-    grade_interest: string | null;
-    study_goal: string | null;
-    avatar_path: string | null;
-    show_avatar: boolean | null;
-  } | null = null;
-
-  if (baseProfile) {
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("display_name, bio, institution, discipline, grade_interest, study_goal, avatar_path, show_avatar")
-      .eq("id", user.id)
-      .maybeSingle();
-    if (error) {
-      console.warn("[auth/session] campos opcionais do perfil indisponíveis; usando valores padrão", {
-        code: error.code,
-        message: error.message,
-        userId: user.id.slice(0, 8),
-        table: "profiles",
-        stage: "optional-profile",
-      });
-    } else {
-      optionalProfile = data;
-    }
-  }
-
-  const profileRow = { ...baseProfile, ...(optionalProfile ?? {}) };
 
   let avatarUrl: string | null = null;
   if (profileRow?.avatar_path && profileRow.show_avatar !== false) {
@@ -89,10 +64,10 @@ export const getSession = cache(async () => {
     fullName: profileRow?.full_name ?? null,
     displayName: profileRow?.display_name ?? null,
     avatarUrl,
-    profile: baseProfile ? profileRow : null,
+    profile: profileRow ?? null,
     suspendedAt: profileRow?.suspended_at ?? null,
     roles: (roleRows ?? []).map((r) => r.role),
-    accessError: Boolean(profileError || rolesError || !baseProfile),
+    accessError: Boolean(profileError || rolesError || !profileRow),
   };
 });
 
