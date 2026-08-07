@@ -17,15 +17,18 @@ export function CorrecaoReview({
   objectiveScoreSum,
   discursivas,
   returnHref = "/professor/correcao",
+  nextHref,
 }: {
   submissionId: string;
   objectiveScoreSum: number;
   discursivas: DiscursivaItem[];
   returnHref?: string;
+  nextHref?: string | null;
 }) {
   const [scores, setScores] = useState<Record<string, { score: number; feedback: string }>>({});
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [saved, setSaved] = useState(false);
   const router = useRouter();
 
   const allGraded = discursivas.every((d) => scores[d.questionId] !== undefined);
@@ -37,7 +40,7 @@ export function CorrecaoReview({
     startTransition(async () => {
       try {
         await saveGrade(submissionId, totalScore, feedback, "TEACHER");
-        router.push(returnHref);
+        setSaved(true);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Não conseguimos salvar a correção. Tente novamente.");
       }
@@ -72,12 +75,14 @@ export function CorrecaoReview({
 
       {error && <div className="mt-3.5 rounded-md border border-danger-border bg-danger-dim px-4.5 py-3.5 text-[13.5px] leading-normal text-danger-text">{error}</div>}
 
-      <div className="mt-2 flex flex-wrap items-center justify-between gap-3.5">
+      {saved && <div role="status" className="mt-4 rounded-lg border border-brand-border bg-brand-dim p-4"><p className="font-semibold text-brand-text">Correção salva.</p><p className="mt-1 text-sm text-muted-foreground">{nextHref ? "A próxima entrega está pronta para você continuar." : "Você concluiu todas as entregas desta atividade."}</p><div className="mt-3 flex flex-wrap gap-2"><button type="button" onClick={() => router.push(nextHref ?? returnHref)} className="inline-flex min-h-11 items-center justify-center rounded-sm bg-primary px-4 text-sm font-bold text-primary-foreground">{nextHref ? "Próxima entrega" : "Voltar para a turma"}</button>{nextHref && <button type="button" onClick={() => router.push(returnHref)} className="inline-flex min-h-11 items-center justify-center rounded-sm border border-border px-4 text-sm font-semibold text-foreground">Voltar para a turma</button>}</div></div>}
+
+      {!saved && <div className="mt-2 flex flex-wrap items-center justify-between gap-3.5">
         <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-[rgba(var(--overlay-rgb),0.03)] px-2.5 py-1 text-xs text-muted-foreground">Nota total: {totalScore}</span>
         <button data-testid="correcao-finalize" type="button" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 bg-primary font-bold text-primary-foreground shadow-[0_4px_14px_rgba(217,119,87,0.16)] hover:-translate-y-px hover:opacity-90 h-11.5 min-w-40 rounded-full px-5 font-display text-base tracking-[-0.2px]" disabled={!allGraded || pending} onClick={onFinalize}>
-          {pending ? "Salvando…" : "Concluir correção"}
+          {pending ? "Salvando…" : "Salvar correção"}
         </button>
-      </div>
+      </div>}
     </>
   );
 }
