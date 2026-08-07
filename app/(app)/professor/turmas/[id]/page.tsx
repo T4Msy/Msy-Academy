@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, ClipboardCheck, Megaphone, Sparkles, Users } from "lucide-react";
+import { ArrowRight, BookOpen, ClipboardCheck, Megaphone, Sparkles, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { isAssessmentExpired } from "@/lib/assessments/deadline";
 import { formatDate } from "@/lib/classes/format";
@@ -10,13 +10,19 @@ export default async function ProfessorTurmaOverviewPage({ params }: { params: P
   const { id } = await params;
   const supabase = await createClient();
 
-  const [{ data: assignments }, { count: studentCount }, { data: gradeRows }, { data: announcements }] = await Promise.all([
+  const [{ data: assignments }, { count: studentCount }, { data: gradeRows }, { data: announcements }, { data: materials }] = await Promise.all([
     supabase.from("assignments").select("id, content_type, content_id, due_at").eq("class_id", id).is("deleted_at", null).order("due_at", { ascending: true, nullsFirst: false }),
     supabase.from("enrollments").select("student_id", { count: "exact", head: true }).eq("class_id", id).eq("status", "ACTIVE"),
     supabase.rpc("class_grade_report", { p_class_id: id }),
     supabase.from("class_announcements").select("id, message, created_at").eq("class_id", id).order("created_at", { ascending: false }).limit(3),
+    supabase.from("materials").select("id, title, created_at").eq("class_id", id).is("deleted_at", null).order("created_at", { ascending: false }).limit(3),
   ]);
   const rows = assignments ?? [];
+  const assignmentIds = rows.map((item) => item.id);
+  const { data: submissions } = assignmentIds.length
+    ? await supabase.from("submissions").select("status").in("assignment_id", assignmentIds)
+    : { data: [] as { status: string }[] };
+  const pendingCorrections = (submissions ?? []).filter((item) => item.status === "SUBMITTED").length;
   const active = rows.filter((item) => !isAssessmentExpired(item.due_at));
   const nextDue = active[0] ?? null;
 
@@ -39,6 +45,7 @@ export default async function ProfessorTurmaOverviewPage({ params }: { params: P
       <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard icon={<Users aria-hidden />} label="Alunos matriculados" value={String(studentCount ?? 0)} />
         <StatCard icon={<ClipboardCheck aria-hidden />} label="Atividades ativas" value={String(active.length)} />
+        <StatCard icon={<ClipboardCheck aria-hidden />} label="Correções aguardando" value={String(pendingCorrections)} detail={pendingCorrections ? "Entregas enviadas pelos alunos" : "Tudo corrigido por aqui"} />
         <StatCard icon={<Sparkles aria-hidden />} label="Média geral" value={average !== null ? average.toFixed(1) : "—"} />
         <StatCard icon={<ArrowRight aria-hidden />} label="Próximo prazo" value={nextDue ? titleFor(nextDue) : "Nenhum"} detail={nextDue ? formatDate(nextDue.due_at) : undefined} />
       </div>
@@ -60,6 +67,18 @@ export default async function ProfessorTurmaOverviewPage({ params }: { params: P
             ))}
           </ul>
         )}
+      </section>
+      <section className="rounded-lg border border-border bg-card p-5">
+        <div className="mb-3 flex items-center justify-between gap-3"><h2 className="font-display text-lg font-bold text-foreground">Correções</h2><Link href={`/professor/correcao/turma/${id}`} className="text-sm font-semibold text-brand-text">{pendingCorrections ? "Corrigir" : "Ver correções"}</Link></div>
+        <p className="text-sm text-muted-foreground">{pendingCorrections ? `${pendingCorrections} entrega${pendingCorrections === 1 ? "" : "s"} aguardando correção.` : "Tudo corrigido por aqui."}</p>
+      </section>
+      <section className="rounded-lg border border-border bg-card p-5">
+        <div className="mb-3 flex items-center justify-between gap-3"><h2 className="flex items-center gap-2 font-display text-lg font-bold text-foreground"><BookOpen className="size-4.5 text-brand-text" aria-hidden />Materiais recentes</h2><Link href={`/professor/turmas/${id}/materiais`} className="text-sm font-semibold text-brand-text">Ver materiais</Link></div>
+        {(materials ?? []).length === 0 ? <p className="text-sm text-muted-foreground">Nenhum material compartilhado.</p> : <ul className="space-y-2">{materials?.map((item) => <li key={item.id} className="rounded-md border border-border p-3"><p className="truncate text-sm font-semibold text-foreground">{item.title || "Material sem título"}</p><p className="mt-1 text-xs text-muted-foreground">{formatDate(item.created_at)}</p></li>)}</ul>}
+      </section>
+      <section className="rounded-lg border border-border bg-card p-5">
+        <div className="mb-3 flex items-center justify-between gap-3"><h2 className="font-display text-lg font-bold text-foreground">Desempenho</h2><Link href={`/professor/turmas/${id}/notas`} className="text-sm font-semibold text-brand-text">Ver desempenho</Link></div>
+        <p className="text-sm text-muted-foreground">{graded.length ? `Média atual ${average?.toFixed(1)} nas avaliações corrigidas.` : "Os dados aparecerão conforme os alunos realizarem atividades."}</p>
       </section>
       <section className="rounded-lg border border-border bg-card p-5">
         <div className="mb-3 flex items-center justify-between gap-3">
