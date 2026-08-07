@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, ClipboardCheck, Sparkles, Users } from "lucide-react";
+import { ArrowRight, ClipboardCheck, Megaphone, Sparkles, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { isAssessmentExpired } from "@/lib/assessments/deadline";
 import { formatDate } from "@/lib/classes/format";
@@ -10,10 +10,11 @@ export default async function ProfessorTurmaOverviewPage({ params }: { params: P
   const { id } = await params;
   const supabase = await createClient();
 
-  const [{ data: assignments }, { count: studentCount }, { data: gradeRows }] = await Promise.all([
+  const [{ data: assignments }, { count: studentCount }, { data: gradeRows }, { data: announcements }] = await Promise.all([
     supabase.from("assignments").select("id, content_type, content_id, due_at").eq("class_id", id).is("deleted_at", null).order("due_at", { ascending: true, nullsFirst: false }),
     supabase.from("enrollments").select("student_id", { count: "exact", head: true }).eq("class_id", id).eq("status", "ACTIVE"),
     supabase.rpc("class_grade_report", { p_class_id: id }),
+    supabase.from("class_announcements").select("id, message, created_at").eq("class_id", id).order("created_at", { ascending: false }).limit(3),
   ]);
   const rows = assignments ?? [];
   const active = rows.filter((item) => !isAssessmentExpired(item.due_at));
@@ -42,6 +43,7 @@ export default async function ProfessorTurmaOverviewPage({ params }: { params: P
         <StatCard icon={<ArrowRight aria-hidden />} label="Próximo prazo" value={nextDue ? titleFor(nextDue) : "Nenhum"} detail={nextDue ? formatDate(nextDue.due_at) : undefined} />
       </div>
 
+      <div className="grid gap-6 lg:grid-cols-2">
       <section className="rounded-lg border border-border bg-card p-5">
         <h2 className="mb-3 font-display text-lg font-bold text-foreground">Próximas atribuições</h2>
         {active.length === 0 ? (
@@ -59,6 +61,14 @@ export default async function ProfessorTurmaOverviewPage({ params }: { params: P
           </ul>
         )}
       </section>
+      <section className="rounded-lg border border-border bg-card p-5">
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <h2 className="flex items-center gap-2 font-display text-lg font-bold text-foreground"><Megaphone className="size-4.5 text-brand-text" aria-hidden />Avisos</h2>
+          <Link href={`/professor/turmas/${id}/avisos`} className="text-sm font-semibold text-brand-text">Ver todos</Link>
+        </div>
+        {(announcements ?? []).length === 0 ? <p className="text-sm text-muted-foreground">Nenhum aviso publicado.</p> : <ul className="space-y-2">{announcements?.map((item) => <li key={item.id} className="rounded-md border border-border p-3"><p className="line-clamp-2 whitespace-pre-wrap text-sm text-foreground">{item.message}</p><p className="mt-1 text-xs text-muted-foreground">{formatDate(item.created_at)}</p></li>)}</ul>}
+      </section>
+      </div>
     </>
   );
 }

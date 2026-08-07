@@ -294,6 +294,7 @@ function AnnouncementsCard({ announcements }: { announcements: StudentRoutine["a
             ))}
           </ul>
         )}
+        <Link href="/aluno/avisos" className="mb-4 inline-flex text-sm font-semibold text-brand-text hover:underline">Ver todos</Link>
       </CardContent>
     </Card>
   );

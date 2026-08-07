@@ -50,7 +50,7 @@ export default async function AlunoTurmaOverviewPage({ params }: { params: Promi
         <ContextCard icon={<Users aria-hidden />} label="Progresso" value={`${completedCount}/${rows.length} concluídas`} detail={rows.length ? `${Math.round((completedCount / rows.length) * 100)}% das atividades da turma` : "A turma ainda não possui atividades"} />
         <ContextCard icon={<Sparkles aria-hidden />} label="Última nota" value={latestGrade ? String(gradeBySubmission.get(latestGrade.id)) : "Ainda sem notas"} detail={latestGrade ? "Resultado mais recente" : "Notas corrigidas aparecerão aqui"} />
         <ContextCard icon={<BookOpen aria-hidden />} label="Último material" value={recentMaterial?.title ?? "Nenhum material"} detail={recentMaterial ? formatDate(recentMaterial.created_at) : "Os materiais publicados aparecerão aqui"} href={recentMaterial ? `/aluno/materiais/${recentMaterial.id}` : undefined} />
-        <ContextCard icon={<Megaphone aria-hidden />} label="Último aviso" value={announcements?.[0]?.message ?? "Nenhum aviso publicado"} detail={announcements?.[0] ? formatDate(announcements[0].created_at) : "Sem novidades por enquanto"} />
+        <ContextCard icon={<Megaphone aria-hidden />} label="Último aviso" value={announcements?.[0]?.message ?? "Nenhum aviso publicado"} detail={announcements?.[0] ? formatDate(announcements[0].created_at) : "Sem novidades por enquanto"} href={`/aluno/turmas/${id}/avisos`} />
       </div>
       <div className="grid gap-6 lg:grid-cols-2">
         <ContextList title="Próximos prazos" items={upcoming} titleFor={titleFor} empty="Você não possui prazos próximos nesta turma." />

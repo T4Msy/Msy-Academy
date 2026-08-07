@@ -19,6 +19,7 @@ import {
   IconConfiguracoes,
   IconPerfil,
 } from "@/components/shell/navIcons";
+import { Megaphone } from "lucide-react";
 
 const NAV: SidebarSection[] = [
   { items: [{ href: "/professor", label: "Início", icon: <IconHome />, exact: true, mobilePrimary: true }] },
@@ -50,6 +51,7 @@ const NAV: SidebarSection[] = [
     title: "Turma",
     items: [
       { href: "/professor/turmas", label: "Turmas", icon: <IconTurma />, mobilePrimary: true },
+      { href: "/professor/avisos", label: "Avisos", icon: <Megaphone size={18} strokeWidth={1.6} aria-hidden /> },
       { href: "/professor/correcao", label: "Correção", icon: <IconCorrecao />, mobilePrimary: true },
       { href: "/professor/correcao/escanear", label: "Escanear Gabarito", mobileLabel: "Escanear", icon: <IconScan />, mobilePrimary: true },
     ],

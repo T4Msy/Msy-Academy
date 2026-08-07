@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ClipboardCheck, LayoutDashboard, MessageCircle, Settings, Sparkles, BookOpen, Users } from "lucide-react";
+import { ClipboardCheck, LayoutDashboard, MessageCircle, Megaphone, Settings, Sparkles, BookOpen, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { ClassHeader, ClassRoleBadge } from "@/components/classes/ClassHeader";
 import { ClassTabsNav } from "@/components/classes/ClassTabsNav";
@@ -71,6 +71,7 @@ export default async function ProfessorTurmaLayout({
           { key: "atividades", label: "Atividades", href: `${base}/atividades`, icon: <ClipboardCheck className="size-4" aria-hidden /> },
           { key: "notas", label: "Notas", href: `${base}/notas`, icon: <Sparkles className="size-4" aria-hidden /> },
           { key: "materiais", label: "Materiais", href: `${base}/materiais`, icon: <BookOpen className="size-4" aria-hidden /> },
+          { key: "avisos", label: "Avisos", href: `${base}/avisos`, icon: <Megaphone className="size-4" aria-hidden /> },
           { key: "chat", label: "Chat", href: `${base}/chat`, icon: <MessageCircle className="size-4" aria-hidden /> },
         ]}
       />

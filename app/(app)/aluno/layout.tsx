@@ -5,10 +5,11 @@ import { Sidebar, type SidebarSection } from "@/components/shell/Sidebar";
 import { MobileTabBar } from "@/components/shell/MobileTabBar";
 import { homeForRoles } from "@/lib/auth/access";
 import { IconHome, IconTutorIA, IconAtividade, IconTurma, IconSimulados, IconPlanoDeEstudos, IconFlashcards, IconEstudoAnimado, IconBiblioteca, IconDashboard, IconConfiguracoes, IconPerfil } from "@/components/shell/navIcons";
+import { Megaphone } from "lucide-react";
 
 const NAV: SidebarSection[] = [
   { items: [{ href: "/aluno", label: "Início", icon: <IconHome />, exact: true, mobilePrimary: true }] },
-  { title: "Meu espaço de estudos", items: [{ href: "/aluno/turmas", label: "Minhas Turmas", icon: <IconTurma />, mobilePrimary: true }, { href: "/aluno/tarefas", label: "Resolver", icon: <IconAtividade />, mobilePrimary: true }, { href: "/aluno/materiais", label: "Conteúdos", icon: <IconBiblioteca /> }] },
+  { title: "Meu espaço de estudos", items: [{ href: "/aluno/turmas", label: "Minhas Turmas", icon: <IconTurma />, mobilePrimary: true }, { href: "/aluno/avisos", label: "Avisos", icon: <Megaphone size={18} strokeWidth={1.6} aria-hidden /> }, { href: "/aluno/tarefas", label: "Resolver", icon: <IconAtividade />, mobilePrimary: true }, { href: "/aluno/materiais", label: "Conteúdos", icon: <IconBiblioteca /> }] },
   { title: "Continuar aprendendo", items: [{ href: "/aluno/tutor-ia", label: "Perguntar", icon: <IconTutorIA /> }, { href: "/aluno/simulados", label: "Simulado", icon: <IconSimulados /> }, { href: "/aluno/flashcards", label: "Revisar", icon: <IconFlashcards /> }] },
   { title: "Organizar", items: [{ href: "/aluno/plano-de-estudos", label: "Planejar", icon: <IconPlanoDeEstudos /> }, { href: "/aluno/estudo-animado", label: "Treinar", icon: <IconEstudoAnimado /> }] },
   { title: "Acompanhar", items: [{ href: "/aluno/dashboard", label: "Meu Progresso", mobileLabel: "Progresso", icon: <IconDashboard />, mobilePrimary: true }] },
