@@ -33,6 +33,7 @@ const NAV: SidebarSection[] = [
         label: "Criar",
         icon: <IconNovaProva />,
         items: [
+          { href: "/professor/criar", label: "Criar conteúdo", icon: <IconNovaProva /> },
           { href: "/professor/provas/nova", label: "Nova Prova", icon: <IconNovaProva /> },
           { href: "/professor/atividades/nova", label: "Nova Atividade", icon: <IconAtividade /> },
           { href: "/professor/planos-de-aula/nova", label: "Novo Plano de Aula", icon: <IconPlano /> },
