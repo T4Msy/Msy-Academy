@@ -804,6 +804,9 @@ select.input option { background-color: var(--bg-card); color: var(--fg); }
 
 .ia-desc { font-size: 12px; color: var(--fg-muted); line-height: 1.35; }
 
+/* The creation stepper already carries its numbers in the labels. */
+ol[aria-label="Etapas de criação"] { list-style: none; padding-left: 0; }
+
 .ia-tile.active .radio-dot { border-color: var(--accent-text); }
 .ia-tile.active .radio-dot::after { background: var(--accent); }
 

@@ -65,6 +65,7 @@ export default async function BancoDeQuestoesPage({
   const teacherOptions = [...teachers.entries()].sort(([, a], [, b]) => a.localeCompare(b, "pt-BR"));
   const subjectOptions = [...subjects.entries()].sort(([, a], [, b]) => a.localeCompare(b, "pt-BR"));
   const contentOptions = [...contents].sort((a, b) => a.localeCompare(b, "pt-BR"));
+  const hasAdvancedFilters = Boolean(tags || bncc || dificuldade || professor || conteudo);
 
   return (
     <>
@@ -83,53 +84,35 @@ export default async function BancoDeQuestoesPage({
 
       <form className="mb-4 overflow-hidden rounded-lg border border-border bg-card shadow-elevated transition-colors" method="get">
         <div className="flex flex-row flex-wrap items-end gap-3 p-5.5">
-          <div className="flex min-w-40 flex-col gap-1.5">
+          <div className="flex min-w-48 flex-1 flex-col gap-1.5">
             <label className="block text-sm font-semibold text-foreground" htmlFor="busca">Buscar</label>
             <input className="w-full appearance-none rounded-sm border border-border bg-[rgba(var(--overlay-rgb),0.04)] px-3 py-2.5 text-md text-foreground outline-none transition-colors focus:border-brand-border focus:ring-[3px] focus:ring-brand-glow" id="busca" name="busca" defaultValue={busca ?? ""} placeholder="Palavra no enunciado" />
           </div>
-          <div className="flex min-w-40 flex-col gap-1.5"><label className="text-sm font-semibold text-foreground" htmlFor="tags">Tags (qualquer)</label><input id="tags" name="tags" defaultValue={tags ?? ""} placeholder="DNA, revisão" className="w-full rounded-sm border border-border bg-card px-3 py-2.5 text-md" /></div>
-          <div className="flex min-w-40 flex-col gap-1.5"><label className="text-sm font-semibold text-foreground" htmlFor="bncc">BNCC</label><input id="bncc" name="bncc" defaultValue={bncc ?? ""} placeholder="EF06MA07" className="w-full rounded-sm border border-border bg-card px-3 py-2.5 text-md uppercase" /></div>
           <div className="flex min-w-40 flex-col gap-1.5">
-            <label className="block text-sm font-semibold text-foreground" htmlFor="tipo">Tipo</label>
-            <select className="w-full appearance-none rounded-sm border border-border bg-[rgba(var(--overlay-rgb),0.04)] px-3 py-2.5 text-md text-foreground outline-none transition-colors focus:border-brand-border focus:ring-[3px] focus:ring-brand-glow" id="tipo" name="tipo" defaultValue={tipo ?? ""}>
-              <option value="">Todos</option>
-              <option value="MULTIPLA">Múltipla escolha</option>
-              <option value="VF">Verdadeiro/Falso</option>
-              <option value="DISCURSIVA">Discursiva</option>
-            </select>
-          </div>
-          <div className="flex min-w-40 flex-col gap-1.5">
-            <label className="block text-sm font-semibold text-foreground" htmlFor="dificuldade">Dificuldade</label>
-            <select className="w-full appearance-none rounded-sm border border-border bg-[rgba(var(--overlay-rgb),0.04)] px-3 py-2.5 text-md text-foreground outline-none transition-colors focus:border-brand-border focus:ring-[3px] focus:ring-brand-glow" id="dificuldade" name="dificuldade" defaultValue={dificuldade ?? ""}>
-              <option value="">Todas</option>
-              <option value="FACIL">Fácil</option>
-              <option value="MEDIO">Médio</option>
-              <option value="DIFICIL">Difícil</option>
-            </select>
-          </div>
-          <div className="flex min-w-40 flex-col gap-1.5">
-            <label className="block text-sm font-semibold text-foreground" htmlFor="professor">Professor</label>
-            <select className="w-full appearance-none rounded-sm border border-border bg-[rgba(var(--overlay-rgb),0.04)] px-3 py-2.5 text-md text-foreground outline-none transition-colors focus:border-brand-border focus:ring-[3px] focus:ring-brand-glow" id="professor" name="professor" defaultValue={professor ?? ""}>
-              <option value="">Todos</option>
-              {teacherOptions.map(([id, name]) => <option key={id} value={id}>{name}</option>)}
-            </select>
-          </div>
-          <div className="flex min-w-40 flex-col gap-1.5">
-            <label className="block text-sm font-semibold text-foreground" htmlFor="materia">Matéria</label>
+            <label className="block text-sm font-semibold text-foreground" htmlFor="materia">Disciplina</label>
             <select className="w-full appearance-none rounded-sm border border-border bg-[rgba(var(--overlay-rgb),0.04)] px-3 py-2.5 text-md text-foreground outline-none transition-colors focus:border-brand-border focus:ring-[3px] focus:ring-brand-glow" id="materia" name="materia" defaultValue={materia ?? ""}>
               <option value="">Todas</option>
               {subjectOptions.map(([id, name]) => <option key={id} value={id}>{name}</option>)}
             </select>
           </div>
           <div className="flex min-w-40 flex-col gap-1.5">
-            <label className="block text-sm font-semibold text-foreground" htmlFor="conteudo">Conteúdo</label>
-            <select className="w-full appearance-none rounded-sm border border-border bg-[rgba(var(--overlay-rgb),0.04)] px-3 py-2.5 text-md text-foreground outline-none transition-colors focus:border-brand-border focus:ring-[3px] focus:ring-brand-glow" id="conteudo" name="conteudo" defaultValue={conteudo ?? ""}>
-              <option value="">Todos</option>
-              {contentOptions.map((content) => <option key={content} value={content}>{content}</option>)}
+            <label className="block text-sm font-semibold text-foreground" htmlFor="tipo">Tipo</label>
+            <select className="w-full appearance-none rounded-sm border border-border bg-[rgba(var(--overlay-rgb),0.04)] px-3 py-2.5 text-md text-foreground outline-none transition-colors focus:border-brand-border focus:ring-[3px] focus:ring-brand-glow" id="tipo" name="tipo" defaultValue={tipo ?? ""}>
+              <option value="">Todos</option><option value="MULTIPLA">Múltipla escolha</option><option value="VF">Verdadeiro/Falso</option><option value="DISCURSIVA">Discursiva</option>
             </select>
           </div>
-          <button type="submit" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 bg-primary font-bold text-primary-foreground shadow-[0_4px_14px_rgba(217,119,87,0.16)] hover:-translate-y-px hover:opacity-90 px-3 py-[7px] text-sm">Filtrar</button>
+          <button type="submit" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-md font-semibold transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-brand-glow active:translate-y-px disabled:pointer-events-none disabled:opacity-50 bg-primary font-bold text-primary-foreground shadow-[0_4px_14px_rgba(217,119,87,0.16)] hover:-translate-y-px hover:opacity-90 px-3 py-[7px] text-sm">Buscar questões</button>
         </div>
+        <details open={hasAdvancedFilters} className="border-t border-border">
+          <summary className="cursor-pointer px-5.5 py-3 text-sm font-semibold text-foreground outline-none focus-visible:ring-2 focus-visible:ring-brand-glow">Mais filtros</summary>
+          <div className="flex flex-row flex-wrap items-end gap-3 px-5.5 pb-5.5">
+            <div className="flex min-w-40 flex-col gap-1.5"><label className="block text-sm font-semibold text-foreground" htmlFor="tags">Tags (qualquer)</label><input id="tags" name="tags" defaultValue={tags ?? ""} placeholder="DNA, revisão" className="w-full rounded-sm border border-border bg-card px-3 py-2.5 text-md" /></div>
+            <div className="flex min-w-40 flex-col gap-1.5"><label className="block text-sm font-semibold text-foreground" htmlFor="bncc">BNCC</label><input id="bncc" name="bncc" defaultValue={bncc ?? ""} placeholder="EF06MA07" className="w-full rounded-sm border border-border bg-card px-3 py-2.5 text-md uppercase" /></div>
+            <div className="flex min-w-40 flex-col gap-1.5"><label className="block text-sm font-semibold text-foreground" htmlFor="dificuldade">Dificuldade</label><select className="w-full appearance-none rounded-sm border border-border bg-[rgba(var(--overlay-rgb),0.04)] px-3 py-2.5 text-md text-foreground outline-none transition-colors focus:border-brand-border focus:ring-[3px] focus:ring-brand-glow" id="dificuldade" name="dificuldade" defaultValue={dificuldade ?? ""}><option value="">Todas</option><option value="FACIL">Fácil</option><option value="MEDIO">Médio</option><option value="DIFICIL">Difícil</option></select></div>
+            <div className="flex min-w-40 flex-col gap-1.5"><label className="block text-sm font-semibold text-foreground" htmlFor="professor">Professor</label><select className="w-full appearance-none rounded-sm border border-border bg-[rgba(var(--overlay-rgb),0.04)] px-3 py-2.5 text-md text-foreground outline-none transition-colors focus:border-brand-border focus:ring-[3px] focus:ring-brand-glow" id="professor" name="professor" defaultValue={professor ?? ""}><option value="">Todos</option>{teacherOptions.map(([id, name]) => <option key={id} value={id}>{name}</option>)}</select></div>
+            <div className="flex min-w-40 flex-col gap-1.5"><label className="block text-sm font-semibold text-foreground" htmlFor="conteudo">Conteúdo</label><select className="w-full appearance-none rounded-sm border border-border bg-[rgba(var(--overlay-rgb),0.04)] px-3 py-2.5 text-md text-foreground outline-none transition-colors focus:border-brand-border focus:ring-[3px] focus:ring-brand-glow" id="conteudo" name="conteudo" defaultValue={conteudo ?? ""}><option value="">Todos</option>{contentOptions.map((content) => <option key={content} value={content}>{content}</option>)}</select></div>
+          </div>
+        </details>
       </form>
 
       {list.length === 0 ? (

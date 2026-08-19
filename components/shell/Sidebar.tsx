@@ -2,7 +2,7 @@
 
 import { useState, useSyncExternalStore } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { IconChevronDown } from "./navIcons";
 
 /** mobilePrimary marks the ≤4 items MobileTabBar shows directly — the rest land under "Mais". */
@@ -32,24 +32,25 @@ function subscribeToSidebar(onChange: () => void) {
   return () => observer.disconnect();
 }
 
-function activeGroupLabels(sections: SidebarSection[], pathname: string): string[] {
+function activeGroupLabels(sections: SidebarSection[], pathname: string, queryString: string): string[] {
   return sections
     .flatMap((s) => s.items)
     .filter((entry): entry is Extract<SidebarEntry, { kind: "group" }> => entry.kind === "group")
-    .filter((group) => group.items.some((item) => isActiveHref(pathname, item)))
+    .filter((group) => group.items.some((item) => isActiveHref(pathname, queryString, item)))
     .map((group) => group.label);
 }
 
 /** Environment sidebar (Professor or Aluno) — the nav item list is owned by each environment's layout.tsx. */
 export function Sidebar({ sections }: { sections: SidebarSection[] }) {
   const pathname = usePathname();
+  const queryString = useSearchParams().toString();
   const collapsed = useSyncExternalStore(
     subscribeToSidebar,
     currentCollapsed,
     () => "expanded" as Collapsed,
   );
   const [openGroups, setOpenGroups] = useState<Set<string>>(
-    () => new Set(activeGroupLabels(sections, pathname)),
+    () => new Set(activeGroupLabels(sections, pathname, queryString)),
   );
 
   // Auto-open any group containing the active route, so navigating straight
@@ -59,7 +60,7 @@ export function Sidebar({ sections }: { sections: SidebarSection[] }) {
   const [lastPathname, setLastPathname] = useState(pathname);
   if (pathname !== lastPathname) {
     setLastPathname(pathname);
-    const active = activeGroupLabels(sections, pathname);
+    const active = activeGroupLabels(sections, pathname, queryString);
     if (active.some((label) => !openGroups.has(label))) {
       setOpenGroups((prev) => new Set([...prev, ...active]));
     }
@@ -95,7 +96,7 @@ export function Sidebar({ sections }: { sections: SidebarSection[] }) {
               >
                 <button
                   type="button"
-                  className={`sidebar-link sidebar-group-trigger${entry.items.some((item) => isActiveHref(pathname, item)) ? " active" : ""}`}
+                  className={`sidebar-link sidebar-group-trigger${entry.items.some((item) => isActiveHref(pathname, queryString, item)) ? " active" : ""}`}
                   aria-expanded={openGroups.has(entry.label)}
                   onClick={() => toggleGroup(entry.label)}
                   title={entry.label}
@@ -111,8 +112,8 @@ export function Sidebar({ sections }: { sections: SidebarSection[] }) {
                     <Link
                       key={item.href}
                       href={item.href}
-                      className={`sidebar-link sidebar-group-item${isActiveHref(pathname, item) ? " active" : ""}`}
-                      aria-current={isActiveHref(pathname, item) ? "page" : undefined}
+                      className={`sidebar-link sidebar-group-item${isActiveHref(pathname, queryString, item) ? " active" : ""}`}
+                      aria-current={isActiveHref(pathname, queryString, item) ? "page" : undefined}
                       role="menuitem"
                     >
                       <span className="sidebar-link-icon">{item.icon}</span>
@@ -125,8 +126,8 @@ export function Sidebar({ sections }: { sections: SidebarSection[] }) {
               <Link
                 key={entry.href}
                 href={entry.href}
-                className={`sidebar-link${isActiveHref(pathname, entry) ? " active" : ""}`}
-                aria-current={isActiveHref(pathname, entry) ? "page" : undefined}
+                className={`sidebar-link${isActiveHref(pathname, queryString, entry) ? " active" : ""}`}
+                aria-current={isActiveHref(pathname, queryString, entry) ? "page" : undefined}
                 title={entry.label}
               >
                 <span className="sidebar-link-icon">{entry.icon}</span>
@@ -152,8 +153,12 @@ export function Sidebar({ sections }: { sections: SidebarSection[] }) {
   );
 }
 
-function isActiveHref(pathname: string, item: SidebarItem): boolean {
-  const path = item.href.split("?", 1)[0];
+function isActiveHref(pathname: string, queryString: string, item: SidebarItem): boolean {
+  const [path, hrefQuery] = item.href.split("?", 2);
   if (item.exact) return pathname === path;
-  return pathname === path || pathname.startsWith(path + "/");
+  if (pathname !== path && !pathname.startsWith(path + "/")) return false;
+  if (!hrefQuery) return path !== "/professor/criar" || queryString.length === 0;
+  const expected = new URLSearchParams(hrefQuery);
+  const current = new URLSearchParams(queryString);
+  return [...expected.entries()].every(([key, value]) => current.get(key) === value);
 }

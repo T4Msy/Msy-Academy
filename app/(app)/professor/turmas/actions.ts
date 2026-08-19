@@ -134,3 +134,15 @@ export async function unassignContent(classId: string, assignmentId: string): Pr
   revalidatePath(`/professor/turmas/${classId}/atividades`);
   revalidatePath(`/professor/turmas/${classId}`);
 }
+
+/** Publica um aviso na turma usando a estrutura de comunicados existente. */
+export async function createAnnouncement(classId: string, message: string): Promise<void> {
+  const cleanMessage = message.trim();
+  if (!cleanMessage) throw new Error("Escreva uma mensagem para publicar o aviso.");
+  const { supabase, user } = await requireUser();
+  await requireClassOwner(supabase, user.id, classId);
+  const { error } = await supabase.from("class_announcements").insert({ class_id: classId, message: cleanMessage });
+  if (error) throw new Error(`Não foi possível publicar o aviso: ${error.message}`);
+  revalidatePath(`/professor/turmas/${classId}/avisos`);
+  revalidatePath("/professor/avisos");
+}
