@@ -434,7 +434,7 @@ a { color: inherit; text-decoration: none; }
 .app-body { flex: 1; display: flex; max-width: 1400px; margin: 0 auto; width: 100%; }
 
 .sidebar {
-  width: 224px;
+  width: 240px;
   flex-shrink: 0;
   padding: 24px 12px;
   display: flex;
@@ -487,7 +487,7 @@ a { color: inherit; text-decoration: none; }
 }
 .sidebar-link-icon { display: flex; flex-shrink: 0; color: inherit; }
 .sidebar-link--block { display: block; }
-.sidebar-link-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar-link-label { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* ── Sidebar groups (e.g. "Criar" > Nova Prova/Atividade/Plano) ──
    Expanded sidebar: JS-driven accordion (.is-open toggles .sidebar-group-items).
