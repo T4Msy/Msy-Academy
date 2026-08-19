@@ -85,7 +85,7 @@ export default async function AtividadePage({ params }: { params: Promise<{ id: 
             <span className="inline-flex items-center rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground">{assignments?.length ?? 0} atribuiÃ§Ã£o{assignments?.length === 1 ? "" : "Ãµes"}</span>
           </div>
         </div>
-        <div className="flex flex-wrap items-center justify-end gap-2"><SendActivityToClass activityId={activity.id} classes={classes ?? []} studentsByClass={studentsByClass} /><ActivityActions activityId={activity.id} /><ExamExportActions examTitle={activity.title} questions={questions} includeAnswerKey={false} /><RenameDeleteMenu currentTitle={activity.title} onRename={renameAction} onDelete={deleteAction} redirectAfterDelete="/professor/atividades" /></div>
+        <div className="flex flex-wrap items-center justify-end gap-2"><SendActivityToClass activityId={activity.id} activityTitle={activity.title} questionCount={questions.length} classes={classes ?? []} studentsByClass={studentsByClass} /><ActivityActions activityId={activity.id} /><ExamExportActions examTitle={activity.title} questions={questions} includeAnswerKey={false} /><RenameDeleteMenu currentTitle={activity.title} onRename={renameAction} onDelete={deleteAction} redirectAfterDelete="/professor/atividades" /></div>
       </div>
 
       <QuestionsEditor kind="ACTIVITY" parentId={activity.id} questions={questions} actions={questionsActions} />

@@ -153,6 +153,7 @@ export function Sidebar({ sections }: { sections: SidebarSection[] }) {
 }
 
 function isActiveHref(pathname: string, item: SidebarItem): boolean {
-  if (item.exact) return pathname === item.href;
-  return pathname === item.href || pathname.startsWith(item.href + "/");
+  const path = item.href.split("?", 1)[0];
+  if (item.exact) return pathname === path;
+  return pathname === path || pathname.startsWith(path + "/");
 }
