@@ -13,18 +13,23 @@ function parseCategory(value: string | undefined): CategoryFilter {
   return value === "avaliacao" || value === "exercicio" ? value : "all";
 }
 const CATEGORY_LABEL: Record<CategoryFilter, string> = { all: "Todas", avaliacao: "Avaliações", exercicio: "Exercícios" };
+type ContentFilter = "all" | "prova" | "atividade";
+function parseContentFilter(value: string | undefined): ContentFilter {
+  return value === "prova" || value === "atividade" ? value : "all";
+}
 
 export default async function ProfessorTurmaAtividadesPage({
   params,
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ modulo?: string; categoria?: string }>;
+  searchParams: Promise<{ modulo?: string; categoria?: string; tipo?: string }>;
 }) {
   const { id } = await params;
   const sp = await searchParams;
   const moduleId = sp.modulo;
   const category = parseCategory(sp.categoria);
+  const contentFilter = parseContentFilter(sp.tipo);
   const supabase = await createClient();
   const {
     data: { user },
@@ -33,6 +38,7 @@ export default async function ProfessorTurmaAtividadesPage({
   let assignmentsQuery = supabase.from("assignments").select("id, content_type, content_id, due_at, created_at, content_category").eq("class_id", id).is("deleted_at", null).order("created_at", { ascending: false });
   if (moduleId) assignmentsQuery = assignmentsQuery.eq("module_id", moduleId);
   if (category !== "all") assignmentsQuery = assignmentsQuery.eq("content_category", category);
+  if (contentFilter !== "all") assignmentsQuery = assignmentsQuery.eq("content_type", contentFilter === "prova" ? "EXAM" : "ACTIVITY");
 
   // assignmentsQuery não depende de nada das outras 5 — roda na mesma leva
   // em vez de esperar o Promise.all terminar para só então começar.
@@ -68,6 +74,7 @@ export default async function ProfessorTurmaAtividadesPage({
     const params = new URLSearchParams();
     if (moduleId) params.set("modulo", moduleId);
     if (next !== "all") params.set("categoria", next);
+    if (contentFilter !== "all") params.set("tipo", contentFilter);
     const qs = params.toString();
     return qs ? `?${qs}` : "";
   };

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import type { ClassTabItem } from "./types";
 
 /**
@@ -21,6 +21,7 @@ export function ClassTabsNav({
   trailingLink?: { label: string; href: string };
 }) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   return (
     <nav
@@ -28,7 +29,8 @@ export function ClassTabsNav({
       className="mb-6 flex max-w-full gap-1 overflow-x-auto border-b border-border pb-2"
     >
       {items.map((item) => {
-        const isActive = item.exact ? pathname === item.href : pathname.startsWith(item.href);
+        const [itemPath, itemQuery] = item.href.split("?", 2);
+        const isActive = (item.exact ? pathname === itemPath : pathname.startsWith(itemPath)) && (!itemQuery || [...new URLSearchParams(itemQuery)].every(([key, value]) => searchParams.get(key) === value));
         return (
           <Link
             key={item.key}

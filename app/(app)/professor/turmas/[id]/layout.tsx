@@ -55,7 +55,8 @@ export default async function ProfessorTurmaLayout({
         items={[
           { key: "geral", label: "Geral", href: base, exact: true, icon: <LayoutDashboard className="size-4" aria-hidden /> },
           { key: "alunos", label: "Alunos", href: `${base}/alunos`, icon: <Users className="size-4" aria-hidden /> },
-          { key: "atividades", label: "Atividades", href: `${base}/atividades`, icon: <ClipboardCheck className="size-4" aria-hidden /> },
+          { key: "atividades", label: "Atividades", href: `${base}/atividades?tipo=atividade`, icon: <ClipboardCheck className="size-4" aria-hidden /> },
+          { key: "provas", label: "Provas", href: `${base}/atividades?tipo=prova`, icon: <ClipboardCheck className="size-4" aria-hidden /> },
           { key: "materiais", label: "Materiais", href: `${base}/materiais`, icon: <BookOpen className="size-4" aria-hidden /> },
           { key: "avisos", label: "Avisos", href: `${base}/avisos`, icon: <Megaphone className="size-4" aria-hidden /> },
           { key: "correcao", label: "Correções", href: `/professor/correcao/turma/${id}`, icon: <ClipboardCheck className="size-4" aria-hidden /> },
