@@ -79,6 +79,9 @@ const THEME_INIT_SCRIPT = `
     var sidebar = localStorage.getItem("sidebar-collapsed") === "true" ? "collapsed" : "expanded";
     document.documentElement.setAttribute("data-sidebar", sidebar);
   } catch (e) {}
+  try {
+    document.documentElement.setAttribute("data-focus-mode", localStorage.getItem("msy-focus-mode") === "true" ? "true" : "false");
+  } catch (e) {}
 })();
 `;
 

@@ -373,6 +373,22 @@ a { color: inherit; text-decoration: none; }
 .profile-avatar-preview img { width: 100%; height: 100%; object-fit: cover; }
 
 /* ── App shell (authenticated area: topbar + sidebar + main) ─── */
+.focus-home-wrap { display: none; }
+.focus-toggle { gap: 7px; }
+.focus-toggle.is-active { background: var(--accent-dim); color: var(--accent-text); box-shadow: inset 0 0 0 1px var(--accent); }
+html[data-focus-mode="true"] .normal-home { display: none; }
+html[data-focus-mode="true"] .focus-home-wrap { display: block; }
+html[data-focus-mode="true"] .app-main { font-size: 1.15rem; }
+html[data-focus-mode="true"] .app-main h1, html[data-focus-mode="true"] .app-main h2 { font-size: 1.25em; }
+html[data-focus-mode="true"] .app-main button, html[data-focus-mode="true"] .app-main a { min-height: 48px; }
+.focus-home h1, .focus-home h2 { font-family: var(--font-display); font-weight: 700; color: var(--fg); }
+.focus-home h1 { font-size: 1.65rem; }.focus-home h2 { font-size: 1.35rem; margin-bottom: 14px; }
+.focus-grid { display: grid; gap: 12px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.focus-card, .focus-action, .focus-list article, .focus-empty { border: 1px solid var(--border); border-radius: 10px; background: var(--card); padding: 16px; }
+.focus-card { display: flex; align-items: center; gap: 12px; color: var(--fg); }.focus-card svg { color: var(--accent-text); }.focus-card small { display:block; margin-top: 3px; color: var(--fg-muted); }
+.focus-grid--actions { grid-template-columns: repeat(3, minmax(0, 1fr)); }.focus-action { display:flex; align-items:center; justify-content:center; gap:10px; font-weight:700; color:var(--fg); }.focus-action svg { color:var(--accent-text); }
+.focus-list { display:grid; gap:10px; }.focus-list article p { margin: 6px 0 0; color: var(--fg-muted); }.focus-progress-label { display:flex; justify-content:space-between; gap:12px; }.focus-progress-label b { color:var(--accent-text); }.focus-progress-bar { height:12px; margin-top:10px; overflow:hidden; border-radius:99px; background:var(--bg-hover); }.focus-progress-bar span { display:block; height:100%; border-radius:inherit; background:var(--accent); }
+@media (max-width: 640px) { .focus-grid, .focus-grid--actions { grid-template-columns: 1fr; } .focus-toggle span { display:none; } }
 .app-shell { min-height: 100vh; display: flex; flex-direction: column; }
 
 .topbar {

@@ -3,6 +3,8 @@ import { ContextSwitcher } from "./ContextSwitcher";
 import { UserMenu } from "./UserMenu";
 import { NotificationBell, type NotificationItem } from "./NotificationBell";
 import { GlobalSearch } from "./GlobalSearch";
+import { ThemeToggle } from "./ThemeToggle";
+import { FocusToggle } from "./FocusToggle";
 
 type TopbarProps =
   | {
@@ -48,6 +50,7 @@ export function Topbar(props: TopbarProps) {
           <>
             <GlobalSearch environment={props.currentEnv} />
             <div className="topbar-right">
+              {props.currentEnv === "ALUNO" && <><FocusToggle /><ThemeToggle variant="icon" /></>}
               <NotificationBell notifications={props.notifications} environment={props.currentEnv} />
               <UserMenu name={props.name} email={props.email} avatarUrl={props.avatarUrl} profileHref={props.profileHref} settingsHref={props.settingsHref} />
             </div>

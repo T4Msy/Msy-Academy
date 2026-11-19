@@ -7,6 +7,7 @@ import { studentDashboardStatsQueryKey } from "@/lib/dashboard/queryKeys";
 import { StudentPriorityDashboard } from "./StudentPriorityDashboard";
 import { StudentMissionsCard } from "@/components/student/StudentMissionsCard";
 import { getDerivedStudentMissionIds } from "@/lib/dashboard/studentMissions";
+import { StudentFocusDashboard } from "./StudentFocusDashboard";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Início" };
@@ -33,6 +34,7 @@ export default async function AlunoHomePage() {
 
   return (
     <>
+      <div className="normal-home">
       <div className="mb-5">
         <h1 className="font-display text-2xl font-bold text-foreground sm:text-3xl">
           Olá, {firstName}
@@ -58,6 +60,8 @@ export default async function AlunoHomePage() {
         </div>
         <StudentMissionsCard initialCompletedIds={initialCompletedIds} />
       </section>
+      </div>
+      <div className="focus-home-wrap"><HydrationBoundary state={dehydrate(queryClient)}><StudentFocusDashboard /></HydrationBoundary></div>
     </>
   );
 }

@@ -20,6 +20,7 @@ export interface StudentRoutine {
     title: string;
     subject: string | null;
     score: number;
+    maxScore: number;
     gradedAt: string;
   }>;
   continueItem: { title: string; href: string; detail: string } | null;
@@ -28,6 +29,7 @@ export interface StudentRoutine {
     name: string;
     subject: string | null;
     teacherName: string | null;
+    isImportant: boolean;
     nextExam: string | null;
     nextActivity: string | null;
     pendingAssignments: number;
@@ -136,6 +138,8 @@ export async function getStudentDashboardStats(): Promise<StudentDashboardStats>
     { data: materials },
     { data: sessions },
     { data: announcements },
+    { data: activityItems },
+    { data: examQuestions },
   ] = await Promise.all([
     submissionIds.length
       ? supabase.from("submission_answers").select("is_correct").in("submission_id", submissionIds)
@@ -175,9 +179,11 @@ export async function getStudentDashboardStats(): Promise<StudentDashboardStats>
       .not("ended_at", "is", null),
     supabase
       .from("class_announcements")
-      .select("id, class_id, message, created_at")
+      .select("id, class_id, message, created_at, is_important")
       .order("created_at", { ascending: false })
       .limit(5),
+    activityIds.length ? supabase.from("activity_items").select("activity_id, points").in("activity_id", activityIds) : Promise.resolve({ data: [] as { activity_id: string; points: number }[] }),
+    examIds.length ? supabase.from("exam_questions").select("exam_id, points").in("exam_id", examIds) : Promise.resolve({ data: [] as { exam_id: string; points: number }[] }),
   ]);
 
   const teacherNames: { data: { class_id: string; teacher_name: string | null }[] | null } =
@@ -216,6 +222,10 @@ export async function getStudentDashboardStats(): Promise<StudentDashboardStats>
   );
   const classNameById = new Map(classList.map((classroom) => [classroom.id, classroom.name]));
   const gradesBySubmissionId = new Map((grades ?? []).map((grade) => [grade.submission_id, grade]));
+  const activityMaxById = new Map<string, number>();
+  for (const item of activityItems ?? []) activityMaxById.set(item.activity_id, (activityMaxById.get(item.activity_id) ?? 0) + Number(item.points));
+  const examMaxById = new Map<string, number>();
+  for (const item of examQuestions ?? []) examMaxById.set(item.exam_id, (examMaxById.get(item.exam_id) ?? 0) + Number(item.points));
   const recentGrades = [...gradesBySubmissionId.entries()]
     .map(([submissionId, grade]) => {
       const submission = submissionList.find((item) => item.id === submissionId);
@@ -233,6 +243,7 @@ export async function getStudentDashboardStats(): Promise<StudentDashboardStats>
                 classList.find((item) => item.id === assignment.class_id)?.subject_id ?? "",
               ) ?? null,
             score: grade.total_score,
+            maxScore: assignment.content_type === "EXAM" ? (examMaxById.get(assignment.content_id) ?? 0) : (activityMaxById.get(assignment.content_id) ?? 0),
             gradedAt: grade.created_at,
           }
         : null;
@@ -328,6 +339,7 @@ export async function getStudentDashboardStats(): Promise<StudentDashboardStats>
         publishedAt: announcement.created_at,
         className: classNameById.get(announcement.class_id) ?? "Turma",
         teacherName: teacherNameByClassId.get(announcement.class_id) ?? null,
+        isImportant: announcement.is_important ?? false,
       })),
     },
   };
